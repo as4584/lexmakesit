@@ -1,0 +1,77 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+.venv
+*.egg-info/
+dist/
+build/
+*.log
+logs/
+.env
+.env.local
+.env.production
+.secrets
+secrets/
+*.pem
+*.key
+test.db
+test_*.db
+/tmp/portfolio-*
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+node_modules/
+
+# SSL Certificates and keys
+ssl/
+*.pem
+*.key
+*.crt
+*.csr
+nginx.prod.conf
+
+# Docker secrets
+secrets/
+
+# Docker volumes
+docker-data/
+
+.env.bak
+
+# Deploy scripts — KEEP PRIVATE
+deploy.sh
+deploy-nginx.sh
+server_setup.sh
+setup.sh
+setup-github-secrets.sh
+security_hardening.sh
+security_final.sh
+final_cleanup.sh
+fix_vulnerabilities.sh
+health-check.sh
+test-actions.sh
+test-local.sh
+validate_workflow.sh
+demo.sh
+
+# Security scan outputs
+bandit-report.json
+security_scan.json
+audit_report.md
+server.err
+
+# Preview/temp artifacts
+*_preview.md
+golden_*.txt

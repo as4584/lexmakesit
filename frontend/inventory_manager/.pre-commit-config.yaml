@@ -1,0 +1,17 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: check-added-large-files
+        args: ['--maxkb=500']
+      - id: check-merge-conflict
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: local
+    hooks:
+      - id: block-sensitive-files
+        name: Block committing secrets and tokens
+        entry: bash -c 'if git diff --cached --name-only | grep -E "(^|/)\.env($|\.|/)|service_account\.json|ngrok|token|credentials\.json"; then echo "Blocked committing sensitive files"; exit 1; fi'
+        language: system
+        types: [file]

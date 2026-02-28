@@ -1,0 +1,36 @@
+line-length = 120
+target-version = "py311"
+
+[lint]
+# Enable a smaller subset of rules to focus on important issues
+select = [
+    "E",      # pycodestyle errors
+    "W",      # pycodestyle warnings  
+    "F",      # pyflakes
+    "I",      # isort
+    "UP",     # pyupgrade
+    "B",      # flake8-bugbear
+    "SIM",    # flake8-simplify
+    "C90",    # mccabe
+]
+
+ignore = [
+    "PLC0415",  # Allow imports within functions (common in pytest fixtures)
+    "PTH100",   # Allow os.path usage (legacy code compatibility)
+    "PTH108",   # Allow os.unlink usage
+    "PTH120",   # Allow os.path.dirname usage  
+    "E402",     # Allow module level imports not at top (test files)
+]
+
+[lint.per-file-ignores]
+"tests/*" = [
+    "PLC0415",  # imports within functions are common in pytest
+    "E402",     # module imports not at top is fine in tests
+    "F841",     # unused variables ok in tests
+]
+
+[lint.mccabe]
+max-complexity = 10
+
+[lint.isort]
+known-first-party = ["src"]

@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "id": "p1", "sku": "JD1-BLK-10", "name": "Air Jordan 1 Black", "category": "Sneakers", "retail_price": 170.0 },
+    { "id": "p2", "sku": "JD1-WHT-9", "name": "Air Jordan 1 White", "category": "Sneakers", "retail_price": 170.0 }
+  ]
+}

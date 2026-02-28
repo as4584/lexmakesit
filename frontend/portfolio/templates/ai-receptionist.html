@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Receptionist - Never Miss Revenue | lexmakesit</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@700;900&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/global.css">
+    <link rel="stylesheet" href="/static/css/background.css">
+    <link rel="stylesheet" href="/static/css/glass.css">
+    <link rel="stylesheet" href="/static/css/buttons.css">
+    <link rel="stylesheet" href="/static/css/components.css">
+
+    <!-- JS -->
+    <script src="/static/js/aero.js" defer></script>
+</head>
+
+<body>
+    <!-- Background Bubbles Container (Populated by JS) -->
+    <div class="aero-bubbles"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="/" class="logo-text">Lex Santiago</a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/#portfolio" class="nav-link">Work</a>
+                <a href="/#about" class="nav-link">About</a>
+                <a href="/#contact" class="nav-link">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero aero-section">
+        <div class="glass-panel text-center">
+            <div class="gloss-overlay"></div>
+            <h1 style="margin-bottom: 1rem;">Never Miss Revenue</h1>
+            <h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: var(--color-ocean-mid);">
+                The AI receptionist that answers calls 24/7.
+            </h2>
+            <p style="margin-bottom: 3rem; max-width: 700px; margin-left: auto; margin-right: auto;">
+                Book appointments, answer FAQs, and send SMS confirmations automatically.
+                <br><strong style="color: var(--color-ocean-mid);">All for $0.08 / call.</strong>
+            </p>
+            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <a href="#roi-calculator" class="aero-btn">Calculate Savings</a>
+                <a href="#demo" class="aero-btn"
+                    style="background: transparent; border: 1px solid var(--color-ocean-mid); color: var(--color-navy-text);">See
+                    Demo</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo" class="aero-section">
+        <div class="glass-panel">
+            <div class="gloss-overlay"></div>
+            <h2 class="text-center" style="margin-bottom: 2rem; color: var(--color-ocean-mid);">Live Call Simulation
+            </h2>
+
+            <div style="max-width: 600px; margin: 0 auto;">
+                <div class="glass-card" style="padding: 2rem; background: rgba(255,255,255,0.4);">
+                    <div class="gloss-overlay"></div>
+
+                    <div style="margin-bottom: 1.5rem; text-align: left;">
+                        <span
+                            style="font-size: 0.8rem; color: var(--color-ocean-mid); font-weight: bold;">CUSTOMER</span>
+                        <div
+                            style="background: rgba(255,255,255,0.6); padding: 1rem; border-radius: 12px 12px 12px 0; margin-top: 0.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+                            "Hi! I'd like to book an appointment for Tuesday at 2 PM."
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 1.5rem; text-align: right;">
+                        <span style="font-size: 0.8rem; color: var(--color-ocean-mid); font-weight: bold;">AI
+                            RECEPTIONIST</span>
+                        <div
+                            style="background: var(--color-ocean-light); color: white; padding: 1rem; border-radius: 12px 12px 0 12px; margin-top: 0.5rem; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                            "Perfect! I've booked you for Tuesday 2 PM. You'll receive a confirmation text shortly."
+                        </div>
+                    </div>
+
+                    <div
+                        style="text-align: center; margin-top: 1.5rem; color: var(--color-ocean-mid); font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span
+                            style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%;"></span>
+                        Booking confirmed + SMS sent automatically
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ROI Calculator Section -->
+    <section id="roi-calculator" class="aero-section">
+        <div class="glass-panel">
+            <div class="gloss-overlay"></div>
+            <h2 class="text-center" style="margin-bottom: 1rem; color: var(--color-ocean-mid);">Calculate Your Savings
+            </h2>
+            <p class="text-center" style="margin-bottom: 3rem;">See exactly how much you save vs. a human receptionist.
+            </p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+                <!-- Inputs -->
+                <div>
+                    <h3 style="margin-bottom: 1.5rem; font-size: 1.2rem;">Your Business Stats</h3>
+
+                    <div style="margin-bottom: 2rem;">
+                        <label for="calls-per-month"
+                            style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Calls per Month</label>
+                        <input type="number" id="calls-per-month" value="80" min="1" max="5000"
+                            style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid rgba(0,0,0,0.1); background: rgba(255,255,255,0.5); font-family: var(--font-body); font-size: 1rem;"
+                            oninput="calculateROI()">
+                    </div>
+
+                    <div class="glass-card" style="padding: 1rem; background: rgba(255,255,255,0.3);">
+                        <strong style="color: var(--color-navy-text);">AI Cost Breakdown:</strong>
+                        <p style="margin: 0; color: var(--color-ocean-mid); font-size: 0.9rem;">$0.08 per call (Twilio +
+                            AI)</p>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="text-center">
+                    <h3 style="margin-bottom: 1rem; font-size: 1.2rem;">Your Monthly Savings</h3>
+
+                    <div id="monthly-savings"
+                        style="font-size: 3.5rem; font-weight: 700; color: var(--color-ocean-mid); font-family: var(--font-display); margin-bottom: 0.5rem;">
+                        $2,754
+                    </div>
+                    <p style="margin-bottom: 2rem; color: var(--color-navy-text);">saved per month</p>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div style="background: rgba(255,255,255,0.5); padding: 1rem; border-radius: 12px;">
+                            <div style="font-size: 0.8rem; color: var(--color-navy-text);">AI Cost</div>
+                            <div id="ai-cost"
+                                style="font-weight: bold; color: var(--color-ocean-mid); font-size: 1.2rem; font-family: var(--font-display);">
+                                $6.40</div>
+                        </div>
+                        <div style="background: rgba(255,255,255,0.5); padding: 1rem; border-radius: 12px;">
+                            <div style="font-size: 0.8rem; color: var(--color-navy-text);">Human Cost</div>
+                            <div id="human-cost"
+                                style="font-weight: bold; color: #ef4444; font-size: 1.2rem; font-family: var(--font-display);">
+                                $2,760</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="aero-section">
+        <div class="glass-panel">
+            <div class="gloss-overlay"></div>
+            <h2 class="text-center" style="margin-bottom: 3rem; color: var(--color-ocean-mid);">Simple Pricing</h2>
+
+            <div class="projects-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                <!-- Starter -->
+                <div class="glass-card text-center">
+                    <div class="gloss-overlay"></div>
+                    <h3 style="margin-bottom: 0.5rem;">Starter</h3>
+                    <div
+                        style="font-size: 2.5rem; font-weight: 700; color: var(--color-ocean-mid); margin: 1rem 0; font-family: var(--font-display);">
+                        $100<span
+                            style="font-size: 1rem; color: var(--color-navy-text); font-weight: normal;">/mo</span>
+                    </div>
+                    <p style="font-style: italic; margin-bottom: 1.5rem;">"Just answer my calls"</p>
+                    <ul style="text-align: left; margin-bottom: 2rem; padding-left: 1rem;">
+                        <li style="margin-bottom: 0.5rem;">✓ Voicemail handling</li>
+                        <li style="margin-bottom: 0.5rem;">✓ Simple booking</li>
+                        <li style="margin-bottom: 0.5rem;">✓ SMS confirmations</li>
+                    </ul>
+                    <a href="#" class="aero-btn" style="width: 100%; font-size: 0.9rem;">Select Starter</a>
+                </div>
+
+                <!-- Core -->
+                <div class="glass-card text-center"
+                    style="border: 2px solid var(--color-ocean-mid); transform: scale(1.05);">
+                    <div class="gloss-overlay"></div>
+                    <div
+                        style="background: var(--color-ocean-mid); color: white; padding: 4px 12px; border-radius: 12px; display: inline-block; font-size: 0.8rem; margin-bottom: 1rem; font-weight: bold;">
+                        MOST POPULAR</div>
+                    <h3 style="margin-bottom: 0.5rem;">Core</h3>
+                    <div
+                        style="font-size: 2.5rem; font-weight: 700; color: var(--color-ocean-mid); margin: 1rem 0; font-family: var(--font-display);">
+                        $200<span
+                            style="font-size: 1rem; color: var(--color-navy-text); font-weight: normal;">/mo</span>
+                    </div>
+                    <p style="font-style: italic; margin-bottom: 1.5rem;">"Automate & prove ROI"</p>
+                    <ul style="text-align: left; margin-bottom: 2rem; padding-left: 1rem;">
+                        <li style="margin-bottom: 0.5rem;">✓ Everything in Starter</li>
+                        <li style="margin-bottom: 0.5rem;">✓ ROI Dashboard</li>
+                        <li style="margin-bottom: 0.5rem;">✓ Number Porting</li>
+                        <li style="margin-bottom: 0.5rem;">✓ Custom Voice</li>
+                    </ul>
+                    <a href="#" class="aero-btn" style="width: 100%; font-size: 0.9rem;">Start Free Pilot</a>
+                </div>
+
+                <!-- Pro -->
+                <div class="glass-card text-center">
+                    <div class="gloss-overlay"></div>
+                    <h3 style="margin-bottom: 0.5rem;">Pro</h3>
+                    <div
+                        style="font-size: 2.5rem; font-weight: 700; color: var(--color-ocean-mid); margin: 1rem 0; font-family: var(--font-display);">
+                        $300<span
+                            style="font-size: 1rem; color: var(--color-navy-text); font-weight: normal;">/mo</span>
+                    </div>
+                    <p style="font-style: italic; margin-bottom: 1.5rem;">"Scale & integrate"</p>
+                    <ul style="text-align: left; margin-bottom: 2rem; padding-left: 1rem;">
+                        <li style="margin-bottom: 0.5rem;">✓ Everything in Core</li>
+                        <li style="margin-bottom: 0.5rem;">✓ CRM Integration</li>
+                        <li style="margin-bottom: 0.5rem;">✓ Custom Workflows</li>
+                        <li style="margin-bottom: 0.5rem;">✓ Priority Support</li>
+                    </ul>
+                    <a href="#" class="aero-btn"
+                        style="width: 100%; font-size: 0.9rem; background: transparent; border: 1px solid var(--color-ocean-mid); color: var(--color-navy-text);">Contact
+                        Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-top">
+        <div class="container text-center" style="padding: 3rem 0;">
+            <p style="color: var(--color-navy-text); margin-bottom: 1rem;">&copy; 2025 Lex Santiago. Built with FastAPI
+                & Aero Design.</p>
+            <div style="display: flex; justify-content: center; gap: 2rem;">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/#portfolio" class="nav-link">Portfolio</a>
+                <a href="/#contact" class="nav-link">Contact</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function calculateROI() {
+            const callsPerMonth = document.getElementById('calls-per-month').value;
+
+            // Calculate costs
+            const aiMonthlyCost = callsPerMonth * 0.08;
+            const humanMonthlyCost = 2760; // Fixed human cost
+            const monthlySavings = humanMonthlyCost - aiMonthlyCost;
+
+            // Update display
+            document.getElementById('ai-cost').textContent = '$' + aiMonthlyCost.toFixed(2);
+            document.getElementById('monthly-savings').textContent = '$' + monthlySavings.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        }
+
+        // Calculate initial ROI on page load
+        document.addEventListener('DOMContentLoaded', function () {
+            calculateROI();
+        });
+    </script>
+</body>
+
+</html>

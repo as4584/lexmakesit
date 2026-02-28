@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - DonXEra{% endblock %}
+
+{% block header %}Dashboard{% endblock %}
+
+{% block subtitle %}Overview of your inventory{% endblock %}
+
+{% block content %}
+<!-- Metrics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h6 class="card-subtitle">Total SKUs</h6>
+                    <i class="bi bi-box text-secondary"></i>
+                </div>
+                <h3 class="card-title mb-0">{{ total_skus or 0 }}</h3>
+                <small class="text-muted">Different items</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="card-subtitle">Items in Stock</h6>
+                    <i class="bi bi-boxes text-secondary"></i>
+                </div>
+                <h3 class="card-title mb-0">{{ total_on_hand or 0 }}</h3>
+                <small class="text-muted">Total units</small>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="card-subtitle">Low Stock</h6>
+                    <i class="bi bi-exclamation-circle text-secondary"></i>
+                </div>
+                <h3 class="card-title mb-0">{{ low_stock_count or 0 }}</h3>
+                <small class="text-muted">Need restock</small>
+                <div class="mt-3">
+                    <a href="{{ url_for('low_stock') }}" class="btn btn-sm btn-outline-primary w-100">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card metric-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h6 class="card-subtitle">Actions</h6>
+                    <i class="bi bi-lightning-charge text-secondary"></i>
+                </div>
+                <p class="mb-3 small text-muted">Quick tools</p>
+                <button class="btn btn-sm btn-primary w-100 mb-2" onclick="syncInventory()">
+                    Sync Now
+                </button>
+                <button class="btn btn-sm btn-outline-primary w-100" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    Upload CSV
+                </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-lightning"></i> Quick Actions
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('inventory') }}" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-grid-3x3-gap"></i> View Inventory
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <a href="{{ url_for('low_stock') }}" class="btn btn-outline-warning w-100">
+                            <i class="bi bi-exclamation-triangle"></i> Low Stock Report
+                        </a>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-success w-100" onclick="syncInventory()">
+                            <i class="bi bi-arrow-repeat"></i> Full Sync
+                        </button>
+                    </div>
+                    <div class="col-md-3 mb-2">
+                        <button class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                            <i class="bi bi-upload"></i> Upload CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity / Summary -->
+<div class="row">
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-activity"></i> System Status
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Lightspeed API</h6>
+                        <span class="badge bg-success status-badge">
+                            <i class="bi bi-check-circle"></i> Connected
+                        </span>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Google Sheets</h6>
+                        <span class="badge bg-success status-badge">
+                            <i class="bi bi-check-circle"></i> Synced
+                        </span>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Next Scheduled Sync</h6>
+                        <small class="text-muted">In 45 minutes</small>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Backup Status</h6>
+                        <small class="text-muted">Last backup: Today 3:00 AM</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-4">
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Quick Tips
+                </h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li class="mb-2">
+                        <i class="bi bi-lightbulb text-warning"></i>
+                        <small>Inventory syncs automatically every hour</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-lightbulb text-warning"></i>
+                        <small>Upload sales CSV to update quantities</small>
+                    </li>
+                    <li class="mb-2">
+                        <i class="bi bi-lightbulb text-warning"></i>
+                        <small>Check low stock alerts regularly</small>
+                    </li>
+                    <li class="mb-0">
+                        <i class="bi bi-lightbulb text-warning"></i>
+                        <small>Data is automatically backed up nightly</small>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

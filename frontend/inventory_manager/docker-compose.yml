@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    hostname: inventory.internal
+    networks:
+      lex_net:
+        aliases:
+          - inventory.internal
+    restart: always
+    # Internal port only
+    expose:
+      - "8010"
+    env_file:
+      - /srv/env/global.env
+      - .env
+    environment:
+      - FLASK_ENV=production
+      - PORT=8010
+      - DEMO_MODE=false
+    volumes:
+      - ./config:/app/config:ro
+      - ./logs:/app/logs
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8010/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  lex_net:
+    external: true

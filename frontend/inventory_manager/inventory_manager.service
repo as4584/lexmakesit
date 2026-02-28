@@ -1,0 +1,15 @@
+[Unit]
+Description=Inventory Manager Service
+After=network.target docker.service
+Requires=docker.service
+
+[Service]
+User=lex
+WorkingDirectory=/srv/inventory_manager
+ExecStart=/usr/bin/docker compose -f /srv/inventory_manager/docker-compose.yml up -d --build
+ExecStop=/usr/bin/docker compose -f /srv/inventory_manager/docker-compose.yml down
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

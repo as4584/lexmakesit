@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "variant_id": "p1-v1", "location_id": "loc1", "quantity_on_hand": 8, "quantity_sold": 2, "last_updated": "2025-10-22T12:00:00Z" },
+    { "variant_id": "p2-v1", "location_id": "loc1", "quantity_on_hand": 3, "quantity_sold": 7, "last_updated": "2025-10-22T12:00:00Z" }
+  ]
+}

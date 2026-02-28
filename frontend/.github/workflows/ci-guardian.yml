@@ -1,0 +1,37 @@
+name: CI Guardian
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *' # Daily health check
+
+jobs:
+  guardian-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Enforce Monorepo Structure
+        run: |
+          if [ ! -d "portfolio" ] || [ ! -d "inventory_manager" ] || [ ! -d "ai_receptionist" ]; then
+            echo "CRITICAL: Monorepo structure violated!"
+            exit 1
+          fi
+          
+      - name: Check Documentation Compliance
+        run: |
+          if [ ! -f "docs/epistemologyciagent.md" ]; then
+            echo "WARNING: Epistemological core missing."
+          fi
+          
+      - name: Global Security Scan
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - run: |
+          pip install pip-audit
+          # Scan all requirements files found
+          find . -name "requirements.txt" -exec pip-audit -r {} --ignore-vuln CVE-2025-54121 --ignore-vuln CVE-2025-62727 --ignore-vuln CVE-2024-23342 \;

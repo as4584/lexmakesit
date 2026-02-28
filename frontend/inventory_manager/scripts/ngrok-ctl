@@ -1,0 +1,98 @@
+#!/bin/bash
+# Quick ngrok management script
+
+case "$1" in
+  start)
+    echo "🚀 Starting Flask + ngrok..."
+    cd /root/inventory_manager
+    nohup python3 scripts/smart_start.py > /tmp/smart_start.log 2>&1 &
+    sleep 5
+    echo "✅ Started! Check status with: $0 status"
+    ;;
+    
+  stop)
+    echo "🛑 Stopping Flask + ngrok..."
+    pkill -f "python3 scripts/smart_start.py"
+    pkill -f ngrok
+    echo "✅ Stopped"
+    ;;
+    
+  restart)
+    echo "🔄 Restarting..."
+    $0 stop
+    sleep 2
+    $0 start
+    ;;
+    
+  status)
+    echo "=== SYSTEM STATUS ==="
+    echo ""
+    
+    # Check processes
+    if ps aux | grep -q "[p]ython3 scripts/smart_start.py"; then
+      echo "✅ Flask app: RUNNING"
+    else
+      echo "❌ Flask app: NOT RUNNING"
+    fi
+    
+    if ps aux | grep -q "[n]grok http"; then
+      echo "✅ ngrok tunnel: RUNNING"
+    else
+      echo "❌ ngrok tunnel: NOT RUNNING"
+    fi
+    
+    echo ""
+    
+    # Test Flask
+    if curl -s http://localhost:5000/health > /dev/null 2>&1; then
+      echo "✅ Flask health check: PASSED"
+    else
+      echo "❌ Flask health check: FAILED"
+    fi
+    
+    # Get ngrok URL
+    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['tunnels'][0]['public_url'])" 2>/dev/null)
+    
+    if [ ! -z "$PUBLIC_URL" ]; then
+      echo "✅ ngrok tunnel: ONLINE"
+      echo ""
+      echo "🌐 PUBLIC URL:"
+      echo "   $PUBLIC_URL"
+    else
+      echo "❌ ngrok tunnel: OFFLINE"
+    fi
+    
+    echo ""
+    echo "📊 ngrok Dashboard: http://127.0.0.1:4040"
+    ;;
+    
+  logs)
+    echo "📋 Showing logs (Ctrl+C to exit)..."
+    tail -f /tmp/smart_start.log
+    ;;
+    
+  url)
+    PUBLIC_URL=$(curl -s http://127.0.0.1:4040/api/tunnels 2>/dev/null | python3 -c "import sys, json; data = json.load(sys.stdin); print(data['tunnels'][0]['public_url'])" 2>/dev/null)
+    if [ ! -z "$PUBLIC_URL" ]; then
+      echo "$PUBLIC_URL"
+    else
+      echo "❌ ngrok not running or tunnel not established"
+      exit 1
+    fi
+    ;;
+    
+  *)
+    echo "Usage: $0 {start|stop|restart|status|logs|url}"
+    echo ""
+    echo "Commands:"
+    echo "  start   - Start Flask app and ngrok tunnel"
+    echo "  stop    - Stop all services"
+    echo "  restart - Restart all services"
+    echo "  status  - Show current status"
+    echo "  logs    - Show live logs"
+    echo "  url     - Show public URL only"
+    exit 1
+    ;;
+esac
+
+exit 0

@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "id": "s1", "date": "2025-10-21", "total": 170.0, "location_id": "loc1", "items": [{"sku": "JD1-BLK-10", "qty": 1}] },
+    { "id": "s2", "date": "2025-10-21", "total": 340.0, "location_id": "loc1", "items": [{"sku": "JD1-WHT-9", "qty": 2}] }
+  ]
+}

@@ -1,0 +1,57 @@
+name: UI Guardian
+
+on:
+  push:
+    paths:
+      - 'portfolio/**'
+      - 'docs/UI_EPISTEMOLOGY_AGENT.md'
+  pull_request:
+    paths:
+      - 'portfolio/**'
+
+jobs:
+  ui-test:
+    runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.40.0-jammy
+    defaults:
+      run:
+        working-directory: ./portfolio
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install Backend Deps
+        run: pip install -r requirements.txt
+        
+      - name: Install Node Deps
+        run: npm install -D @playwright/test typescript ts-node
+        
+      - name: Run Playwright Tests
+        id: playwright
+        run: npx playwright test
+        continue-on-error: true
+        
+      - name: Upload Report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: playwright-report
+          path: portfolio/playwright-report/
+          retention-days: 30
+          
+      - name: Activate Self-Healing
+        if: steps.playwright.outcome == 'failure'
+        uses: ../.github/actions/ui-self-heal
+        with:
+          report-path: portfolio/playwright-report/
+          
+      - name: Fail if Critical
+        if: steps.playwright.outcome == 'failure'
+        run: |
+          echo "UI Tests Failed. Self-healing attempted. Please review artifacts."
+          exit 1

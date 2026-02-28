@@ -1,0 +1,151 @@
+name: Deploy AI Receptionist
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'ai_receptionist/**'
+
+env:
+  DEPLOYMENT_ID: ${{ github.run_id }}
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-ai-receptionist
+
+jobs:
+  test-and-scan:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./ai_receptionist
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest safety pip-audit
+          
+      - name: Run Tests
+        run: pytest
+        
+      - name: Security Scan
+        run: |
+          pip-audit -r requirements.txt
+          # safety check -r requirements.txt || true
+
+  build:
+    needs: test-and-scan
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+      
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Log in to the Container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./ai_receptionist
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEPLOYMENT_ID }}
+          # Also tag as latest for easier manual operations
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ env.DEPLOYMENT_ID }},${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Copy Compose File to Server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          source: "ai_receptionist/docker-compose.prod.yml"
+          target: "/srv/ai_receptionist"
+          strip_components: 1
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Setup Environment
+            mkdir -p /srv/env/ai_receptionist
+            echo "${{ secrets.AI_RECEPTIONIST_ENV }}" > /srv/env/ai_receptionist/.env
+            chmod 600 /srv/env/ai_receptionist/.env
+            
+            cd /srv/ai_receptionist
+            
+            # 2. Pull New Image
+            export IMAGE_TAG=${{ env.DEPLOYMENT_ID }}
+            export IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+            
+            docker pull $IMAGE_NAME:$IMAGE_TAG
+            
+            # 3. Deployment (Standard Recreate Strategy)
+            # We use a fixed project name 'ai_receptionist' to ensure persistent volumes (DB/Redis/Qdrant) are preserved.
+            # Blue/Green is NOT used here because it would require complex volume management for stateful services.
+            
+            echo "Deploying ai_receptionist..."
+            
+            # Stop any legacy Blue/Green containers if they exist to avoid conflicts
+            docker compose -p ai_receptionist-blue down || true
+            docker compose -p ai_receptionist-green down || true
+            
+            # Start/Update the service
+            IMAGE_TAG=$IMAGE_TAG docker compose -f docker-compose.prod.yml -p ai_receptionist up -d
+            
+            # 4. Health Check
+            echo "Waiting for health check..."
+            ATTEMPTS=0
+            MAX_ATTEMPTS=12
+            SUCCESS_COUNT=0
+            
+            while [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; do
+              # Check port 8002 internal health endpoint
+              HTTP_CODE=$(docker exec ai_receptionist-app-1 curl -s -o /dev/null -w "%{http_code}" http://localhost:8002/health)
+              
+              if [ "$HTTP_CODE" == "200" ]; then
+                SUCCESS_COUNT=$((SUCCESS_COUNT+1))
+                echo "Health check passed ($SUCCESS_COUNT/3)"
+              else
+                SUCCESS_COUNT=0
+                echo "Health check failed (Code: $HTTP_CODE)"
+              fi
+              
+              if [ $SUCCESS_COUNT -ge 3 ]; then
+                break
+              fi
+              
+              sleep 10
+              ATTEMPTS=$((ATTEMPTS+1))
+            done
+            
+            if [ $SUCCESS_COUNT -lt 3 ]; then
+              echo "Health check failed!"
+              # We don't rollback automatically in Recreate strategy because the old containers are gone/updated.
+              # But we exit with error to notify the pipeline.
+              exit 1
+            fi
+            
+            echo "Deployment Complete."

@@ -1,0 +1,141 @@
+ItemID,SKU,Name,Category,Color,Size,Barcode,RetailPrice,QtyOnHand,QtySold,Location,LastUpdated
+1,HS-001-S,Hellstar Flame Hoodie,Clothing,Black,S,7001234567889,180.00,4,8,Rack A-1,2025-10-28
+2,HS-001-M,Hellstar Flame Hoodie,Clothing,Black,M,7001234567890,180.00,3,12,Rack A-1,2025-10-28
+3,HS-001-L,Hellstar Flame Hoodie,Clothing,Black,L,7001234567891,180.00,2,18,Rack A-1,2025-10-28
+4,HS-001-XL,Hellstar Flame Hoodie,Clothing,Black,XL,7001234567892,180.00,1,25,Rack A-1,2025-10-28
+5,HS-002-S,Hellstar Racing Tee,Clothing,White,S,7001234567893,85.00,10,12,Rack A-2,2025-10-28
+6,HS-002-M,Hellstar Racing Tee,Clothing,White,M,7001234567894,85.00,8,15,Rack A-2,2025-10-28
+7,HS-002-L,Hellstar Racing Tee,Clothing,White,L,7001234567895,85.00,6,22,Rack A-2,2025-10-28
+8,HS-002-XL,Hellstar Racing Tee,Clothing,White,XL,7001234567896,85.00,4,18,Rack A-2,2025-10-28
+9,HS-003-M,Hellstar Logo Hoodie,Clothing,Navy,M,7001234567897,195.00,2,10,Rack A-1,2025-10-28
+10,HS-003-L,Hellstar Logo Hoodie,Clothing,Navy,L,7001234567898,195.00,0,14,Rack A-1,2025-10-28
+11,DT-001-S,Denim Tears Cotton Wreath Hoodie,Clothing,Brown,S,7002234567889,250.00,2,5,Rack B-1,2025-10-28
+12,DT-001-M,Denim Tears Cotton Wreath Hoodie,Clothing,Brown,M,7002234567890,250.00,1,8,Rack B-1,2025-10-28
+13,DT-001-L,Denim Tears Cotton Wreath Hoodie,Clothing,Brown,L,7002234567891,250.00,0,12,Rack B-1,2025-10-28
+14,DT-001-XL,Denim Tears Cotton Wreath Hoodie,Clothing,Brown,XL,7002234567892,250.00,1,6,Rack B-1,2025-10-28
+15,DT-002-30,Denim Tears Carpenter Jeans,Clothing,Light Blue,30,7002234567893,320.00,3,4,Rack B-2,2025-10-28
+16,DT-002-32,Denim Tears Carpenter Jeans,Clothing,Light Blue,32,7002234567894,320.00,2,6,Rack B-2,2025-10-28
+17,DT-002-34,Denim Tears Carpenter Jeans,Clothing,Light Blue,34,7002234567895,320.00,3,5,Rack B-2,2025-10-28
+18,DT-002-36,Denim Tears Carpenter Jeans,Clothing,Light Blue,36,7002234567896,320.00,1,8,Rack B-2,2025-10-28
+19,DT-003-S,Denim Tears Logo Tee,Clothing,Black,S,7002234567897,95.00,9,15,Rack B-3,2025-10-28
+20,DT-003-M,Denim Tears Logo Tee,Clothing,Black,M,7002234567898,95.00,7,20,Rack B-3,2025-10-28
+21,DT-003-L,Denim Tears Logo Tee,Clothing,Black,L,7002234567899,95.00,5,25,Rack B-3,2025-10-28
+22,DT-003-XL,Denim Tears Logo Tee,Clothing,Black,XL,7002234567900,95.00,3,18,Rack B-3,2025-10-28
+23,DT-004-M,Denim Tears Logo Tee,Clothing,White,M,7002234567901,95.00,4,18,Rack B-3,2025-10-28
+24,DT-004-L,Denim Tears Logo Tee,Clothing,White,L,7002234567902,95.00,2,22,Rack B-3,2025-10-28
+25,VL-001-S,Vlone Friends Tee,Clothing,Black/Orange,S,7003234567889,150.00,5,10,Rack C-1,2025-10-28
+26,VL-001-M,Vlone Friends Tee,Clothing,Black/Orange,M,7003234567890,150.00,3,15,Rack C-1,2025-10-28
+27,VL-001-L,Vlone Friends Tee,Clothing,Black/Orange,L,7003234567891,150.00,2,20,Rack C-1,2025-10-28
+28,VL-001-XL,Vlone Friends Tee,Clothing,Black/Orange,XL,7003234567892,150.00,1,12,Rack C-1,2025-10-28
+29,VL-002-S,Vlone Staple Hoodie,Clothing,Black,S,7003234567893,220.00,4,8,Rack C-2,2025-10-28
+30,VL-002-M,Vlone Staple Hoodie,Clothing,Black,M,7003234567894,220.00,2,12,Rack C-2,2025-10-28
+31,VL-002-L,Vlone Staple Hoodie,Clothing,Black,L,7003234567895,220.00,1,15,Rack C-2,2025-10-28
+32,VL-003-M,Vlone Juice Wrld Tee,Clothing,White,M,7003234567896,135.00,6,18,Rack C-3,2025-10-28
+33,VL-003-L,Vlone Juice Wrld Tee,Clothing,White,L,7003234567897,135.00,4,22,Rack C-3,2025-10-28
+34,VL-004-M,Vlone Palm Angels Collab Tee,Clothing,Purple,M,7003234567898,165.00,3,9,Rack C-3,2025-10-28
+35,VL-004-L,Vlone Palm Angels Collab Tee,Clothing,Purple,L,7003234567899,165.00,2,11,Rack C-3,2025-10-28
+36,BP-001-S,Bape Shark Hoodie,Clothing,Green Camo,S,7004234567889,450.00,2,3,Rack D-1,2025-10-28
+37,BP-001-M,Bape Shark Hoodie,Clothing,Green Camo,M,7004234567890,450.00,1,5,Rack D-1,2025-10-28
+38,BP-001-L,Bape Shark Hoodie,Clothing,Green Camo,L,7004234567891,450.00,0,7,Rack D-1,2025-10-28
+39,BP-001-XL,Bape Shark Hoodie,Clothing,Green Camo,XL,7004234567892,450.00,1,4,Rack D-1,2025-10-28
+40,BP-002-S,Bape Ape Head Tee,Clothing,White,S,7004234567893,120.00,6,10,Rack D-2,2025-10-28
+41,BP-002-M,Bape Ape Head Tee,Clothing,White,M,7004234567894,120.00,4,15,Rack D-2,2025-10-28
+42,BP-002-L,Bape Ape Head Tee,Clothing,White,L,7004234567895,120.00,3,18,Rack D-2,2025-10-28
+43,BP-002-XL,Bape Ape Head Tee,Clothing,White,XL,7004234567896,120.00,2,12,Rack D-2,2025-10-28
+44,BP-003-M,Bape ABC Camo Tee,Clothing,Blue Camo,M,7004234567897,125.00,5,12,Rack D-2,2025-10-28
+45,BP-003-L,Bape ABC Camo Tee,Clothing,Blue Camo,L,7004234567898,125.00,2,16,Rack D-2,2025-10-28
+46,BP-004-M,Bape Baby Milo Tee,Clothing,Pink,M,7004234567899,110.00,6,20,Rack D-3,2025-10-28
+47,BP-004-L,Bape Baby Milo Tee,Clothing,Pink,L,7004234567900,110.00,8,18,Rack D-3,2025-10-28
+48,BP-005-S,Bape Tiger Camo Hoodie,Clothing,Orange Camo,S,7004234567901,420.00,3,6,Rack D-1,2025-10-28
+49,BP-005-M,Bape Tiger Camo Hoodie,Clothing,Orange Camo,M,7004234567902,420.00,2,9,Rack D-1,2025-10-28
+50,BP-005-L,Bape Tiger Camo Hoodie,Clothing,Orange Camo,L,7004234567903,420.00,1,11,Rack D-1,2025-10-28
+51,BP-006-M,Bape Busy Works Tee,Clothing,Black,M,7004234567904,105.00,7,14,Rack D-3,2025-10-28
+52,BP-006-L,Bape Busy Works Tee,Clothing,Black,L,7004234567905,105.00,5,16,Rack D-3,2025-10-28
+53,CR-001-30,Corteiz Cargo Pants,Clothing,Black,30,7005234567889,160.00,5,10,Rack E-1,2025-10-28
+54,CR-001-32,Corteiz Cargo Pants,Clothing,Black,32,7005234567890,160.00,4,14,Rack E-1,2025-10-28
+55,CR-001-34,Corteiz Cargo Pants,Clothing,Black,34,7005234567891,160.00,3,16,Rack E-1,2025-10-28
+56,CR-001-36,Corteiz Cargo Pants,Clothing,Black,36,7005234567892,160.00,2,12,Rack E-1,2025-10-28
+57,CR-002-S,Corteiz Alcatraz Hoodie,Clothing,Grey,S,7005234567893,175.00,3,8,Rack E-2,2025-10-28
+58,CR-002-M,Corteiz Alcatraz Hoodie,Clothing,Grey,M,7005234567894,175.00,2,12,Rack E-2,2025-10-28
+59,CR-002-L,Corteiz Alcatraz Hoodie,Clothing,Grey,L,7005234567895,175.00,1,15,Rack E-2,2025-10-28
+60,CR-003-M,Corteiz 4Starz Tee,Clothing,White,M,7005234567896,85.00,8,18,Rack E-3,2025-10-28
+61,CR-003-L,Corteiz 4Starz Tee,Clothing,White,L,7005234567897,85.00,6,22,Rack E-3,2025-10-28
+62,ES-001-S,Essential Fear of God Hoodie,Clothing,Cream,S,7006234567889,95.00,8,16,Rack F-1,2025-10-28
+63,ES-001-M,Essential Fear of God Hoodie,Clothing,Cream,M,7006234567890,95.00,6,22,Rack F-1,2025-10-28
+64,ES-001-L,Essential Fear of God Hoodie,Clothing,Cream,L,7006234567891,95.00,5,25,Rack F-1,2025-10-28
+65,ES-001-XL,Essential Fear of God Hoodie,Clothing,Cream,XL,7006234567892,95.00,3,18,Rack F-1,2025-10-28
+66,ES-002-M,Essential Fear of God Tee,Clothing,Black,M,7006234567893,48.00,10,30,Rack F-2,2025-10-28
+67,ES-002-L,Essential Fear of God Tee,Clothing,Black,L,7006234567894,48.00,12,28,Rack F-2,2025-10-28
+68,SP-001-S,Sp5der Web Hoodie,Clothing,Pink,S,7007234567889,165.00,4,7,Rack G-1,2025-10-28
+69,SP-001-M,Sp5der Web Hoodie,Clothing,Pink,M,7007234567890,165.00,3,10,Rack G-1,2025-10-28
+70,SP-001-L,Sp5der Web Hoodie,Clothing,Pink,L,7007234567891,165.00,2,13,Rack G-1,2025-10-28
+71,SP-002-M,Sp5der Young Thug Tee,Clothing,Green,M,7007234567892,95.00,7,15,Rack G-2,2025-10-28
+72,SP-002-L,Sp5der Young Thug Tee,Clothing,Green,L,7007234567893,95.00,5,18,Rack G-2,2025-10-28
+73,SC-001-M,Stussy World Tour Hoodie,Clothing,Black,M,7008234567890,145.00,5,14,Rack H-1,2025-10-28
+74,SC-001-L,Stussy World Tour Hoodie,Clothing,Black,L,7008234567891,145.00,3,18,Rack H-1,2025-10-28
+75,SC-002-M,Stussy Graffiti Tee,Clothing,White,M,7008234567892,68.00,9,22,Rack H-2,2025-10-28
+76,SC-002-L,Stussy Graffiti Tee,Clothing,White,L,7008234567893,68.00,7,25,Rack H-2,2025-10-28
+77,TH-001-M,Trapstar Irongate Hoodie,Clothing,Black,M,7009234567890,195.00,2,8,Rack I-1,2025-10-28
+78,TH-001-L,Trapstar Irongate Hoodie,Clothing,Black,L,7009234567891,195.00,1,12,Rack I-1,2025-10-28
+79,TH-002-M,Trapstar Chenille Decoded Tee,Clothing,Navy,M,7009234567892,88.00,6,16,Rack I-2,2025-10-28
+80,TH-002-L,Trapstar Chenille Decoded Tee,Clothing,Navy,L,7009234567893,88.00,4,20,Rack I-2,2025-10-28
+81,TR-001-8.5,Travis Scott Jordan 1 Low,Sneakers,Brown/Pink,8.5,8001234567889,850.00,2,2,Shelf 1-A,2025-10-28
+82,TR-001-9,Travis Scott Jordan 1 Low,Sneakers,Brown/Pink,9,8001234567890,850.00,1,3,Shelf 1-A,2025-10-28
+83,TR-001-9.5,Travis Scott Jordan 1 Low,Sneakers,Brown/Pink,9.5,8001234567891,850.00,0,4,Shelf 1-A,2025-10-28
+84,TR-001-10,Travis Scott Jordan 1 Low,Sneakers,Brown/Pink,10,8001234567892,850.00,0,5,Shelf 1-A,2025-10-28
+85,TR-001-10.5,Travis Scott Jordan 1 Low,Sneakers,Brown/Pink,10.5,8001234567893,850.00,1,3,Shelf 1-A,2025-10-28
+86,TR-001-11,Travis Scott Jordan 1 Low,Sneakers,Brown/Pink,11,8001234567894,850.00,2,4,Shelf 1-A,2025-10-28
+87,DK-001-8,Nike Dunk Low Panda,Sneakers,Black/White,8,8002234567889,130.00,10,20,Shelf 1-B,2025-10-28
+88,DK-001-8.5,Nike Dunk Low Panda,Sneakers,Black/White,8.5,8002234567890,130.00,9,22,Shelf 1-B,2025-10-28
+89,DK-001-9,Nike Dunk Low Panda,Sneakers,Black/White,9,8002234567891,130.00,8,25,Shelf 1-B,2025-10-28
+90,DK-001-9.5,Nike Dunk Low Panda,Sneakers,Black/White,9.5,8002234567892,130.00,7,26,Shelf 1-B,2025-10-28
+91,DK-001-10,Nike Dunk Low Panda,Sneakers,Black/White,10,8002234567893,130.00,12,28,Shelf 1-B,2025-10-28
+92,DK-001-10.5,Nike Dunk Low Panda,Sneakers,Black/White,10.5,8002234567894,130.00,11,27,Shelf 1-B,2025-10-28
+93,DK-001-11,Nike Dunk Low Panda,Sneakers,Black/White,11,8002234567895,130.00,10,30,Shelf 1-B,2025-10-28
+94,JD1-001-8.5,Air Jordan 1 Retro High Chicago,Sneakers,Red/White,8.5,8003234567889,220.00,3,8,Shelf 2-A,2025-10-28
+95,JD1-001-9,Air Jordan 1 Retro High Chicago,Sneakers,Red/White,9,8003234567890,220.00,2,12,Shelf 2-A,2025-10-28
+96,JD1-001-9.5,Air Jordan 1 Retro High Chicago,Sneakers,Red/White,9.5,8003234567891,220.00,1,15,Shelf 2-A,2025-10-28
+97,JD1-001-10,Air Jordan 1 Retro High Chicago,Sneakers,Red/White,10,8003234567892,220.00,0,18,Shelf 2-A,2025-10-28
+98,JD1-001-10.5,Air Jordan 1 Retro High Chicago,Sneakers,Red/White,10.5,8003234567893,220.00,2,10,Shelf 2-A,2025-10-28
+99,JD1-001-11,Air Jordan 1 Retro High Chicago,Sneakers,Red/White,11,8003234567894,220.00,3,9,Shelf 2-A,2025-10-28
+100,YZ-001-8,Yeezy Slide Bone,Sneakers,Bone,8,8004234567889,90.00,5,14,Shelf 2-B,2025-10-28
+101,YZ-001-9,Yeezy Slide Bone,Sneakers,Bone,9,8004234567890,90.00,4,18,Shelf 2-B,2025-10-28
+102,YZ-001-10,Yeezy Slide Bone,Sneakers,Bone,10,8004234567891,90.00,3,22,Shelf 2-B,2025-10-28
+103,YZ-001-11,Yeezy Slide Bone,Sneakers,Bone,11,8004234567892,90.00,2,16,Shelf 2-B,2025-10-28
+104,YZ-002-8,Yeezy Foam Runner Onyx,Sneakers,Black,8,8004234567893,100.00,3,12,Shelf 2-B,2025-10-28
+105,YZ-002-9,Yeezy Foam Runner Onyx,Sneakers,Black,9,8004234567894,100.00,2,15,Shelf 2-B,2025-10-28
+106,YZ-002-10,Yeezy Foam Runner Onyx,Sneakers,Black,10,8004234567895,100.00,1,20,Shelf 2-B,2025-10-28
+107,YZ-002-11,Yeezy Foam Runner Onyx,Sneakers,Black,11,8004234567896,100.00,0,18,Shelf 2-B,2025-10-28
+108,NB-001-8.5,New Balance 550 White Green,Sneakers,White/Green,8.5,8005234567889,140.00,8,10,Shelf 3-A,2025-10-28
+109,NB-001-9,New Balance 550 White Green,Sneakers,White/Green,9,8005234567890,140.00,7,12,Shelf 3-A,2025-10-28
+110,NB-001-9.5,New Balance 550 White Green,Sneakers,White/Green,9.5,8005234567891,140.00,6,14,Shelf 3-A,2025-10-28
+111,NB-001-10,New Balance 550 White Green,Sneakers,White/Green,10,8005234567892,140.00,9,15,Shelf 3-A,2025-10-28
+112,NB-001-10.5,New Balance 550 White Green,Sneakers,White/Green,10.5,8005234567893,140.00,8,13,Shelf 3-A,2025-10-28
+113,NB-001-11,New Balance 550 White Green,Sneakers,White/Green,11,8005234567894,140.00,7,16,Shelf 3-A,2025-10-28
+114,NB-002-9,New Balance 2002R Protection Pack,Sneakers,Grey,9,8005234567895,180.00,3,8,Shelf 3-B,2025-10-28
+115,NB-002-9.5,New Balance 2002R Protection Pack,Sneakers,Grey,9.5,8005234567896,180.00,4,9,Shelf 3-B,2025-10-28
+116,NB-002-10,New Balance 2002R Protection Pack,Sneakers,Grey,10,8005234567897,180.00,5,10,Shelf 3-B,2025-10-28
+117,NB-002-10.5,New Balance 2002R Protection Pack,Sneakers,Grey,10.5,8005234567898,180.00,4,11,Shelf 3-B,2025-10-28
+118,NB-002-11,New Balance 2002R Protection Pack,Sneakers,Grey,11,8005234567899,180.00,3,12,Shelf 3-B,2025-10-28
+119,AF1-001-8.5,Nike Air Force 1 Low White,Sneakers,White,8.5,8006234567889,110.00,15,35,Shelf 4-A,2025-10-28
+120,AF1-001-9,Nike Air Force 1 Low White,Sneakers,White,9,8006234567890,110.00,18,40,Shelf 4-A,2025-10-28
+121,AF1-001-9.5,Nike Air Force 1 Low White,Sneakers,White,9.5,8006234567891,110.00,16,38,Shelf 4-A,2025-10-28
+122,AF1-001-10,Nike Air Force 1 Low White,Sneakers,White,10,8006234567892,110.00,20,42,Shelf 4-A,2025-10-28
+123,AF1-001-10.5,Nike Air Force 1 Low White,Sneakers,White,10.5,8006234567893,110.00,17,39,Shelf 4-A,2025-10-28
+124,AF1-001-11,Nike Air Force 1 Low White,Sneakers,White,11,8006234567894,110.00,14,36,Shelf 4-A,2025-10-28
+125,JD4-001-9,Air Jordan 4 Retro Military Black,Sneakers,Black/White,9,8007234567889,225.00,2,6,Shelf 4-B,2025-10-28
+126,JD4-001-9.5,Air Jordan 4 Retro Military Black,Sneakers,Black/White,9.5,8007234567890,225.00,1,8,Shelf 4-B,2025-10-28
+127,JD4-001-10,Air Jordan 4 Retro Military Black,Sneakers,Black/White,10,8007234567891,225.00,0,10,Shelf 4-B,2025-10-28
+128,JD4-001-10.5,Air Jordan 4 Retro Military Black,Sneakers,Black/White,10.5,8007234567892,225.00,1,7,Shelf 4-B,2025-10-28
+129,JD4-001-11,Air Jordan 4 Retro Military Black,Sneakers,Black/White,11,8007234567893,225.00,2,5,Shelf 4-B,2025-10-28
+130,SK8-001-8.5,Vans Old Skool Black/White,Sneakers,Black/White,8.5,8008234567889,65.00,12,28,Shelf 5-A,2025-10-28
+131,SK8-001-9,Vans Old Skool Black/White,Sneakers,Black/White,9,8008234567890,65.00,14,32,Shelf 5-A,2025-10-28
+132,SK8-001-9.5,Vans Old Skool Black/White,Sneakers,Black/White,9.5,8008234567891,65.00,13,30,Shelf 5-A,2025-10-28
+133,SK8-001-10,Vans Old Skool Black/White,Sneakers,Black/White,10,8008234567892,65.00,16,34,Shelf 5-A,2025-10-28
+134,SK8-001-10.5,Vans Old Skool Black/White,Sneakers,Black/White,10.5,8008234567893,65.00,15,31,Shelf 5-A,2025-10-28
+135,SK8-001-11,Vans Old Skool Black/White,Sneakers,Black/White,11,8008234567894,65.00,13,29,Shelf 5-A,2025-10-28
+136,CK-001-9,Converse Chuck Taylor All Star High Black,Sneakers,Black,9,8009234567889,60.00,18,42,Shelf 5-B,2025-10-28
+137,CK-001-9.5,Converse Chuck Taylor All Star High Black,Sneakers,Black,9.5,8009234567890,60.00,20,45,Shelf 5-B,2025-10-28
+138,CK-001-10,Converse Chuck Taylor All Star High Black,Sneakers,Black,10,8009234567891,60.00,22,48,Shelf 5-B,2025-10-28
+139,CK-001-10.5,Converse Chuck Taylor All Star High Black,Sneakers,Black,10.5,8009234567892,60.00,19,44,Shelf 5-B,2025-10-28
+140,CK-001-11,Converse Chuck Taylor All Star High Black,Sneakers,Black,11,8009234567893,60.00,17,40,Shelf 5-B,2025-10-28

@@ -1,0 +1,4 @@
+0000000000000000000000000000000000000000 aae837165c7e9434ef9024dfdc769b542297f7de alex santiago <as4584@njit.edu> 1768819320 -0500	clone: from https://github.com/as4584/ai-receptionist-gemini-fastapi.git
+aae837165c7e9434ef9024dfdc769b542297f7de 0fa3169a3532a0e0b120ad9837f621eb6de6132b alex santiago <as4584@njit.edu> 1768823186 -0500	commit: Revamp AI Receptionist page: transparent pricing, 4-tier structure, competitor comparison, ROI calculator with sliders, trust blocks
+0fa3169a3532a0e0b120ad9837f621eb6de6132b 49b092b89655a0b56dc1ad8719b578e4eb6ed8d0 alex santiago <as4584@njit.edu> 1772151091 -0500	reset: moving to 49b092b
+49b092b89655a0b56dc1ad8719b578e4eb6ed8d0 468e4ae9a251375f6af8fc2c0abf78a9c58adf6a alex santiago <as4584@njit.edu> 1772294214 -0500	commit: fix: rollback to golden Dual-Reality UI, hide deploy scripts in .gitignore

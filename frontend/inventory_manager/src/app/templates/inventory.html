@@ -1,0 +1,653 @@
+{% extends "base.html" %}
+
+{% block title %}Inventory - DonXEra{% endblock %}
+
+{% block header %}Inventory Management{% endblock %}
+
+{% block subtitle %}All products and stock levels{% endblock %}
+
+{% block content %}\n<!-- Category Filter Buttons -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="category-filter-buttons mb-3">
+            <button class="btn-category active" data-category="all" onclick="filterByCategory('all')" aria-pressed="true">
+                <i class="bi bi-grid-3x3"></i> All Items
+            </button>
+            <button class="btn-category" data-category="Clothing" onclick="filterByCategory('Clothing')" aria-pressed="false">
+                <i class="bi bi-bag"></i> Clothing
+            </button>
+            <button class="btn-category" data-category="Sneakers" onclick="filterByCategory('Sneakers')" aria-pressed="false">
+                <i class="bi bi-box-seam"></i> Sneakers
+            </button>
+        </div>
+        <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by brand, product, color, code (e.g., jordan, nike, nb, vlone)">
+        </div>
+    </div>
+</div>
+
+<!-- Low Stock Showcase -->
+<div class="low-stock-showcase mb-3">
+    <div class="d-flex align-items-center mb-2">
+        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+        <strong>Low Stock Showcase</strong>
+        <small class="text-muted ms-2">Example items to highlight visibility</small>
+    </div>
+    <div class="showcase-items d-flex flex-wrap gap-2">
+        <span class="chip chip-danger">BAPE-SHKHOOD-BLK-L • 1 left</span>
+        <span class="chip chip-warning">NB-990V6-GRY-9 • 2 left</span>
+        <span class="chip chip-warning">JD1-ROYL-9.5 • 3 left</span>
+    </div>
+    <hr class="my-3">
+    </div>
+
+<!-- Inventory Summary -->
+<div class="row mb-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body py-2">
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <small class="text-muted">Total Items:</small>
+                        <strong id="totalItems">{{ inventory|length }}</strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">In Stock:</small>
+                        <strong class="text-success" id="inStockItems">
+                            {{ inventory|selectattr('QtyOnHand', '>', 0)|list|length }}
+                        </strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Low Stock:</small>
+                        <strong class="text-warning" id="lowStockItems">
+                            {{ inventory|selectattr('QtyOnHand', '<=', 5)|selectattr('QtyOnHand', '>', 0)|list|length }}
+                        </strong>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Out of Stock:</small>
+                        <strong class="text-danger" id="outOfStockItems">
+                            {{ inventory|selectattr('QtyOnHand', '==', 0)|list|length }}
+                        </strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Inventory Table -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="card-title mb-0">
+            <i class="bi bi-table"></i> Inventory Items
+        </h5>
+        <div>
+            <button class="btn btn-outline-secondary btn-sm" onclick="exportInventory()">
+                <i class="bi bi-download d-none d-sm-inline"></i> <span class="d-none d-sm-inline">Export</span><span class="d-sm-none">CSV</span>
+            </button>
+            <button class="btn btn-outline-primary btn-sm" onclick="syncInventory()">
+                <i class="bi bi-arrow-repeat"></i> <span class="d-none d-sm-inline">Refresh</span>
+            </button>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-lg-block">
+            <table class="table table-hover mb-0" id="inventoryTable">
+                <thead class="table-light">
+                    <tr>
+                        <th class="sortable" data-column="SKU">
+                            Product Code <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="Name">
+                            Name <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="Category">
+                            Category <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="Color">
+                            Color <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="Size">
+                            Size <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="RetailPrice">
+                            Price <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="QtyOnHand">
+                            On Hand <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="QtySold">
+                            Sold <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th class="sortable" data-column="Location">
+                            Location <i class="bi bi-arrow-up-down"></i>
+                        </th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory %}
+                    <tr class="inventory-row" 
+                        data-sku="{{ item.SKU }}" 
+                        data-category="{{ item.Category }}" 
+                        data-color="{{ item.Color }}"
+                        data-qty="{{ item.QtyOnHand }}"
+                        data-name="{{ item.Name }}"
+                        data-size="{{ item.Size }}">
+                        <td>
+                            <strong>{{ item.SKU }}</strong>
+                            {% if item.Barcode %}
+                            <br><small class="text-muted">{{ item.Barcode }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.Name }}</td>
+                        <td>
+                            <span class="badge badge-category {{ 'cat-' + item.Category|lower }}">
+                                <span class="icon {{ 'cat-' + item.Category|lower }}">{{ item.Category[0]|upper }}</span>
+                                {{ item.Category }}
+                            </span>
+                        </td>
+                        <td>{{ item.Color }}</td>
+                        <td>
+                            <span class="size-badge">{{ item.Size }}</span>
+                            <div class="size-dropdown">
+                                <div class="size-dropdown-header">Available Sizes:</div>
+                                <div class="size-list" data-product-name="{{ item.Name }}"></div>
+                            </div>
+                        </td>
+                        <td>${{ "%.2f"|format(item.RetailPrice) }}</td>
+                        <td>
+                            <span class="badge {% if item.QtyOnHand == 0 %}bg-danger{% elif item.QtyOnHand <= 5 %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ item.QtyOnHand }}
+                            </span>
+                        </td>
+                        <td>{{ item.QtySold or 0 }}</td>
+                        <td>{{ item.Location }}</td>
+                        <td>
+                            {% if item.QtyOnHand == 0 %}
+                                <span class="badge bg-danger">Out of Stock</span>
+                            {% elif item.QtyOnHand <= 5 %}
+                                <span class="badge bg-warning">Low Stock</span>
+                            {% else %}
+                                <span class="badge bg-success">In Stock</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="d-lg-none" id="mobileInventoryList">
+            {% for item in inventory %}
+          <div class="mobile-inventory-card" 
+              data-sku="{{ item.SKU }}" 
+              data-category="{{ item.Category }}" 
+              data-color="{{ item.Color }}"
+              data-qty="{{ item.QtyOnHand }}"
+              data-name="{{ item.Name }}"
+              data-size="{{ item.Size }}">
+                <div class="mobile-card-header">
+                    <div class="mobile-card-title">
+                        <strong>{{ item.Name }}</strong>
+                        <div class="mobile-card-sku">{{ item.SKU }}</div>
+                    </div>
+                    <div class="mobile-card-status">
+                        {% if item.QtyOnHand == 0 %}
+                            <span class="badge bg-danger">Out</span>
+                        {% elif item.QtyOnHand <= 5 %}
+                            <span class="badge bg-warning">Low</span>
+                        {% else %}
+                            <span class="badge bg-success">In Stock</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="mobile-card-body">
+                    <div class="mobile-info-row">
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">Category</span>
+                            <span class="badge badge-category {{ 'cat-' + item.Category|lower }}">
+                                <span class="icon {{ 'cat-' + item.Category|lower }}">{{ item.Category[0]|upper }}</span>
+                                {{ item.Category }}
+                            </span>
+                        </div>
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">Price</span>
+                            <strong>${{ "%.2f"|format(item.RetailPrice) }}</strong>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-info-row">
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">Color</span>
+                            <span>{{ item.Color }}</span>
+                        </div>
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">Size</span>
+                            <span class="size-toggle" onclick="toggleSizesMobile(this)">
+                                {{ item.Size }} <i class="bi bi-chevron-down"></i>
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mobile-sizes-dropdown" style="display: none;">
+                        <div class="mobile-sizes-header">Available Sizes:</div>
+                        <div class="mobile-size-list" data-product-name="{{ item.Name }}"></div>
+                    </div>
+                    
+                    <div class="mobile-info-row">
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">On Hand</span>
+                            <span class="badge {% if item.QtyOnHand == 0 %}bg-danger{% elif item.QtyOnHand <= 5 %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ item.QtyOnHand }}
+                            </span>
+                        </div>
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">Sold</span>
+                            <span>{{ item.QtySold or 0 }}</span>
+                        </div>
+                        <div class="mobile-info-item">
+                            <span class="mobile-label">Location</span>
+                            <span>{{ item.Location }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+            <small class="text-muted">
+                Showing <span id="visibleRows">{{ inventory|length }}</span> of {{ inventory|length }} items
+            </small>
+            <small class="text-muted">
+                Last updated: {{ inventory[0].LastUpdated if inventory else 'Never' }}
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Namespace all inventory-page functions to avoid clashes with app.js
+    let invSortDirection = {};
+    let currentCategory = 'all';
+    
+    // Initialize page behaviors (works even if DOMContentLoaded already fired)
+    function invInit() {
+        try {
+            invBuildSizeLists();
+        } catch (e) { /* no-op */ }
+        // Bind category buttons for robust behavior across browsers
+        document.querySelectorAll('.btn-category').forEach(btn => {
+            // Avoid duplicate listeners by cloning or checking flag
+            if (!btn._invBound) {
+                btn.addEventListener('click', () => invFilterByCategory(btn.dataset.category));
+                btn._invBound = true;
+            }
+        });
+        // Event delegation fallback (in case of dynamic content or inline onclick not firing)
+        const container = document.querySelector('.category-filter-buttons');
+        if (container && !container._invDelegated) {
+            container.addEventListener('click', (ev) => {
+                const targetBtn = ev.target && ev.target.closest ? ev.target.closest('.btn-category') : null;
+                if (targetBtn) {
+                    ev.preventDefault();
+                    invFilterByCategory(targetBtn.dataset.category);
+                }
+            });
+            container._invDelegated = true;
+        }
+        // Initial filter to normalize counts
+        invFilterTable();
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', invInit);
+    } else {
+        invInit();
+    }
+    
+    function invBuildSizeLists() {
+        // Group items by product name
+        const productSizes = {};
+        
+        // Desktop table rows
+        document.querySelectorAll('#inventoryTable tbody tr').forEach(row => {
+            const productName = row.dataset.name;
+            const size = row.dataset.size;
+            const qty = parseInt(row.dataset.qty);
+            
+            if (!productSizes[productName]) {
+                productSizes[productName] = [];
+            }
+            productSizes[productName].push({ size, qty });
+        });
+        
+        // Populate size dropdowns for desktop
+        document.querySelectorAll('.size-list').forEach(sizeList => {
+            const productName = sizeList.dataset.productName;
+            const sizes = productSizes[productName] || [];
+            
+            sizeList.innerHTML = sizes.map(s => 
+                `<div class="size-item ${s.qty === 0 ? 'out-of-stock' : s.qty <= 5 ? 'low-stock' : ''}">
+                    <span class="size-label">${s.size}</span>
+                    <span class="size-qty">${s.qty} left</span>
+                </div>`
+            ).join('');
+        });
+        
+        // Populate size dropdowns for mobile
+        document.querySelectorAll('.mobile-size-list').forEach(sizeList => {
+            const productName = sizeList.dataset.productName;
+            const sizes = productSizes[productName] || [];
+            
+            sizeList.innerHTML = sizes.map(s => 
+                `<div class="mobile-size-item ${s.qty === 0 ? 'out-of-stock' : s.qty <= 5 ? 'low-stock' : ''}">
+                    <span class="size-label">Size ${s.size}</span>
+                    <span class="size-qty ${s.qty === 0 ? 'text-danger' : s.qty <= 5 ? 'text-warning' : 'text-success'}">${s.qty} in stock</span>
+                </div>`
+            ).join('');
+        });
+    }
+    
+    // --- Search helpers ---
+    function normalizeText(str) {
+        return (str || '')
+            .toString()
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/\p{Diacritic}/gu, '')
+            .replace(/[^a-z0-9]+/g, ' ') // keep alphanum, collapse others to space
+            .trim();
+    }
+    function singularize(word) {
+        const w = (word || '').toString().toLowerCase();
+        if (w.endsWith('s')) return w.slice(0, -1);
+        return w;
+    }
+    // Derive a brand from name/sku heuristically
+    function deriveBrand(name, sku) {
+        const n = normalizeText(name);
+        const s = (sku || '').toString().toLowerCase();
+        // order matters (more specific first)
+        if (n.includes('air jordan') || n.includes('jordan') || /\b(jd1|jd4|aj1|aj)\b/.test(s)) return 'jordan';
+        if (n.includes('nike') || /(af1|dunk|nk)/.test(s)) return 'nike';
+        if (n.includes('new balance') || /\b(nb)\b/.test(n) || /^nb[-_]/i.test(s)) return 'new balance';
+        if (n.includes('yeezy') || /^yz[-_]/i.test(s)) return 'yeezy';
+        if (n.includes('vans') || /^sk8[-_]/i.test(s)) return 'vans';
+        if (n.includes('converse') || /^ck[-_]/i.test(s)) return 'converse';
+        if (n.includes('travis scott')) return 'travis scott';
+        if (n.includes('bape') || /^bp[-_]/i.test(s)) return 'bape';
+        if (n.includes('denim tears') || /^dt[-_]/i.test(s)) return 'denim tears';
+        if (n.includes('vlone') || /^vl[-_]/i.test(s)) return 'vlone';
+        if (n.includes('corteiz') || /^cr[-_]/i.test(s)) return 'corteiz';
+        if (n.includes('stussy') || /^sc[-_]/i.test(s)) return 'stussy';
+        if (n.includes('trapstar') || /^th[-_]/i.test(s)) return 'trapstar';
+        if (n.includes('fear of god') || n.includes('essential fear of god') || /^es[-_]/i.test(s)) return 'fear of god';
+        if (n.includes('sp5der') || n.includes('spider') || /^sp[-_]/i.test(s)) return 'sp5der';
+        if (n.includes('hellstar') || /^hs[-_]/i.test(s)) return 'hellstar';
+        return '';
+    }
+    // Expand a user query with helpful brand synonyms
+    function expandSearchQuery(q) {
+        const qn = normalizeText(q);
+        const base = singularize(qn);
+        const expansions = new Set([qn, base]);
+        const add = (arr) => arr.forEach(t => expansions.add(t));
+        const map = {
+            'jordan': ['air jordan', 'aj', 'aj1', 'jd1', 'nike jordan'],
+            'nike': ['af1', 'air force', 'airforce', 'dunk', 'nk'],
+            'new balance': ['newbalance', 'nb', 'nb550', '550', '2002r'],
+            'yeezy': ['foam runner', 'slide', 'yz'],
+            'vans': ['old skool', 'sk8'],
+            'converse': ['chuck taylor', 'ctas'],
+            'travis scott': ['travisscott', 'ts'],
+            'bape': ['a bathing ape', 'ape', 'abathingape'],
+            'denim tears': ['denimtears'],
+            'vlone': [],
+            'corteiz': [],
+            'stussy': [],
+            'trapstar': [],
+            'fear of god': ['fog', 'essentials', 'essential'],
+            'sp5der': ['spider'],
+            'hellstar': []
+        };
+        for (const key in map) {
+            const keyn = normalizeText(key);
+            if (qn === keyn || base === keyn) add([keyn, ...map[key]]);
+        }
+        return Array.from(expansions).filter(Boolean);
+    }
+
+    // Category filter function
+    function invFilterByCategory(category) {
+        currentCategory = (category || 'all');
+        const target = currentCategory.toString().trim().toLowerCase();
+        
+        // Update button states
+        document.querySelectorAll('.btn-category').forEach(btn => {
+            const match = (btn.dataset.category || '').toString().trim().toLowerCase() === target;
+            btn.classList.toggle('active', match);
+            btn.setAttribute('aria-pressed', match ? 'true' : 'false');
+        });
+        
+        // Filter table and cards
+        invFilterTable();
+    }
+    
+    // Mobile size toggle
+    function invToggleSizesMobile(element) {
+        const card = element.closest('.mobile-inventory-card');
+        const dropdown = card.querySelector('.mobile-sizes-dropdown');
+        const icon = element.querySelector('i');
+        
+        if (dropdown.style.display === 'none') {
+            dropdown.style.display = 'block';
+            icon.className = 'bi bi-chevron-up';
+        } else {
+            dropdown.style.display = 'none';
+            icon.className = 'bi bi-chevron-down';
+        }
+    }
+    
+    // Search functionality
+    document.getElementById('searchInput').addEventListener('input', invFilterTable);
+    
+    // Sort functionality
+    document.querySelectorAll('.sortable').forEach(header => {
+        header.addEventListener('click', function() {
+            const column = this.dataset.column;
+            invSortTable(column);
+        });
+        header.style.cursor = 'pointer';
+    });
+    
+    function invFilterTable() {
+    const rawSearch = (document.getElementById('searchInput').value || '');
+    const searchTerm = normalizeText(rawSearch);
+    const searchTerms = searchTerm ? expandSearchQuery(searchTerm) : [];
+    const targetCat = (currentCategory || 'all').toString().trim().toLowerCase();
+        
+        // Filter desktop table rows
+        const rows = document.querySelectorAll('#inventoryTable tbody tr');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const sku = (row.dataset.sku || '');
+            const name = (row.dataset.name || '');
+            const category = (row.dataset.category || '').toString().trim().toLowerCase();
+            const color = (row.dataset.color || '');
+            const brand = deriveBrand(name, sku);
+            
+            let showRow = true;
+            
+            // Category filter
+            if (targetCat !== 'all' && category !== targetCat) {
+                showRow = false;
+            }
+            
+            // Text search
+            if (showRow && searchTerm) {
+                const hay = normalizeText([sku, name, color, category, brand].join(' '));
+                // Match if any expanded term appears
+                const matched = searchTerms.some(term => hay.includes(term));
+                if (!matched) showRow = false;
+            }
+            
+            row.style.display = showRow ? '' : 'none';
+            if (showRow) visibleCount++;
+        });
+        
+        // Filter mobile cards
+        const mobileCards = document.querySelectorAll('.mobile-inventory-card');
+        mobileCards.forEach(card => {
+            const sku = (card.dataset.sku || '');
+            const name = (card.dataset.name || '');
+            const category = (card.dataset.category || '').toString().trim().toLowerCase();
+            const color = (card.dataset.color || '');
+            const brand = deriveBrand(name, sku);
+            
+            let showCard = true;
+            
+            if (targetCat !== 'all' && category !== targetCat) {
+                showCard = false;
+            }
+            if (showCard && searchTerm) {
+                const hay = normalizeText([sku, name, color, category, brand].join(' '));
+                const matched = searchTerms.some(term => hay.includes(term));
+                if (!matched) showCard = false;
+            }
+            card.style.display = showCard ? '' : 'none';
+        });
+        
+        document.getElementById('visibleRows').textContent = visibleCount;
+        
+        // Update summary counts
+        invUpdateSummaryCounts();
+    }
+    
+    function invUpdateSummaryCounts() {
+        const visibleRows = document.querySelectorAll('#inventoryTable tbody tr:not([style*="display: none"])');
+        let inStock = 0, lowStock = 0, outOfStock = 0;
+        
+        visibleRows.forEach(row => {
+            const qty = parseInt(row.dataset.qty);
+            if (qty === 0) outOfStock++;
+            else if (qty <= 5) lowStock++;
+            else inStock++;
+        });
+        
+        document.getElementById('inStockItems').textContent = inStock;
+        document.getElementById('lowStockItems').textContent = lowStock;
+        document.getElementById('outOfStockItems').textContent = outOfStock;
+        document.getElementById('totalItems').textContent = visibleRows.length;
+    }
+    
+    function invSortTable(column) {
+        const tbody = document.querySelector('#inventoryTable tbody');
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        
+        // Toggle sort direction
+        invSortDirection[column] = invSortDirection[column] === 'asc' ? 'desc' : 'asc';
+        
+        // Get column index
+        const headers = document.querySelectorAll('#inventoryTable th');
+        let columnIndex = -1;
+        headers.forEach((header, index) => {
+            if (header.dataset.column === column) {
+                columnIndex = index;
+            }
+        });
+        
+        if (columnIndex === -1) return;
+        
+        // Sort rows
+        rows.sort((a, b) => {
+            let aVal = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+            let bVal = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent.trim();
+            
+            // Handle numeric columns
+            if (['RetailPrice', 'QtyOnHand', 'QtySold'].includes(column)) {
+                aVal = parseFloat(aVal.replace(/[$,]/g, '')) || 0;
+                bVal = parseFloat(bVal.replace(/[$,]/g, '')) || 0;
+            }
+            
+            if (invSortDirection[column] === 'asc') {
+                return aVal > bVal ? 1 : -1;
+            } else {
+                return aVal < bVal ? 1 : -1;
+            }
+        });
+        
+        // Update table
+        rows.forEach(row => tbody.appendChild(row));
+        
+        // Update sort indicators
+        document.querySelectorAll('.sortable i').forEach(icon => {
+            icon.className = 'bi bi-arrow-up-down';
+        });
+        
+        const currentHeader = document.querySelector(`[data-column="${column}"] i`);
+        if (invSortDirection[column] === 'asc') {
+            currentHeader.className = 'bi bi-arrow-up';
+        } else {
+            currentHeader.className = 'bi bi-arrow-down';
+        }
+    }
+    
+    function invExportInventory() {
+        showAlert('Exporting inventory data...', 'info');
+        
+        // Create CSV content
+        const table = document.getElementById('inventoryTable');
+        const rows = table.querySelectorAll('tr:not([style*="display: none"])');
+        let csv = [];
+        
+        // Headers
+        const headers = [];
+        rows[0].querySelectorAll('th').forEach((th, index) => {
+            if (index < 9) { // Exclude status column
+                headers.push(th.textContent.replace(/\s+/g, ' ').trim().split(' ')[0]);
+            }
+        });
+        csv.push(headers.join(','));
+        
+        // Data rows
+        for (let i = 1; i < rows.length; i++) {
+            const row = [];
+            rows[i].querySelectorAll('td').forEach((td, index) => {
+                if (index < 9) { // Exclude status column
+                    let cellData = td.textContent.replace(/\s+/g, ' ').trim();
+                    // Handle multiline cells (SKU with barcode)
+                    cellData = cellData.split('\n')[0] || cellData;
+                    row.push(`"${cellData}"`);
+                }
+            });
+            csv.push(row.join(','));
+        }
+        
+        // Download CSV
+        const csvContent = csv.join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `inventory_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        showAlert('Inventory exported successfully!', 'success');
+    }
+
+    // Expose expected global shims for inline handlers and buttons
+    window.filterByCategory = invFilterByCategory;
+    window.toggleSizesMobile = invToggleSizesMobile;
+    window.exportInventory = invExportInventory;
+</script>
+{% endblock %}
