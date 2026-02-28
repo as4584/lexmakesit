@@ -1,0 +1,14 @@
+docs: consolidate all documentation into docs/ folder
+
+- Created docs/ with frontend/, backend/, infra/, etc/ subdirectories
+- Removed 40+ duplicate markdown files scattered across the repo
+- Consolidated OPERATIONS.md (5 copies), RELEASE_PLAN.md (5 copies),
+  TECHNICAL_DEBT_AUDIT.md (3 copies), EVAL_SYSTEM_README.md (4 copies),
+  onboarding_checklist.md (3 copies), pilot_agreement.md (3 copies),
+  REFACTORING_SUMMARY.md (3 copies), and many more into single sources
+- Merged SILENCE_BUG_FIX.md + SPEED_OPTIMIZATION.md into performance.md
+- Deleted backend/docs/ (content moved to docs/backend/)
+- Deleted frontend/docs/ (content consolidated into docs/infra/ and docs/frontend/)
+- Deleted frontend/lexmakesit-infra/ (duplicate of infra/)
+- Added CONTRIBUTING.md with documentation governance rules
+- Updated update-docs workflow for agent doc maintenance

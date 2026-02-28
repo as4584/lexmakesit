@@ -1,1 +1,7 @@
-fix: rollback to golden Dual-Reality UI, hide deploy scripts in .gitignore
+docs: consolidate all documentation into docs/ folder
+
+- Removed duplicate markdown files (OPERATIONS.md, RELEASE_PLAN.md, etc.)
+- Deleted frontend/docs/ (content moved to workspace docs/)
+- Deleted frontend/lexmakesit-infra/ (duplicate of infra/)
+- Removed scattered doc copies from ai_receptionist/ root
+- All documentation now canonical in workspace docs/ folder

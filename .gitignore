@@ -32,5 +32,8 @@ credentials/
 # Tar archives
 *.tar
 
+# Inner git histories (backend/ and frontend/ have their own repos)
+.git_backup/
+
 # Agent internals (keep .agent/ workflows)
 .gemini/

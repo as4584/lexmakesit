@@ -3,3 +3,5 @@ aae837165c7e9434ef9024dfdc769b542297f7de 0fa3169a3532a0e0b120ad9837f621eb6de6132
 0fa3169a3532a0e0b120ad9837f621eb6de6132b 0fa3169a3532a0e0b120ad9837f621eb6de6132b alex santiago <as4584@njit.edu> 1772151084 -0500	reset: moving to HEAD
 0fa3169a3532a0e0b120ad9837f621eb6de6132b 49b092b89655a0b56dc1ad8719b578e4eb6ed8d0 alex santiago <as4584@njit.edu> 1772151091 -0500	reset: moving to 49b092b
 49b092b89655a0b56dc1ad8719b578e4eb6ed8d0 468e4ae9a251375f6af8fc2c0abf78a9c58adf6a alex santiago <as4584@njit.edu> 1772294214 -0500	commit: fix: rollback to golden Dual-Reality UI, hide deploy scripts in .gitignore
+468e4ae9a251375f6af8fc2c0abf78a9c58adf6a 0e2af102a21ffc8959ba51c7f88ca02de6848ac8 alex santiago <as4584@njit.edu> 1772303412 -0500	commit: Backup before docs consolidation (2026-02-28)
+0e2af102a21ffc8959ba51c7f88ca02de6848ac8 b1e644664fb51497d046a9580112da708a3f3c22 alex santiago <as4584@njit.edu> 1772305524 -0500	commit: docs: consolidate all documentation into docs/ folder
