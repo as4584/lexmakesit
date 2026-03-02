@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     
     # Admin/Security
     admin_private_key: Optional[str] = None
+
+    # ElevenLabs Configuration
+    elevenlabs_api_key: Optional[str] = None
     
     # Application Settings
     log_level: str = "INFO"

@@ -4,9 +4,8 @@ Database models for OAuth token storage.
 
 from datetime import datetime
 from sqlalchemy import Column, String, DateTime, Integer, Text, Boolean
-from sqlalchemy.ext.declarative import declarative_base
 
-Base = declarative_base()
+from ai_receptionist.models.base import Base
 
 
 class GoogleOAuthToken(Base):

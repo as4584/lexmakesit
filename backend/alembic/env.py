@@ -15,11 +15,9 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# Add your model's MetaData object here for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-# If you don't use autogenerate, set to None.
-target_metadata = None
+# Import all models so Base.metadata knows about every table
+from ai_receptionist.models import Base  # noqa: E402
+target_metadata = Base.metadata
 
 # Database URL can be provided via env var for tests/CI
 DB_URL = os.environ.get("ALEMBIC_DATABASE_URL", os.environ.get("DATABASE_URL", "sqlite:///./alembic_test.db"))

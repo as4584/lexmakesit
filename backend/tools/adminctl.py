@@ -117,5 +117,75 @@ def show_flags(tenant: str, admin_user: str):
         sys.exit(1)
 
 
+# ---------------------------------------------------------------------------
+# User / number management helpers
+# ---------------------------------------------------------------------------
+
+
+@adminctl.command("create-user")
+@click.option("--username", required=True, help="Login username")
+@click.option("--password", required=True, help="Plain-text password (will be hashed server-side)")
+@click.option("--full-name", default=None, help="Display name")
+@click.option("--tenant-name", default=None, help="Business/tenant display name (default: capitalised username)")
+@click.option("--plan", type=click.Choice(["starter", "core", "pro", "enterprise"], case_sensitive=False), default=None, help="Set plan after creation")
+@click.option("--admin-user", required=False, default="system", help="Admin identity for audit")
+def create_user(username: str, password: str, full_name: Optional[str], tenant_name: Optional[str], plan: Optional[str], admin_user: str):
+    """Create a user + tenant via the auth API, then optionally set a plan."""
+    client = _get_client(admin_user)
+
+    # 1. Signup
+    signup_body: Dict[str, Any] = {"username": username, "password": password}
+    if full_name:
+        signup_body["full_name"] = full_name
+    if tenant_name:
+        signup_body["tenant_name"] = tenant_name
+
+    resp = client.request("POST", "/api/auth/signup", json_body=signup_body)
+    if not resp.ok:
+        click.echo(f"signup failed: {resp.text}", err=True)
+        sys.exit(1)
+
+    data = resp.json()
+    click.echo(f"Created user '{data['user']['username']}' (id={data['user']['id']}, tenant={data['user']['tenant_id']})")
+
+    # 2. Set plan (optional)
+    if plan:
+        tenant_id = data["user"]["tenant_id"]
+        resp2 = client.request("PUT", f"/admin/tenants/{tenant_id}/plan", tenant=tenant_id, json_body={"plan": plan.lower()})
+        if resp2.ok:
+            click.echo(f"Plan set to '{plan}' for tenant '{tenant_id}'")
+        else:
+            click.echo(f"set-plan failed: {resp2.text}", err=True)
+            sys.exit(1)
+
+
+@adminctl.command("provision-number")
+@click.option("--tenant", required=True, help="Tenant ID to assign the number to")
+@click.option("--area-code", default=None, help="Preferred US area code (optional)")
+@click.option("--admin-user", required=False, default="system", help="Admin identity for audit")
+def provision_number(tenant: str, area_code: Optional[str], admin_user: str):
+    """Buy a US local Twilio number and assign it to a tenant."""
+    client = _get_client(admin_user)
+    body: Dict[str, Any] = {}
+    if area_code:
+        body["area_code"] = area_code
+
+    resp = client.request("POST", f"/admin/tenants/{tenant}/phone-number", tenant=tenant, json_body=body)
+    if resp.ok:
+        data = resp.json()
+        click.echo(f"Provisioned {data['phone_number']} (SID={data['twilio_sid']}) → tenant '{tenant}'")
+    else:
+        click.echo(f"provision failed: {resp.text}", err=True)
+        sys.exit(1)
+
+
+@adminctl.command("show-user")
+@click.option("--username", required=True, help="Username to look up")
+@click.option("--admin-user", required=False, default="system", help="Admin identity")
+def show_user(username: str, admin_user: str):
+    """Look up a user by username (requires the user's auth token – uses login)."""
+    click.echo(f"Use POST /api/auth/login with username='{username}' to obtain a token, then GET /api/auth/me.")
+
+
 if __name__ == "__main__":
     adminctl()

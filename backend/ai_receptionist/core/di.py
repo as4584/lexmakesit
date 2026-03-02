@@ -21,9 +21,22 @@ def get_telephony_service(settings: Settings | None = None) -> TelephonyService:
 def get_tenant_mapping() -> Dict[str, str]:
     """Provide a phone-number-to-tenant_id mapping.
 
-    In production, this could come from a database or settings. Overridden in tests.
+    Queries the phone_numbers table so the Twilio webhook can resolve
+    incoming calls to the correct tenant.  Falls back to an empty dict
+    when the DB is unreachable or the table doesn't exist yet.
     """
-    return {}
+    try:
+        from ai_receptionist.core.database import get_db_session
+        from ai_receptionist.models.phone_number import PhoneNumber
+
+        with get_db_session() as db:
+            rows = db.query(PhoneNumber.phone_number, PhoneNumber.tenant_id).filter(
+                PhoneNumber.is_active.is_(True)
+            ).all()
+            return {r.phone_number: r.tenant_id for r in rows}
+    except Exception:
+        logger.debug("tenant mapping unavailable – returning empty dict", exc_info=True)
+        return {}
 
 
 # --- Feature flags wiring ---

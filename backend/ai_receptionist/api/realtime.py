@@ -14,6 +14,15 @@ router = APIRouter(tags=["realtime"])
 OPENAI_MODEL = "gpt-4o-realtime-preview" 
 VOICE = "shimmer"
 
+# TODO (Phase 2 – ElevenLabs TTS integration):
+# When ready to stream ElevenLabs voices in live calls:
+# 1. Load tenant's voice settings from DB (elevenlabs_voice_id, tts_provider)
+# 2. If tts_provider == 'elevenlabs', use ElevenLabs WebSocket TTS
+#    instead of OpenAI Realtime's built-in TTS.
+# 3. Pipe ElevenLabs audio into Twilio via the same media stream.
+# 4. Keep OpenAI Realtime for STT + LLM, but disable its TTS output.
+# See: ai_receptionist/services/elevenlabs/voice_service.py
+
 # Optimized system instructions for faster connection
 SYSTEM_INSTRUCTIONS = """You are Aria, an AI Receptionist for businesses. Be polite, professional, and concise.
 

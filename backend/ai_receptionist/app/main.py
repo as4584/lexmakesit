@@ -8,6 +8,8 @@ from ai_receptionist.config.settings import Settings, get_settings
 from ai_receptionist.app.api.twilio import router as twilio_router
 from ai_receptionist.app.api.admin import router as admin_router
 from ai_receptionist.app.api.oauth import router as oauth_router
+from ai_receptionist.app.api.auth import router as auth_router
+from ai_receptionist.app.api.voice_settings import router as voice_settings_router
 # from ai_receptionist.api.twilio_voice import router as twilio_voice_router # Removed
 from ai_receptionist.api.realtime import router as realtime_router
 from ai_receptionist.services.voice.endpoints import router as voice_router
@@ -55,6 +57,8 @@ app.include_router(voice_router, prefix="/twilio")
 app.include_router(twilio_router, prefix="/twilio")
 app.include_router(realtime_router, prefix="/twilio")
 app.include_router(admin_router)
+app.include_router(auth_router)
+app.include_router(voice_settings_router)
 app.include_router(oauth_router)
 
 # Observability: attach request id and tenant id to context and logs
