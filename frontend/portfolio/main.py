@@ -1,9 +1,7 @@
-"""
-Professional API Consulting Portfolio Website
-Built with FastAPI, implementing OWASP ASVS Level 1 security standards
-Security: Input validation, output escaping, CSP, HSTS, rate limiting, secure headers
-Version: 1.2.0 - SSH authentication fixes deployed
-"""
+import mimetypes
+mimetypes.init()
+mimetypes.add_type('image/webp', '.webp')
+mimetypes.types_map['.webp'] = 'image/webp'
 
 import json
 import logging
@@ -159,7 +157,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("SESSION_EXPIRE_MINUTES", "30"))
 ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
 TRUSTED_HOSTS = os.getenv(
     "TRUSTED_HOSTS",
-    "localhost,127.0.0.1,104.236.100.245,104.236.100.245:8000,testserver",
+    "localhost,127.0.0.1,104.236.100.245,104.236.100.245:8000,testserver,lexmakesit.com,www.lexmakesit.com",
 ).split(",")
 PRODUCTION = os.getenv("PRODUCTION", "false").lower() == "true"
 
@@ -168,16 +166,18 @@ setup_logging()
 logger = logging.getLogger(__name__)
 
 # Rate limiting configuration
-RATE_LIMIT_PER_MINUTE = os.getenv("RATE_LIMIT_PER_MINUTE", "60")
-RATE_LIMIT_BURST = int(os.getenv("RATE_LIMIT_BURST", "10"))
+RATE_LIMIT_PER_MINUTE = os.getenv("RATE_LIMIT_PER_MINUTE", "60") or "60"
+RATE_LIMIT_BURST = int(os.getenv("RATE_LIMIT_BURST") or "10")
 
 # Email configuration
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
-SMTP_USER = os.getenv("SMTP_USER", "")
-SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT") or "587")
+SMTP_USER = os.getenv("SMTP_USER") or ""
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD") or ""
 SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Portfolio Contact")
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+CONTACT_RECIPIENT_EMAIL = os.getenv("CONTACT_RECIPIENT_EMAIL", "as42519256@gmail.com")
 
 # Global application state
 db_pool = None
@@ -228,14 +228,23 @@ limiter = Limiter(
 
 # Initialize FastAPI app with security defaults and lifespan
 app = FastAPI(
-    title="Lex Santiago Portfolio",
-    description="Personal portfolio showcasing AI and API development projects",
-    version="1.2.0",  # Updated for SSH deployment fixes
+    title="LexMakesIt AI Receptionist",
+    description="Smarter 24/7 AI Phone system for small businesses. Handles inquiries, books appointments, and captures leads.",
+    version="1.3.0",  # Updated for Google OAuth compliance
     docs_url=None if PRODUCTION else "/api/docs",  # Hide docs in production
     redoc_url=None if PRODUCTION else "/api/redoc",
     openapi_url=None if PRODUCTION else "/openapi.json",
     lifespan=lifespan,
 )
+
+# Apple Pay Domain Verification Route
+@app.get("/.well-known/apple-developer-merchantid-domain-association")
+async def apple_pay_verification():
+    """Serve Apple Pay domain verification file"""
+    file_path = os.path.join("static", ".well-known", "apple-developer-merchantid-domain-association")
+    if os.path.exists(file_path):
+        return FileResponse(file_path)
+    return JSONResponse(status_code=404, content={"detail": "Verification file not found. Please upload it to static/.well-known/"})
 
 # Apply rate limiting with exception handler
 app.state.limiter = limiter
@@ -352,13 +361,15 @@ class ContactForm(BaseModel):
 
     name: str
     email: EmailStr
-    subject: str
+    subject: Optional[str] = "lexmakesit email"
     message: str
 
     @field_validator("name", "subject")
     @classmethod
-    def validate_text_field(cls, v: str) -> str:
+    def validate_text_field(cls, v: Optional[str]) -> Optional[str]:
         """Sanitize text fields: strip, length check, no HTML"""
+        if v is None:
+            return v
         if not v or not v.strip():
             raise ValueError("Field cannot be empty")
 
@@ -422,7 +433,7 @@ class Testimonial(BaseModel):
 PROJECTS = [
     Project(
         id=1,
-        title="AI Receptionist for Small Businesses",
+        title="LexMakesIt AI Receptionist",
         description=(
             "Saves time and missed calls. 24/7 AI phone system that "
             "handles customer inquiries, schedules appointments, and provides information so "
@@ -561,84 +572,92 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
 async def send_contact_email(name: str, email: str, subject: str, message: str) -> bool:
     """
-    Send email notification when contact form is submitted
+    Send email notification using SendGrid Web API (bypasses port 587 block)
     Returns True if email sent successfully, False otherwise
     """
-    # Skip if SMTP not configured
-    if not SMTP_USER or not SMTP_PASSWORD:
-        logger.warning("SMTP not configured - email notification skipped")
+    if not SENDGRID_API_KEY:
+        logger.warning("SENDGRID_API_KEY not configured - email notification skipped")
         return False
+
+    import httpx
 
     try:
-        # Create email message
-        msg = MIMEMultipart("alternative")
-        msg["Subject"] = f"Portfolio Contact: {subject}"
-        msg["From"] = SMTP_USER
-        msg["To"] = SMTP_USER  # Send to yourself
-        msg["Reply-To"] = email  # Allow easy reply to sender
+        url = "https://api.sendgrid.com/v3/mail/send"
+        headers = {
+            "Authorization": f"Bearer {SENDGRID_API_KEY}",
+            "Content-Type": "application/json",
+        }
 
-        # Email body (HTML format)
-        html_body = f"""
-        <html>
-        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="max-width: 600px; margin: 0 auto; padding: 20px;
-                        border: 1px solid #ddd; border-radius: 8px;">
-                <h2 style="color: #8b5cf6; border-bottom: 2px solid #8b5cf6;
-                           padding-bottom: 10px;">
-                    🔔 New Portfolio Contact Form Submission
-                </h2>
+        # Use the verified sender email from config
+        from_email = SMTP_FROM_EMAIL or SMTP_USER
 
-                <div style="background-color: #f9f9f9; padding: 15px;
-                            border-radius: 5px; margin: 20px 0;">
-                    <p style="margin: 5px 0;"><strong>From:</strong> {name}</p>
-                    <p style="margin: 5px 0;">
-                        <strong>Email:</strong> <a href="mailto:{email}">{email}</a>
-                    </p>
-                    <p style="margin: 5px 0;"><strong>Subject:</strong> {subject}</p>
-                    <p style="margin: 5px 0;">
-                        <strong>Time:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
-                    </p>
-                </div>
+        payload = {
+            "personalizations": [
+                {
+                    "to": [{"email": CONTACT_RECIPIENT_EMAIL}],
+                    "reply_to": {"email": email, "name": name},
+                    "subject": f"Portfolio Contact: {subject}",
+                }
+            ],
+            "from": {"email": from_email, "name": SMTP_FROM_NAME},
+            "content": [
+                {
+                    "type": "text/html",
+                    "value": f"""
+                <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px;
+                                border: 1px solid #ddd; border-radius: 8px;">
+                        <h2 style="color: #8b5cf6; border-bottom: 2px solid #8b5cf6;
+                                   padding-bottom: 10px;">
+                            🔔 New Portfolio Contact Form Submission
+                        </h2>
 
-                <div style="background-color: #fff; padding: 15px;
-                            border-left: 4px solid #8b5cf6; margin: 20px 0;">
-                    <h3 style="margin-top: 0; color: #555;">Message:</h3>
-                    <p style="white-space: pre-wrap;">{message}</p>
-                </div>
+                        <div style="background-color: #f9f9f9; padding: 15px;
+                                    border-radius: 5px; margin: 20px 0;">
+                            <p style="margin: 5px 0;"><strong>From:</strong> {name}</p>
+                            <p style="margin: 5px 0;">
+                                <strong>Email:</strong> <a href="mailto:{email}">{email}</a>
+                            </p>
+                            <p style="margin: 5px 0;"><strong>Subject:</strong> {subject}</p>
+                            <p style="margin: 5px 0;">
+                                <strong>Time:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+                            </p>
+                        </div>
 
-                <div style="margin-top: 20px; padding-top: 15px;
-                            border-top: 1px solid #ddd; font-size: 12px; color: #888;">
-                    <p>Reply directly to this email to respond to {name}.</p>
-                    <p>This notification was sent from your portfolio contact form.</p>
-                </div>
-            </div>
-        </body>
-        </html>
-        """
+                        <div style="background-color: #fff; padding: 15px;
+                                    border-left: 4px solid #8b5cf6; margin: 20px 0;">
+                            <h3 style="margin-top: 0; color: #555;">Message:</h3>
+                            <p style="white-space: pre-wrap;">{message}</p>
+                        </div>
 
-        # Attach HTML body
-        html_part = MIMEText(html_body, "html")
-        msg.attach(html_part)
+                        <div style="margin-top: 20px; padding-top: 15px;
+                                    border-top: 1px solid #ddd; font-size: 12px; color: #888;">
+                            <p>Reply directly to the email metadata to respond to {name}.</p>
+                            <p>This notification was sent from your portfolio contact form via SendGrid.</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """,
+                }
+            ],
+        }
 
-        # Send email via SMTP
-        await aiosmtplib.send(
-            msg,
-            hostname=SMTP_HOST,
-            port=SMTP_PORT,
-            username=SMTP_USER,
-            password=SMTP_PASSWORD,
-            start_tls=True,
-            timeout=10,
-        )
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, headers=headers, json=payload, timeout=10)
 
-        logger.info(f"Contact email sent successfully from {name} ({email})")
-        return True
+        if response.status_code >= 200 and response.status_code < 300:
+            logger.info(f"Contact email sent successfully via SendGrid from {name} ({email})")
+            return True
+        else:
+            logger.error(
+                f"SendGrid API error: {response.status_code} - {response.text}"
+            )
+            return False
 
-    except aiosmtplib.SMTPException as e:
-        logger.error(f"SMTP error sending contact email: {str(e)}")
-        return False
     except Exception as e:
-        logger.error(f"Unexpected error sending contact email: {str(e)}")
+        logger.error(f"Unexpected error sending contact email via SendGrid: {str(e)}")
         return False
 
 
@@ -664,6 +683,54 @@ async def home(request: Request):
             "certifications": CERTIFICATIONS,
             "availability": "Currently accepting 2 new clients for Q4 2025",
         },
+    )
+
+
+@app.get("/pricing", response_class=HTMLResponse)
+async def pricing(request: Request):
+    """
+    Dedicated pricing page for AI Receptionist plans
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="pricing.html",
+        context={"request": request},
+    )
+
+
+@app.get("/privacy-policy", response_class=HTMLResponse)
+async def privacy_policy(request: Request):
+    """
+    Privacy policy page for Google OAuth compliance
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="privacy-policy.html",
+        context={"request": request},
+    )
+
+
+@app.get("/terms", response_class=HTMLResponse)
+async def terms_of_service(request: Request):
+    """
+    Terms of Service page for Google OAuth compliance
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="terms.html",
+        context={"request": request},
+    )
+
+
+@app.get("/about", response_class=HTMLResponse)
+async def about_page(request: Request):
+    """
+    About page
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="about.html",
+        context={"request": request},
     )
 
 
@@ -702,12 +769,14 @@ async def contact(request: Request, form_data: ContactForm):
         # Log contact submission (sanitized)
         logger.info(f"Contact form submitted by {form_data.name[:20]}...")
 
-        # Send email notification
+        # Use default subject if not provided
+        email_subject = form_data.subject or "lexmakesit email"
+
         # Send email notification
         email_sent = await send_contact_email(
             name=form_data.name,
             email=form_data.email,
-            subject=form_data.subject,
+            subject=email_subject,
             message=form_data.message,
         )
 
@@ -800,10 +869,244 @@ async def health_check(request: Request):
     return {
         "status": "healthy",
         "timestamp": datetime.utcnow().isoformat(),
-        "deployment": "SSH-fixed-v1.2.0",
-        "date": "2025-11-13",
+        "deployment": "LexMakesIt-v1.3.0",
+        "date": "2026-01-21",
         # version info for deployment verification
     }
+
+
+# ============================================================================
+# STRIPE PAYMENT INTEGRATION
+# ============================================================================
+
+# Stripe configuration
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY", "")
+
+# Pricing tier configuration
+PRICING_TIERS = {
+    "starter": {"name": "Starter", "price": 75, "minutes": 100, "price_id": "price_1Sro5E25J162lH5djEsUZnrQ"},
+    "professional": {"name": "Professional", "price": 150, "minutes": 425, "price_id": "price_1Srnl925J162lH5dYtAcLBQ0"},
+    "business": {"name": "Business", "price": 250, "minutes": 900, "price_id": "price_1SroYB25J162lH5dh3QPAMAL"},
+}
+
+
+class CheckoutRequest(BaseModel):
+    tier: str
+    email: EmailStr
+    include_setup_fee: bool = False
+
+
+@app.post("/api/stripe/create-checkout-session")
+@limiter.limit("10/minute")
+async def create_checkout_session(request: Request, checkout_data: CheckoutRequest):
+    """Create a Stripe checkout session for subscription purchase"""
+    if not STRIPE_SECRET_KEY:
+        raise HTTPException(status_code=500, detail="Payment system not configured")
+    
+    try:
+        import stripe
+        stripe.api_key = STRIPE_SECRET_KEY
+        
+        tier = checkout_data.tier.lower()
+        if tier not in PRICING_TIERS:
+            raise HTTPException(status_code=400, detail="Invalid pricing tier")
+        
+        tier_info = PRICING_TIERS[tier]
+        
+        # Create Stripe checkout session
+        line_item = {
+            "quantity": 1,
+        }
+        
+        # If we have a specific Price ID (configured in Stripe), use it.
+        # This is required for Metered Billing to work!
+        if "price_id" in tier_info and "REPLACE" not in tier_info["price_id"]:
+            line_item["price"] = tier_info["price_id"]
+        else:
+            # Fallback: Create ad-hoc pricing (Note: Does NOT support usage metering)
+            line_item["price_data"] = {
+                "currency": "usd",
+                "product_data": {
+                    "name": f"AI Receptionist - {tier_info['name']}",
+                    "description": f"{tier_info['minutes']} minutes/month included",
+                },
+                "unit_amount": tier_info['price'] * 100,  # Stripe uses cents
+                "recurring": {"interval": "month"},
+            }
+            
+        # Compile line items
+        line_items = [line_item]
+        
+        # Add Setup Fee if requested (VIP Mode)
+        if checkout_data.include_setup_fee:
+            line_items.append({
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "White Glove Setup Fee",
+                        "description": "Professional Onboarding & Custom AI Prompts",
+                    },
+                    "unit_amount": 30000,  # $300.00
+                },
+                "quantity": 1,
+            })
+
+        session = stripe.checkout.Session.create(
+            # Removing payment_method_types to allow Automatic Payment Methods 
+            # as configured in the Stripe Dashboard (includes Apple Pay, Google Pay, etc.)
+            automatic_payment_methods={"enabled": True},
+            line_items=line_items,
+            mode="subscription",
+            success_url="https://dashboard.lexmakesit.com/welcome?session_id={CHECKOUT_SESSION_ID}",
+            cancel_url="https://lexmakesit.com/projects/ai-receptionist#pricing",
+            customer_email=checkout_data.email,
+            metadata={
+                "tier": tier,
+                "email": checkout_data.email,
+                "setup_fee_paid": str(checkout_data.include_setup_fee)
+            },
+        )
+        
+        logger.info(f"Checkout session created for {checkout_data.email} - tier: {tier} - setup_fee: {checkout_data.include_setup_fee}")
+        return {"checkout_url": session.url, "session_id": session.id}
+        
+    except Exception as e:
+        logger.error(f"Stripe checkout error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Failed to create checkout session")
+
+
+@app.post("/api/stripe/webhook")
+async def stripe_webhook(request: Request):
+    """Handle Stripe webhook events for payment processing"""
+    if not STRIPE_SECRET_KEY or not STRIPE_WEBHOOK_SECRET:
+        logger.error("Stripe not configured for webhooks")
+        raise HTTPException(status_code=500, detail="Webhook not configured")
+    
+    try:
+        import stripe
+        stripe.api_key = STRIPE_SECRET_KEY
+        
+        payload = await request.body()
+        sig_header = request.headers.get("stripe-signature", "")
+        
+        # Verify webhook signature
+        try:
+            event = stripe.Webhook.construct_event(
+                payload, sig_header, STRIPE_WEBHOOK_SECRET
+            )
+        except ValueError:
+            logger.error("Invalid Stripe webhook payload")
+            raise HTTPException(status_code=400, detail="Invalid payload")
+        except stripe.error.SignatureVerificationError:
+            logger.error("Invalid Stripe webhook signature")
+            raise HTTPException(status_code=400, detail="Invalid signature")
+        
+        # Handle the event
+        if event["type"] == "checkout.session.completed":
+            session = event["data"]["object"]
+            customer_email = session.get("customer_email")
+            tier = session.get("metadata", {}).get("tier", "starter")
+            
+            logger.info(f"Payment completed for {customer_email} - tier: {tier}")
+            
+            # Send welcome email with dashboard access
+            await send_welcome_email(customer_email, tier)
+            
+        elif event["type"] == "customer.subscription.created":
+            subscription = event["data"]["object"]
+            logger.info(f"Subscription created: {subscription['id']}")
+            
+        elif event["type"] == "customer.subscription.deleted":
+            subscription = event["data"]["object"]
+            logger.info(f"Subscription cancelled: {subscription['id']}")
+        
+        return JSONResponse(content={"status": "success"})
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Stripe webhook error: {str(e)}")
+        raise HTTPException(status_code=500, detail="Webhook processing failed")
+
+
+async def send_welcome_email(email: str, tier: str) -> bool:
+    """Send welcome email with dashboard access after purchase"""
+    if not SMTP_USER or not SMTP_PASSWORD:
+        logger.warning("SMTP not configured - welcome email skipped")
+        return False
+    
+    try:
+        tier_info = PRICING_TIERS.get(tier, PRICING_TIERS["starter"])
+        
+        msg = MIMEMultipart("alternative")
+        msg["Subject"] = "🎉 Welcome to AI Receptionist - Your Account is Ready!"
+        msg["From"] = SMTP_USER
+        msg["To"] = email
+        
+        html_body = f"""
+        <html>
+        <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="max-width: 600px; margin: 0 auto; padding: 20px;
+                        background: linear-gradient(135deg, #60aaff 0%, #3d84ff 100%);
+                        border-radius: 16px;">
+                <div style="background: white; border-radius: 12px; padding: 30px;">
+                    <h1 style="color: #3d84ff; margin-bottom: 20px;">Welcome to AI Receptionist! 🎉</h1>
+                    
+                    <p>Thank you for choosing the <strong>{tier_info['name']}</strong> plan!</p>
+                    
+                    <div style="background: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                        <h3 style="margin-top: 0;">Your Plan Details:</h3>
+                        <p><strong>Plan:</strong> {tier_info['name']}</p>
+                        <p><strong>Included Minutes:</strong> {tier_info['minutes']}/month</p>
+                        <p><strong>Monthly Rate:</strong> ${tier_info['price']}/month</p>
+                    </div>
+                    
+                    <h3>Next Steps:</h3>
+                    <ol>
+                        <li>Access your dashboard to complete onboarding</li>
+                        <li>Set up your business profile</li>
+                        <li>Choose your phone number</li>
+                        <li>Customize your AI receptionist</li>
+                    </ol>
+                    
+                    <a href="https://dashboard.lexmakesit.com" 
+                       style="display: inline-block; background: #3d84ff; color: white; 
+                              padding: 14px 28px; text-decoration: none; border-radius: 8px;
+                              font-weight: bold; margin: 20px 0;">
+                        Access Your Dashboard →
+                    </a>
+                    
+                    <p style="margin-top: 30px; color: #666; font-size: 14px;">
+                        Questions? Reply to this email or visit our support page.<br>
+                        - Lex Santiago, lexmakesit
+                    </p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        html_part = MIMEText(html_body, "html")
+        msg.attach(html_part)
+        
+        await aiosmtplib.send(
+            msg,
+            hostname=SMTP_HOST,
+            port=SMTP_PORT,
+            username=SMTP_USER,
+            password=SMTP_PASSWORD,
+            start_tls=True,
+            timeout=10,
+        )
+        
+        logger.info(f"Welcome email sent to {email}")
+        return True
+        
+    except Exception as e:
+        logger.error(f"Failed to send welcome email: {str(e)}")
+        return False
 
 
 # ============================================================================
