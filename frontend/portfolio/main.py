@@ -954,9 +954,7 @@ async def create_checkout_session(request: Request, checkout_data: CheckoutReque
             })
 
         session = stripe.checkout.Session.create(
-            # Removing payment_method_types to allow Automatic Payment Methods 
-            # as configured in the Stripe Dashboard (includes Apple Pay, Google Pay, etc.)
-            automatic_payment_methods={"enabled": True},
+            payment_method_types=["card"],
             line_items=line_items,
             mode="subscription",
             success_url="https://dashboard.lexmakesit.com/welcome?session_id={CHECKOUT_SESSION_ID}",
