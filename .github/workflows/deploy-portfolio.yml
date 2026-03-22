@@ -1,0 +1,55 @@
+name: Deploy Portfolio
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'frontend/portfolio/templates/**'
+      - 'frontend/portfolio/static/**'
+      - 'frontend/portfolio/main.py'
+      - 'frontend/portfolio/requirements.txt'
+      - 'frontend/portfolio/Dockerfile'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy templates to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          source: "frontend/portfolio/templates/"
+          target: "~/antigravity_bundle/apps/portfolio/"
+          strip_components: 2
+
+      - name: Copy static files to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          source: "frontend/portfolio/static/"
+          target: "~/antigravity_bundle/apps/portfolio/"
+          strip_components: 2
+
+      - name: Copy main.py to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          source: "frontend/portfolio/main.py"
+          target: "~/antigravity_bundle/apps/portfolio/"
+          strip_components: 2
+
+      - name: Restart container
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          script: docker restart portfolio-web-1
