@@ -1,231 +1,1291 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lex Santiago | Engineer & Creator</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lex Santiago — Engineer &amp; Creator</title>
+  <meta name="description" content="Full-stack engineer building AI systems, web apps, and automation tools. NJIT. Working with Innovation Development Solutions." />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@700;900&display=swap"
-        rel="stylesheet">
+  <!-- DESIGN BRIEF ─────────────────────────────────────────────────
+    Client:      Lex Santiago — LexMakesIt
+    Industry:    Creative Developer Portfolio
+    Palette:     navy-950 (bg) · navy-800 (surface) · blue-600 (primary)
+                 orange-500 (accent/CTA) · emerald-400 (live/status, sparingly)
+    Typography:  Archivo (heading, 700–900) · Space Grotesk (body, 400–600)
+    Pattern:     Portfolio Grid — Hero → Services → Projects → Collab → Testimonials → About → Contact
+    Style:       Motion-Driven with Intersection Observer scroll reveals
+    Anti-patterns avoided: no purple, no decorative gradients, no emoji icons,
+                           no placeholder images, no arbitrary Tailwind values,
+                           no space-*, max 2 fonts, max 5 design colors
+  ──────────────────────────────────────────────────────────────────── -->
 
-    <!-- CSS System -->
-    <link rel="stylesheet" href="/static/css/global.css">
-    <link rel="stylesheet" href="/static/css/glass.css">
-    <link rel="stylesheet" href="/static/css/buttons.css">
-    <link rel="stylesheet" href="/static/css/components.css">
+  <!-- Fonts: Archivo (heading) + Space Grotesk (body) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet" />
 
-    <!-- Dual-Reality Layers -->
-    <link rel="stylesheet" href="/static/css/reality-mobile.css">
-    <link rel="stylesheet" href="/static/css/reality-desktop.css">
+  <!-- Tailwind CDN v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            navy: {
+              950: '#050d1a',
+              900: '#08111e',
+              800: '#0d1a2e',
+              700: '#12223d',
+              600: '#1a2d4a',
+              500: '#243d63',
+            }
+          },
+          fontFamily: {
+            heading: ['Archivo', 'sans-serif'],
+            body:    ['Space Grotesk', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
 
-    <!-- JS Bootstrap (Reality Detection) -->
-    <script src="/static/js/detect-reality.js" defer></script>
-    <!-- Redundant line removal in next step if checking manually, but here I write the file so it's clean -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { background-color: #050d1a; }
+
+    body {
+      background-color: #050d1a;
+      color: #e2e8f0;
+      font-family: 'Space Grotesk', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.65;
+    }
+
+    /* ── Scroll reveal ─────────────────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(26px);
+      transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .reveal-d1 { transition-delay: 0.08s; }
+    .reveal-d2 { transition-delay: 0.16s; }
+    .reveal-d3 { transition-delay: 0.24s; }
+    .reveal-d4 { transition-delay: 0.32s; }
+
+    /* ── Nav scroll state ──────────────────────────────────────── */
+    #navbar {
+      transition: background 0.3s ease, border-color 0.3s ease;
+      border-bottom: 1px solid transparent;
+    }
+    #navbar.scrolled {
+      background: rgba(5, 13, 26, 0.92);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-color: #1a2d4a;
+    }
+
+    /* ── Project cards ─────────────────────────────────────────── */
+    .project-card {
+      transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+    .project-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 24px 64px rgba(37, 99, 235, 0.13);
+      border-color: rgba(37, 99, 235, 0.38);
+    }
+
+    /* ── Tech tags ─────────────────────────────────────────────── */
+    .tech-tag {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 0.69rem;
+      font-weight: 500;
+      letter-spacing: 0.015em;
+      color: #93c5fd;
+      background: rgba(37, 99, 235, 0.1);
+      border: 1px solid rgba(37, 99, 235, 0.18);
+      border-radius: 4px;
+      padding: 2px 8px;
+      white-space: nowrap;
+    }
+
+    /* ── Status / WIP badges ───────────────────────────────────── */
+    .badge-live {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #6ee7b7;
+      background: rgba(52, 211, 153, 0.12);
+      border: 1px solid rgba(52, 211, 153, 0.28);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+    .badge-wip {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #f97316;
+      background: rgba(249, 115, 22, 0.1);
+      border: 1px solid rgba(249, 115, 22, 0.28);
+      border-radius: 4px;
+      padding: 2px 8px;
+    }
+
+    /* ── Available badge ───────────────────────────────────────── */
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #34d399;
+      background: rgba(52, 211, 153, 0.08);
+      border: 1px solid rgba(52, 211, 153, 0.22);
+      border-radius: 100px;
+      padding: 5px 14px;
+    }
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #34d399;
+      flex-shrink: 0;
+    }
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50%       { transform: scale(1.5); opacity: 0.6; }
+    }
+    .status-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
+
+    /* ── Section label ─────────────────────────────────────────── */
+    .section-label {
+      display: block;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #f97316;
+    }
+
+    /* ── Terminal window ───────────────────────────────────────── */
+    .terminal {
+      background: #070e1a;
+      border: 1px solid #1a2d4a;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .terminal-bar {
+      background: #0d1a2e;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-bottom: 1px solid #1a2d4a;
+    }
+    .t-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .terminal-body {
+      padding: 20px 22px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.82rem;
+      line-height: 1.85;
+    }
+    .t-prompt { color: #3b82f6; }
+    .t-cmd    { color: #e2e8f0; }
+    .t-ok     { color: #34d399; }
+    .t-dim    { color: #374f6b; }
+    .t-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: #f97316;
+      vertical-align: text-bottom;
+    }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .t-cursor { animation: blink 1s step-end infinite; }
+
+    /* ── Skill pills ───────────────────────────────────────────── */
+    .skill-pill {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #94a3b8;
+      background: #0d1a2e;
+      border: 1px solid #1a2d4a;
+      border-radius: 6px;
+      padding: 6px 14px;
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+      cursor: default;
+    }
+    .skill-pill:hover {
+      color: #e2e8f0;
+      border-color: rgba(37, 99, 235, 0.38);
+      background: rgba(37, 99, 235, 0.07);
+    }
+
+    /* ── Buttons ───────────────────────────────────────────────── */
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #f97316;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 11px 26px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+      text-decoration: none;
+    }
+    .btn-primary:hover { background: #ea6c0b; transform: translateY(-1px); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #e2e8f0;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 11px 26px;
+      border-radius: 8px;
+      border: 1px solid #1a2d4a;
+      cursor: pointer;
+      transition: color 0.2s, border-color 0.2s, transform 0.2s;
+      text-decoration: none;
+    }
+    .btn-ghost:hover {
+      color: #93c5fd;
+      border-color: rgba(37, 99, 235, 0.45);
+      transform: translateY(-1px);
+    }
+
+    /* ── Testimonial cards ─────────────────────────────────────── */
+    .testimonial-card {
+      background: #0d1a2e;
+      border: 1px solid #1a2d4a;
+      border-radius: 12px;
+      transition: border-color 0.28s, transform 0.28s;
+    }
+    .testimonial-card:hover {
+      border-color: rgba(37, 99, 235, 0.3);
+      transform: translateY(-3px);
+    }
+
+    /* ── Form inputs ───────────────────────────────────────────── */
+    .form-input {
+      width: 100%;
+      background: #0d1a2e;
+      border: 1px solid #1a2d4a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      font-family: 'Space Grotesk', sans-serif;
+      color: #e2e8f0;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .form-input::placeholder { color: #374f6b; }
+    .form-input:focus        { border-color: #2563eb; }
+
+    /* ── Dot grid bg ───────────────────────────────────────────── */
+    .dot-grid {
+      background-image: radial-gradient(circle, #1a2d4a 1px, transparent 1px);
+      background-size: 22px 22px;
+    }
+
+    /* ── Live ticker ──────────────────────────────────────────── */
+    .ticker-wrap {
+      overflow: hidden;
+      background: #080f1c;
+      border-top: 1px solid #1a2d4a;
+      border-bottom: 1px solid #1a2d4a;
+      padding: 11px 0;
+      white-space: nowrap;
+      position: relative;
+    }
+    .ticker-wrap::before,
+    .ticker-wrap::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 80px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .ticker-wrap::before { left: 0;  background: linear-gradient(to right, #080f1c, transparent); }
+    .ticker-wrap::after  { right: 0; background: linear-gradient(to left,  #080f1c, transparent); }
+    .ticker-track {
+      display: inline-flex;
+      animation: ticker-scroll 32s linear infinite;
+    }
+    .ticker-track:hover { animation-play-state: paused; }
+    @keyframes ticker-scroll {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+    .ticker-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.03em;
+      color: #374f6b;
+      padding: 0 20px;
+    }
+    .ticker-item.highlight { color: #34d399; }
+    .ticker-item.accent    { color: #f97316; }
+    .ticker-dot            { width: 4px; height: 4px; border-radius: 50%; background: #1a2d4a; flex-shrink: 0; }
+    .ticker-dot.live       { background: #34d399; }
+    .ticker-dot.active     { background: #f97316; }
+
+    /* ── Hero mesh canvas ────────────────────────────────────────── */
+    #hero-mesh {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Reduced motion ────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal              { opacity: 1; transform: none; transition: none; }
+      .status-dot          { animation: none; }
+      .t-cursor            { animation: none; }
+      .project-card:hover  { transform: none; }
+      #hero-mesh           { display: none; }
+    }
+
+    /* ── Scrollbar ─────────────────────────────────────────────── */
+    ::-webkit-scrollbar       { width: 8px; }
+    ::-webkit-scrollbar-track { background: #050d1a; }
+    ::-webkit-scrollbar-thumb { background: #1a2d4a; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #243d63; }
+  </style>
 </head>
 
-<body>
-    <!-- Navigation -->
-    <nav class="navbar">
-        <div class="nav-container">
-            <a href="#" class="logo-text">Lex Santiago</a>
-            <div class="nav-links">
-                <a href="#home" class="nav-link">Home</a>
-                <a href="#portfolio" class="nav-link">Work</a>
-                <a href="#about" class="nav-link">About</a>
-                <a href="#contact" class="nav-link">Contact</a>
-            </div>
+<body class="font-body">
+
+<!-- ─── NAV ──────────────────────────────────────────────────────── -->
+<nav id="navbar" class="fixed top-0 left-0 right-0 z-50 px-6 py-5">
+  <div class="max-w-6xl mx-auto flex items-center justify-between">
+
+    <a href="#home" class="font-heading text-2xl font-black text-white tracking-tight">
+      Lex<span class="text-orange-500">.</span>
+    </a>
+
+    <!-- Desktop nav -->
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#work"    class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200 cursor-pointer">Work</a>
+      <a href="#collab"  class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200 cursor-pointer">Collab</a>
+      <a href="#about"   class="text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200 cursor-pointer">About</a>
+      <a href="#contact" class="btn-primary text-sm py-2 px-5">Hire Me</a>
+    </div>
+
+    <!-- Mobile toggle -->
+    <button id="menu-btn" class="md:hidden text-slate-400 hover:text-white" aria-label="Open menu">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile dropdown -->
+  <div id="mobile-nav" class="hidden md:hidden mt-4 pb-4 px-2 flex flex-col gap-3">
+    <a href="#work"    class="text-slate-300 text-sm font-medium py-2 border-b border-navy-600 cursor-pointer">Work</a>
+    <a href="#collab"  class="text-slate-300 text-sm font-medium py-2 border-b border-navy-600 cursor-pointer">Collab</a>
+    <a href="#about"   class="text-slate-300 text-sm font-medium py-2 border-b border-navy-600 cursor-pointer">About</a>
+    <a href="#contact" class="btn-primary text-sm mt-2 justify-center">Hire Me</a>
+  </div>
+</nav>
+
+
+<!-- ─── HERO ──────────────────────────────────────────────────────── -->
+<section id="home" class="min-h-screen flex items-center pt-28 pb-20 px-6 relative overflow-hidden">
+  <canvas id="hero-mesh" aria-hidden="true"></canvas>
+  <div class="max-w-6xl mx-auto w-full relative z-10">
+    <div class="grid md:grid-cols-2 gap-14 items-center">
+
+      <!-- Left: Identity -->
+      <div>
+        <div class="reveal mb-7">
+          <span class="status-badge">
+            <span class="status-dot"></span>
+            Available for new projects
+          </span>
         </div>
-    </nav>
 
-    <!-- Hero Section -->
-    <section id="home" class="hero aero-section">
-        <div class="glass-panel text-center">
-            <div class="gloss-overlay"></div>
-            <h1 style="margin-bottom: 1rem;">Lex Santiago</h1>
-            <h2 style="font-size: 1.5rem; margin-bottom: 2rem; color: var(--color-ocean-mid);">
-                Engineer / Creator
-            </h2>
-            <p style="margin-bottom: 3rem; max-width: 600px; margin-left: auto; margin-right: auto;">
-                Building AI that handles the boring stuff.
-            </p>
-            <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                <a href="#portfolio" class="aero-btn">See My Work</a>
-                <a href="#contact" class="aero-btn"
-                    style="background: transparent; border: 1px solid var(--color-ocean-mid); color: var(--color-navy-text);">Let's
-                    Talk</a>
-            </div>
+        <h1 class="reveal reveal-d1 font-heading font-black text-white leading-none mb-5"
+            style="font-size: clamp(3.2rem, 8.5vw, 5.8rem); letter-spacing: -0.03em;">
+          LEX<br/>SANTIAGO
+        </h1>
 
-            <div style="margin-top: 3rem; display: flex; gap: 1.5rem; justify-content: center;">
-                <a href="https://github.com/as4584" target="_blank"
-                    style="font-size: 1.5rem; text-decoration: none;">💻</a>
-                <a href="https://www.instagram.com/httpslovelex/" target="_blank"
-                    style="font-size: 1.5rem; text-decoration: none;">📸</a>
-            </div>
+        <p class="reveal reveal-d2 font-heading font-semibold text-slate-300 mb-5"
+           style="font-size: clamp(1.05rem, 2.2vw, 1.22rem);">
+          Engineer &amp; Creator
+        </p>
 
-            <div style="margin-top: 1.5rem; font-size: 0.9rem; color: var(--color-ocean-mid);">
-                <span
-                    style="display: inline-block; width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 8px;"></span>
-                {{ availability }}
-            </div>
+        <p class="reveal reveal-d3 text-slate-500 text-sm leading-relaxed max-w-md mb-9">
+          I build AI systems, web apps, and automation tools that handle the boring stuff —
+          so founders and small businesses can focus on what actually matters.
+          Based in New Jersey. Currently working with
+          <a href="https://innovationdevelopmentsolutions.com" target="_blank" rel="noopener noreferrer"
+             class="text-blue-400 hover:text-blue-300 transition-colors duration-200">
+            Innovation Development Solutions</a>.
+        </p>
+
+        <div class="reveal reveal-d4 flex flex-wrap gap-4 mb-10">
+          <a href="#work"    class="btn-primary">
+            See My Work
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+            </svg>
+          </a>
+          <a href="#contact" class="btn-ghost">Let's Talk</a>
         </div>
-    </section>
 
-    <!-- Portfolio Section -->
-    <section id="portfolio" class="aero-section">
-        <div class="glass-panel">
-            <div class="gloss-overlay"></div>
-            <h2 class="text-center" style="margin-bottom: 0.5rem; color: var(--color-ocean-mid);">Projects</h2>
-            <p class="text-center" style="margin-bottom: 3rem; color: var(--color-navy-text);">"How can I make this
-                easier?"</p>
-
-            <div class="projects-grid">
-                {% for project in projects %}
-                <div class="glass-card">
-                    <div class="gloss-overlay"></div>
-                    <img src="{{ project.image_url }}" alt="{{ project.title }}" class="project-image"
-                        onerror="this.src='/static/images/placeholder-project.svg'">
-                    <h3 style="font-size: 1.25rem; margin-bottom: 0.5rem;">{{ project.title }}</h3>
-                    <p style="font-size: 0.95rem; margin-bottom: 1.5rem; flex-grow: 1;">{{ project.description }}</p>
-
-                    <div class="tech-tags">
-                        {% for tech in project.technologies %}
-                        <span class="tech-tag">{{ tech }}</span>
-                        {% endfor %}
-                    </div>
-
-                    <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid rgba(0,0,0,0.1);">
-                        <a href="{{ project.case_study_url }}" class="aero-btn"
-                            style="padding: 8px 20px; font-size: 0.9rem; width: 100%;">
-                            {% if project.case_study_url.startswith('http') %}View Demo{% else %}Case Study{% endif %}
-                        </a>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+        <!-- Social + affiliation -->
+        <div class="reveal flex items-center gap-5">
+          <a href="https://github.com/as4584" target="_blank" rel="noopener noreferrer"
+             aria-label="GitHub profile"
+             class="text-slate-500 hover:text-white transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0 1 12 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z"/>
+            </svg>
+          </a>
+          <a href="https://www.instagram.com/httpslovelex/" target="_blank" rel="noopener noreferrer"
+             aria-label="Instagram profile"
+             class="text-slate-500 hover:text-white transition-colors duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+            </svg>
+          </a>
+          <div class="w-px h-5 bg-navy-600"></div>
+          <span class="text-slate-600 text-xs font-medium tracking-wide">NJIT Engineering</span>
         </div>
-    </section>
+      </div>
 
-    <!-- Testimonials Section -->
-    <section id="testimonials" class="aero-section">
-        <div class="glass-panel">
-            <div class="gloss-overlay"></div>
-            <h2 class="text-center" style="margin-bottom: 3rem; color: var(--color-ocean-mid);">What Clients Say</h2>
-            <div class="projects-grid">
-                {% for testimonial in testimonials %}
-                <div class="glass-card">
-                    <div class="gloss-overlay"></div>
-                    <div style="color: #ffd700; margin-bottom: 1rem;">★★★★★</div>
-                    <p style="font-style: italic; margin-bottom: 1.5rem; flex-grow: 1;">"{{ testimonial.text }}"</p>
-                    <div>
-                        <h4 style="font-weight: 700;">{{ testimonial.client_name }}</h4>
-                        <p style="font-size: 0.85rem; color: var(--color-ocean-mid);">{{ testimonial.position }}, {{
-                            testimonial.company }}</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
+      <!-- Right: Terminal -->
+      <div class="reveal reveal-d2 hidden md:flex flex-col gap-5">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="t-dot" style="background:#ff5f56;"></div>
+            <div class="t-dot" style="background:#ffbd2e;"></div>
+            <div class="t-dot" style="background:#27c93f;"></div>
+            <span class="ml-3 text-slate-600 text-xs" style="font-family:monospace;">lex@lexmakesit ~ zsh</span>
+          </div>
+          <div class="terminal-body">
+            <div><span class="t-prompt">➜  </span><span class="t-cmd">lexmakesit --build ai-receptionist</span></div>
+            <div><span class="t-ok">✓</span> Voice pipeline initialized</div>
+            <div><span class="t-ok">✓</span> GPT-4o connected</div>
+            <div><span class="t-ok">✓</span> Twilio webhooks active</div>
+            <div><span class="t-ok">✓</span> RAG knowledge base loaded</div>
+            <div class="t-dim">  → Handling calls 24/7...</div>
+            <br/>
+            <div><span class="t-prompt">➜  </span><span class="t-cmd">agentop --status</span></div>
+            <div><span class="t-ok">✓</span> 8 agents online</div>
+            <div><span class="t-ok">✓</span> LangGraph orchestration running</div>
+            <div class="t-dim">  → SitePlannerAgent → PageGeneratorAgent → QA</div>
+            <br/>
+            <div><span class="t-prompt">➜  </span><span class="t-cmd" id="typer"></span><span class="t-cursor"></span></div>
+          </div>
         </div>
-    </section>
 
-    <!-- About Section -->
-    <section id="about" class="aero-section">
-        <div class="glass-panel">
-            <div class="gloss-overlay"></div>
-            <h2 class="text-center" style="margin-bottom: 2rem; color: var(--color-ocean-mid);">Hey, I'm Lex</h2>
-            <div style="max-width: 700px; margin: 0 auto; text-align: center;">
-                <p style="margin-bottom: 1.5rem;">
-                    I'm a college engineer who builds systems that think, so people don't have to stress.
-                </p>
-                <p style="margin-bottom: 1.5rem;">
-                    I grew up in a Spanglish household where clear communication wasn't always easy — now I build tech
-                    that's simple, accessible, and human.
-                </p>
-                <p>
-                    Learning from NJIT mentors <strong>Mark Chiusano</strong> and <strong>Keith Williams</strong>, I'm
-                    building tools that connect people and ideas.
-                </p>
-            </div>
-
-            <!-- Tech Stack -->
-            <div style="margin-top: 4rem;">
-                <h3 class="text-center" style="margin-bottom: 2rem;">Expertise</h3>
-                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem;">
-                    <div class="glass-card" style="padding: 1rem; min-width: 120px; align-items: center;">
-                        <div class="gloss-overlay"></div>
-                        <span style="font-size: 2rem; margin-bottom: 0.5rem;">🚀</span>
-                        <span style="font-weight: 600;">FastAPI</span>
-                    </div>
-                    <div class="glass-card" style="padding: 1rem; min-width: 120px; align-items: center;">
-                        <div class="gloss-overlay"></div>
-                        <span style="font-size: 2rem; margin-bottom: 0.5rem;">🐍</span>
-                        <span style="font-weight: 600;">Python</span>
-                    </div>
-                    <div class="glass-card" style="padding: 1rem; min-width: 120px; align-items: center;">
-                        <div class="gloss-overlay"></div>
-                        <span style="font-size: 2rem; margin-bottom: 0.5rem;">🤖</span>
-                        <span style="font-weight: 600;">OpenAI</span>
-                    </div>
-                    <div class="glass-card" style="padding: 1rem; min-width: 120px; align-items: center;">
-                        <div class="gloss-overlay"></div>
-                        <span style="font-size: 2rem; margin-bottom: 0.5rem;">📞</span>
-                        <span style="font-weight: 600;">Twilio</span>
-                    </div>
-                    <div class="glass-card" style="padding: 1rem; min-width: 120px; align-items: center;">
-                        <div class="gloss-overlay"></div>
-                        <span style="font-size: 2rem; margin-bottom: 0.5rem;">🐳</span>
-                        <span style="font-weight: 600;">Docker</span>
-                    </div>
-                </div>
-            </div>
+        <!-- Quick stats row -->
+        <div class="grid grid-cols-3 gap-4">
+          <div class="bg-navy-800 rounded-xl p-4 text-center border border-navy-600">
+            <div class="font-heading text-2xl font-black text-white">5+</div>
+            <div class="text-slate-600 text-xs mt-1 font-medium">Projects</div>
+          </div>
+          <div class="bg-navy-800 rounded-xl p-4 text-center border border-navy-600">
+            <div class="font-heading text-2xl font-black text-orange-500">3</div>
+            <div class="text-slate-600 text-xs mt-1 font-medium">Clients</div>
+          </div>
+          <div class="bg-navy-800 rounded-xl p-4 text-center border border-navy-600">
+            <div class="font-heading text-2xl font-black text-blue-400">24/7</div>
+            <div class="text-slate-600 text-xs mt-1 font-medium">AI Uptime</div>
+          </div>
         </div>
-    </section>
+      </div>
 
-    <!-- Contact Section -->
-    <section id="contact" class="aero-section">
-        <div class="glass-panel">
-            <div class="gloss-overlay"></div>
-            <h2 class="text-center" style="margin-bottom: 1rem; color: var(--color-ocean-mid);">Let's Talk</h2>
-            <p class="text-center" style="margin-bottom: 3rem;">I'd love to hear what you're building.</p>
+    </div>
+  </div>
+</section>
 
-            <div style="max-width: 600px; margin: 0 auto;">
-                <form id="contactForm">
-                    <div class="form-group">
-                        <label for="name">Name</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="email">Email</label>
-                        <input type="email" id="email" name="email" class="form-control" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="message">Message</label>
-                        <textarea id="message" name="message" class="form-control" rows="5" required></textarea>
-                    </div>
-                    <button type="submit" class="aero-btn" style="width: 100%;">Send Message</button>
-                </form>
-            </div>
+
+<!-- ─── WHAT I BUILD ───────────────────────────────────────────────── -->
+<section class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal mb-10">
+      <span class="section-label">What I Build</span>
+      <h2 class="font-heading text-3xl font-bold text-white mt-2">Three things, done well.</h2>
+    </div>
+    <div class="grid md:grid-cols-3 gap-5">
+
+      <!-- AI Systems -->
+      <div class="reveal reveal-d1 bg-navy-800 border border-navy-600 hover:border-blue-600/40 transition-all duration-300 rounded-xl p-6 cursor-default">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center mb-5" style="background:rgba(37,99,235,0.12);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#3b82f6" stroke-width="1.7" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23-.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 0 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
+          </svg>
         </div>
-    </section>
+        <h3 class="font-heading text-lg font-bold text-white mb-2">AI Systems</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Custom AI tools built to automate repetitive operations — receptionists, chatbots, agent pipelines, RAG-powered assistants.</p>
+      </div>
 
-    <!-- Footer -->
-    <footer class="footer-top">
-        <div class="container text-center" style="padding: 3rem 0;">
-            <p style="color: var(--color-navy-text); margin-bottom: 1rem;">&copy; 2025 Lex Santiago. Built with FastAPI
-                & Aero Design.</p>
-            <p style="font-style: italic; color: var(--color-ocean-mid); margin-bottom: 2rem;">"Still learning, always
-                building."</p>
-            <div style="display: flex; justify-content: center; gap: 2rem;">
-                <a href="/api/docs" class="nav-link">API Docs</a>
-                <a href="https://github.com/as4584" class="nav-link">GitHub</a>
-                <a href="https://www.instagram.com/httpslovelex/" class="nav-link">Instagram</a>
-            </div>
+      <!-- Web Apps -->
+      <div class="reveal reveal-d2 bg-navy-800 border border-navy-600 hover:border-orange-500/30 transition-all duration-300 rounded-xl p-6 cursor-default">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center mb-5" style="background:rgba(249,115,22,0.1);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#f97316" stroke-width="1.7" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75 22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3-4.5 16.5"/>
+          </svg>
         </div>
-    </footer>
+        <h3 class="font-heading text-lg font-bold text-white mb-2">Web Applications</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Full-stack apps with real-time data, third-party API integrations, and interfaces that don't get in the way of the work.</p>
+      </div>
+
+      <!-- Automation -->
+      <div class="reveal reveal-d3 bg-navy-800 border border-navy-600 hover:border-emerald-500/30 transition-all duration-300 rounded-xl p-6 cursor-default">
+        <div class="w-11 h-11 rounded-lg flex items-center justify-center mb-5" style="background:rgba(52,211,153,0.08);">
+          <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" viewBox="0 0 24 24" stroke="#34d399" stroke-width="1.7" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z"/>
+          </svg>
+        </div>
+        <h3 class="font-heading text-lg font-bold text-white mb-2">Automation</h3>
+        <p class="text-slate-500 text-sm leading-relaxed">Backend workflows, API orchestration, and scheduled systems that run while you sleep — no babysitting required.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── PROJECTS ───────────────────────────────────────────────────── -->
+<section id="work" class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal mb-12">
+      <span class="section-label">Selected Work</span>
+      <h2 class="font-heading text-3xl font-bold text-white mt-2">"How can I make this easier?"</h2>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-6">
+
+      <!-- ① Agentop -->
+      <div class="project-card reveal bg-navy-800 border border-navy-600 rounded-xl overflow-hidden">
+        <!-- Visual header: dot-grid on navy with large wordmark -->
+        <div class="h-44 flex items-center justify-center relative overflow-hidden dot-grid" style="background:#0d1a2e;">
+          <div class="relative z-10 text-center">
+            <div class="font-heading font-black text-white" style="font-size:2.4rem;letter-spacing:-0.04em;">AGENTOP</div>
+            <div class="text-slate-600 text-xs font-medium tracking-widest uppercase mt-1">AI Agent Platform</div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <h3 class="font-heading text-lg font-bold text-white">Agentop</h3>
+            <span class="badge-wip flex-shrink-0">In Dev</span>
+          </div>
+          <p class="text-slate-500 text-sm leading-relaxed mb-5">
+            Multi-agent orchestration platform built on LangGraph and FastAPI. Specialist AI agents — planning, generation, QA, SEO, content — coordinated through a Next.js dashboard and WebSocket task stream. Built for production client site delivery.
+          </p>
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="tech-tag">LangGraph</span>
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">Next.js</span>
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">WebSocket</span>
+            <span class="tech-tag">PostgreSQL</span>
+          </div>
+          <a href="https://github.com/as4584" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-2 text-slate-500 hover:text-white text-sm font-medium transition-colors duration-200 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+            </svg>
+            View on GitHub
+          </a>
+        </div>
+      </div>
+
+      <!-- ② AI Receptionist -->
+      <div class="project-card reveal reveal-d1 bg-navy-800 border border-navy-600 rounded-xl overflow-hidden">
+        <div class="h-44 relative overflow-hidden">
+          <img src="https://lexmakesit.com/static/images/TAWOG.jpg"
+               alt="LexMakesIt AI Receptionist — 24/7 voice AI phone system"
+               class="w-full h-full object-cover"
+               loading="lazy" />
+          <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(13,26,46,0.88) 0%, rgba(13,26,46,0.05) 60%);"></div>
+          <div class="absolute bottom-3 left-4">
+            <span class="badge-live">Live</span>
+          </div>
+        </div>
+        <div class="p-6">
+          <h3 class="font-heading text-lg font-bold text-white mb-3">AI Receptionist</h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-5">
+            24/7 AI phone system handling customer inquiries, appointment scheduling, and information requests via Twilio + GPT-4o with RAG knowledge retrieval. Business owners stop missing calls.
+          </p>
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">Twilio</span>
+            <span class="tech-tag">OpenAI GPT-4o</span>
+            <span class="tech-tag">RAG</span>
+            <span class="tech-tag">Redis</span>
+            <span class="tech-tag">PostgreSQL</span>
+          </div>
+          <a href="https://lexmakesit.com/projects/ai-receptionist" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 text-sm font-medium transition-colors duration-200 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+            </svg>
+            Case Study
+          </a>
+        </div>
+      </div>
+
+      <!-- ③ DonXera -->
+      <div class="project-card reveal reveal-d2 bg-navy-800 border border-navy-600 rounded-xl overflow-hidden">
+        <div class="h-44 relative overflow-hidden">
+          <img src="https://lexmakesit.com/static/images/DonXlogo.jpg"
+               alt="DonXera streetwear store inventory management system"
+               class="w-full h-full object-cover"
+               loading="lazy" />
+          <div class="absolute inset-0" style="background:linear-gradient(to top, rgba(13,26,46,0.88) 0%, rgba(13,26,46,0.05) 60%);"></div>
+          <div class="absolute bottom-3 left-4">
+            <span class="badge-live">Live</span>
+          </div>
+        </div>
+        <div class="p-6">
+          <h3 class="font-heading text-lg font-bold text-white mb-3">DonXera Inventory System</h3>
+          <p class="text-slate-500 text-sm leading-relaxed mb-5">
+            Real-time inventory management for a Florida streetwear resell store. SAP ARP + Lightspeed POS sync across multiple locations, handling 140+ SKUs with automated reconciliation.
+          </p>
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">Flask</span>
+            <span class="tech-tag">SAP ARP</span>
+            <span class="tech-tag">Lightspeed POS</span>
+            <span class="tech-tag">Docker</span>
+            <span class="tech-tag">PostgreSQL</span>
+          </div>
+          <a href="http://don-era.lexmakesit.com/" target="_blank" rel="noopener noreferrer"
+             class="inline-flex items-center gap-2 text-orange-500 hover:text-orange-400 text-sm font-medium transition-colors duration-200 cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+            </svg>
+            View Demo
+          </a>
+        </div>
+      </div>
+
+      <!-- ④ Content Creation Manager -->
+      <div class="project-card reveal reveal-d3 bg-navy-800 border border-navy-600 rounded-xl overflow-hidden">
+        <!-- Designed placeholder: icon on dark bg -->
+        <div class="h-44 flex items-center justify-center relative overflow-hidden dot-grid" style="background:#0d1a2e;">
+          <div class="relative z-10 text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="44" height="44" fill="none" viewBox="0 0 24 24" stroke="#f97316" stroke-width="1.4" aria-hidden="true" class="mx-auto mb-2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10"/>
+            </svg>
+            <div class="text-slate-600 text-xs font-medium tracking-widest uppercase">Content Manager</div>
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex items-start justify-between gap-3 mb-3">
+            <h3 class="font-heading text-lg font-bold text-white">Content Creation Manager</h3>
+            <span class="badge-wip flex-shrink-0">WIP</span>
+          </div>
+          <p class="text-slate-500 text-sm leading-relaxed mb-5">
+            End-to-end AI-powered content pipeline — ideation, scripting, scheduling, and publish coordination. Removes the manual bottleneck between idea and published post. Currently in active development.
+          </p>
+          <div class="flex flex-wrap gap-2 mb-5">
+            <span class="tech-tag">Python</span>
+            <span class="tech-tag">FastAPI</span>
+            <span class="tech-tag">OpenAI</span>
+            <span class="tech-tag">LangGraph</span>
+          </div>
+          <div class="inline-flex items-center gap-2 text-slate-600 text-sm font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+            </svg>
+            In active development
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── IDS COLLABORATION ──────────────────────────────────────────── -->
+<section id="collab" class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal bg-navy-800 border border-navy-600 rounded-2xl p-8 md:p-12">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+
+        <div>
+          <span class="section-label">Collaboration</span>
+          <h2 class="font-heading text-2xl font-bold text-white mt-2 mb-5">
+            Working with Innovation<br/>Development Solutions
+          </h2>
+          <p class="text-slate-500 text-sm leading-relaxed mb-4">
+            IDS is a national business infrastructure firm serving clients across all 50 states —
+            formation, licensing, digital systems, and compliance coordinated as one platform.
+          </p>
+          <p class="text-slate-500 text-sm leading-relaxed mb-8">
+            I contribute to their digital and AI layer: building client-facing web applications,
+            custom AI tools, backend automation, and scalable systems that support their distributed
+            operation services across industries.
+          </p>
+          <a href="https://innovationdevelopmentsolutions.com" target="_blank" rel="noopener noreferrer" class="btn-ghost text-sm">
+            Visit IDS
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+            </svg>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-5">
+            <div class="font-heading text-3xl font-black text-blue-400 mb-1">50</div>
+            <div class="text-slate-600 text-xs font-medium tracking-widest uppercase">States Served</div>
+          </div>
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-5">
+            <div class="font-heading text-3xl font-black text-white mb-1">1,000+</div>
+            <div class="text-slate-600 text-xs font-medium tracking-widest uppercase">Systems Deployed</div>
+          </div>
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-5">
+            <div class="font-heading text-3xl font-black text-white mb-1">200+</div>
+            <div class="text-slate-600 text-xs font-medium tracking-widest uppercase">Business Types</div>
+          </div>
+          <div class="bg-navy-900 border border-navy-700 rounded-xl p-5">
+            <div class="font-heading text-3xl font-black text-orange-500 mb-1">AI</div>
+            <div class="text-slate-600 text-xs font-medium tracking-widest uppercase">Scalable Systems</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── TESTIMONIALS ──────────────────────────────────────────────── -->
+<section class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="reveal mb-12">
+      <span class="section-label">Client Feedback</span>
+      <h2 class="font-heading text-3xl font-bold text-white mt-2">What clients say.</h2>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-5">
+
+      <div class="testimonial-card p-6 reveal">
+        <div class="flex gap-1 mb-5" aria-label="5 stars">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+          "Alex built me an AI receptionist that actually works. I can focus on my clients instead of answering the phone all day. It's like having an extra pair of hands."
+        </p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-blue-300 flex-shrink-0" style="background:rgba(37,99,235,0.18);">MT</div>
+          <div>
+            <div class="text-white text-sm font-semibold">Maria Torres</div>
+            <div class="text-slate-600 text-xs">Owner, Bella Vista Salon</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card p-6 reveal reveal-d1">
+        <div class="flex gap-1 mb-5" aria-label="5 stars">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+          "He explained everything in plain English — no tech jargon. The AI handles our after-hours calls perfectly. Simple solution, big impact."
+        </p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-orange-300 flex-shrink-0" style="background:rgba(249,115,22,0.15);">DK</div>
+          <div>
+            <div class="text-white text-sm font-semibold">David Kim</div>
+            <div class="text-slate-600 text-xs">Operations Manager, Kim's HVAC</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="testimonial-card p-6 reveal reveal-d2">
+        <div class="flex gap-1 mb-5" aria-label="5 stars">
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="#f97316" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <p class="text-slate-300 text-sm leading-relaxed mb-6">
+          "We went from chaotic spreadsheets to a clean system that just works. Alexander walked me through every step. Real talk: this saved us hours every week."
+        </p>
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-emerald-300 flex-shrink-0" style="background:rgba(52,211,153,0.12);">AM</div>
+          <div>
+            <div class="text-white text-sm font-semibold">Alex Martinez</div>
+            <div class="text-slate-600 text-xs">Store Manager, DonXEra Streetwear</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── ABOUT ──────────────────────────────────────────────────────── -->
+<section id="about" class="py-20 px-6">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid md:grid-cols-2 gap-16 items-start">
+
+      <!-- Bio -->
+      <div class="reveal">
+        <span class="section-label">About</span>
+        <h2 class="font-heading text-3xl font-bold text-white mt-2 mb-6">Hey, I'm Lex.</h2>
+
+        <div class="flex items-center gap-4 mb-7">
+          <img src="/static/images/lex-photo.jpg" alt="Lex Santiago" class="w-16 h-16 rounded-full object-cover flex-shrink-0 border border-navy-600" />
+          <div>
+            <div class="text-white font-semibold">Lex Santiago</div>
+            <div class="text-slate-600 text-sm">NJIT · New Jersey</div>
+          </div>
+        </div>
+
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">
+          I'm a college engineer who builds systems that think, so people don't have to stress. I grew up in a Spanglish household where clear communication wasn't always easy — now I build tech that's simple, accessible, and human.
+        </p>
+        <p class="text-slate-400 text-sm leading-relaxed mb-4">
+          Learning from NJIT mentors Mark Chiusano and Keith Williams, I'm building tools that connect people and ideas — not just code for the sake of it, but systems that change how people work.
+        </p>
+        <p class="text-slate-400 text-sm leading-relaxed mb-8">
+          Right now I'm deep in two builds: Agentop, a full AI agent orchestration platform, and a content creation manager to help creators stop drowning in workflow. Both in active development.
+        </p>
+
+        <a href="#contact" class="btn-primary text-sm inline-flex">
+          Let's work together
+          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Skills -->
+      <div class="reveal reveal-d1">
+        <h3 class="font-heading font-semibold text-white mb-4">Tech Stack</h3>
+        <div class="flex flex-wrap gap-3 mb-9">
+          <span class="skill-pill">FastAPI</span>
+          <span class="skill-pill">Python</span>
+          <span class="skill-pill">LangGraph</span>
+          <span class="skill-pill">OpenAI</span>
+          <span class="skill-pill">Twilio</span>
+          <span class="skill-pill">Next.js</span>
+          <span class="skill-pill">PostgreSQL</span>
+          <span class="skill-pill">Redis</span>
+          <span class="skill-pill">Docker</span>
+          <span class="skill-pill">WebSockets</span>
+          <span class="skill-pill">RAG</span>
+          <span class="skill-pill">Flask</span>
+        </div>
+
+        <h3 class="font-heading font-semibold text-white mb-4">Focus Areas</h3>
+        <div class="flex flex-col gap-3">
+          <div class="flex items-center gap-3 text-sm text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#34d399" stroke-width="2.2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            AI agent systems &amp; LLM orchestration pipelines
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#34d399" stroke-width="2.2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            Full-stack web application development
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#34d399" stroke-width="2.2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            Voice AI &amp; real-time communication systems
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#34d399" stroke-width="2.2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            API integrations &amp; backend automation
+          </div>
+          <div class="flex items-center gap-3 text-sm text-slate-500">
+            <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="#34d399" stroke-width="2.2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
+            </svg>
+            Small business digital infrastructure
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ─── CONTACT ───────────────────────────────────────────────────── -->
+<section id="contact" class="py-20 px-6">
+  <div class="max-w-xl mx-auto">
+    <div class="reveal text-center mb-12">
+      <span class="section-label">Contact</span>
+      <h2 class="font-heading text-3xl font-bold text-white mt-2 mb-3">Let's build something.</h2>
+      <p class="text-slate-600 text-sm">Tell me what you're working on. I'll get back to you.</p>
+    </div>
+
+    <form id="contact-form" class="reveal reveal-d1 flex flex-col gap-4" novalidate>
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label for="c-name" class="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-widest">Name</label>
+          <input id="c-name" name="name" type="text" required placeholder="Your name" class="form-input" />
+        </div>
+        <div>
+          <label for="c-email" class="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-widest">Email</label>
+          <input id="c-email" name="email" type="email" required placeholder="you@example.com" class="form-input" />
+        </div>
+      </div>
+      <div>
+        <label for="c-msg" class="block text-xs font-semibold text-slate-600 mb-2 uppercase tracking-widest">Message</label>
+        <textarea id="c-msg" name="message" rows="5" required placeholder="Tell me what you're building..."
+                  class="form-input resize-none"></textarea>
+      </div>
+      <button type="submit" class="btn-primary w-full md:w-auto md:self-start justify-center">
+        Send Message
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
+        </svg>
+      </button>
+      <p id="form-ok" class="hidden text-sm text-emerald-400 text-center font-medium">
+        Sent! I'll get back to you soon.
+      </p>
+    </form>
+  </div>
+</section>
+
+
+<!-- ─── LIVE TICKER ─────────────────────────────────────────────── -->
+<div class="ticker-wrap" aria-label="Currently building status" role="marquee">
+  <div class="ticker-track" id="ticker-track">
+    <!-- Populated twice by JS for seamless loop -->
+  </div>
+</div>
+
+<!-- ─── FOOTER ────────────────────────────────────────────────────── -->
+<footer class="border-t border-navy-600 py-10 px-6">
+  <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+    <div>
+      <div class="font-heading text-xl font-black text-white">Lex<span class="text-orange-500">.</span></div>
+      <div class="text-slate-700 text-xs mt-1">"Still learning, always building."</div>
+    </div>
+    <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-700">
+      <a href="https://github.com/as4584" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200 cursor-pointer">GitHub</a>
+      <a href="https://www.instagram.com/httpslovelex/" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200 cursor-pointer">Instagram</a>
+      <a href="https://lexmakesit.com/api/docs" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200 cursor-pointer">API Docs</a>
+      <a href="https://innovationdevelopmentsolutions.com" target="_blank" rel="noopener noreferrer" class="hover:text-white transition-colors duration-200 cursor-pointer">IDS</a>
+    </div>
+    <div class="text-slate-700 text-xs">© 2026 Lex Santiago</div>
+  </div>
+</footer>
+
+
+<!-- ─── SCRIPTS ───────────────────────────────────────────────────── -->
+<script>
+  'use strict';
+
+  // ── Nav scroll backdrop ───────────────────────────────────────────
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 24);
+  }, { passive: true });
+
+  // ── Mobile menu ───────────────────────────────────────────────────
+  const menuBtn  = document.getElementById('menu-btn');
+  const mobileNav = document.getElementById('mobile-nav');
+  menuBtn.addEventListener('click', () => mobileNav.classList.toggle('hidden'));
+  mobileNav.querySelectorAll('a').forEach(a =>
+    a.addEventListener('click', () => mobileNav.classList.add('hidden'))
+  );
+
+  // ── Intersection Observer scroll reveal ───────────────────────────
+  const revealObs = new IntersectionObserver(
+    (entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          e.target.classList.add('visible');
+          revealObs.unobserve(e.target);
+        }
+      });
+    },
+    { threshold: 0.1, rootMargin: '0px 0px -36px 0px' }
+  );
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+  // ── Terminal typewriter ───────────────────────────────────────────
+  const typer   = document.getElementById('typer');
+  const phrases = [
+    'content-manager --init',
+    'agentop --run webgen --client "IDS"',
+    'python3 search.py "saas modern" --design-system',
+    'git commit -m "ship it"',
+  ];
+  let pIdx = 0, cIdx = 0, deleting = false;
+
+  function tick() {
+    const phrase = phrases[pIdx];
+    if (deleting) {
+      cIdx--;
+      typer.textContent = phrase.slice(0, cIdx);
+      if (cIdx === 0) {
+        deleting = false;
+        pIdx = (pIdx + 1) % phrases.length;
+        setTimeout(tick, 480);
+        return;
+      }
+      setTimeout(tick, 38);
+    } else {
+      cIdx++;
+      typer.textContent = phrase.slice(0, cIdx);
+      if (cIdx === phrase.length) {
+        deleting = true;
+        setTimeout(tick, 1900);
+        return;
+      }
+      setTimeout(tick, 62);
+    }
+  }
+
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    setTimeout(tick, 1400);
+  } else if (typer) {
+    typer.textContent = phrases[0];
+  }
+
+  // ── Smooth scroll for same-page anchors ───────────────────────────
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const target = document.querySelector(a.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  // ── Live ticker ───────────────────────────────────────────────────
+  (function initTicker() {
+    const track = document.getElementById('ticker-track');
+    if (!track) return;
+
+    const builds = [
+      { label: 'content-manager',   cls: 'accent',    dot: 'active', note: 'pipeline refactor' },
+      { label: 'agentop',           cls: 'accent',    dot: 'active', note: 'LangGraph v0.2 upgrade' },
+      { label: 'ai-receptionist',   cls: 'highlight', dot: 'live',   note: 'prod · 3 clients' },
+      { label: 'donxera-inventory', cls: 'highlight', dot: 'live',   note: 'live · FL' },
+      { label: 'IDS collab',        cls: 'accent',    dot: 'active', note: 'AI systems layer' },
+    ];
+    const stack = 'FastAPI · LangGraph · OpenAI · Twilio · PostgreSQL · Docker · Next.js · Redis';
+    const times = ['2h ago','4h ago','38m ago','just now','1h ago','12m ago','6h ago'];
+    const rnd   = arr => arr[Math.floor(Math.random() * arr.length)];
+
+    function render() {
+      let h = `<span class="ticker-item highlight"><span class="ticker-dot live"></span>CURRENTLY BUILDING</span>`;
+      builds.forEach(b => {
+        h += `<span class="ticker-item ${b.cls}"><span class="ticker-dot ${b.dot}"></span>${b.label} — ${b.note} · last commit ${rnd(times)}</span>`;
+        h += `<span class="ticker-item"><span class="ticker-dot"></span></span>`;
+      });
+      h += `<span class="ticker-item">${stack}</span>`;
+      h += `<span class="ticker-item"><span class="ticker-dot"></span></span>`;
+      return h;
+    }
+
+    const html = render();
+    track.innerHTML = html + html;          // doubled for seamless loop
+    setInterval(() => { const r = render(); track.innerHTML = r + r; }, 45000);
+  })();
+
+  // ── Low-poly hero mesh ─────────────────────────────────────────────
+  (function initMesh() {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const canvas = document.getElementById('hero-mesh');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Grid config
+    const COLS = 10, ROWS = 7;
+    const AMPLITUDE = 28;   // max pixel wander
+    const SPEED     = 0.00042; // how fast vertices breathe
+
+    let W, H, pts, tris;
+
+    // Build a slightly randomised grid of vertices
+    function buildGrid() {
+      W = canvas.width  = canvas.offsetWidth;
+      H = canvas.height = canvas.offsetHeight;
+      pts = [];
+
+      const cellW = W / (COLS - 1);
+      const cellH = H / (ROWS - 1);
+
+      for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+          const edge = (r === 0 || r === ROWS-1 || c === 0 || c === COLS-1);
+          pts.push({
+            bx: c * cellW,                         // base x
+            by: r * cellH,                         // base y
+            ox: edge ? 0 : (Math.random() - 0.5) * cellW * 0.55, // base offset
+            oy: edge ? 0 : (Math.random() - 0.5) * cellH * 0.55,
+            px: Math.random() * Math.PI * 2,       // phase x
+            py: Math.random() * Math.PI * 2,       // phase y
+            sx: 0.55 + Math.random() * 0.9,        // speed multiplier x
+            sy: 0.55 + Math.random() * 0.9,        // speed multiplier y
+          });
+        }
+      }
+
+      // Build triangles from the grid (2 per cell)
+      tris = [];
+      for (let r = 0; r < ROWS - 1; r++) {
+        for (let c = 0; c < COLS - 1; c++) {
+          const i  = r * COLS + c;
+          const i1 = i + 1;
+          const i2 = i + COLS;
+          const i3 = i + COLS + 1;
+          tris.push([i,  i1, i3]); // upper-right triangle
+          tris.push([i,  i3, i2]); // lower-left triangle
+        }
+      }
+    }
+
+    // Current animated position of each vertex
+    function getPos(p, t) {
+      return {
+        x: p.bx + p.ox + Math.sin(t * p.sx + p.px) * AMPLITUDE,
+        y: p.by + p.oy + Math.cos(t * p.sy + p.py) * AMPLITUDE,
+      };
+    }
+
+    // Color for a triangle based on its centroid Y (deeper = slightly lighter)
+    function triColor(y) {
+      const f  = Math.max(0, Math.min(1, y / H));  // 0 (top) → 1 (bottom)
+      // Interpolate between #050d1a and #112036, very tight range
+      const r  = Math.round(5  + f * 7);
+      const g  = Math.round(13 + f * 16);
+      const b  = Math.round(26 + f * 28);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    let raf;
+    function draw(ts) {
+      const t = ts * SPEED;
+      ctx.clearRect(0, 0, W, H);
+
+      for (const [ai, bi, ci] of tris) {
+        const a = getPos(pts[ai], t);
+        const b = getPos(pts[bi], t);
+        const c = getPos(pts[ci], t);
+
+        const cy = (a.y + b.y + c.y) / 3;
+
+        // Filled face
+        ctx.beginPath();
+        ctx.moveTo(a.x, a.y);
+        ctx.lineTo(b.x, b.y);
+        ctx.lineTo(c.x, c.y);
+        ctx.closePath();
+        ctx.fillStyle = triColor(cy);
+        ctx.fill();
+
+        // Wireframe edge — barely visible blue
+        ctx.strokeStyle = 'rgba(37,99,235,0.07)';
+        ctx.lineWidth   = 0.6;
+        ctx.stroke();
+      }
+
+      raf = requestAnimationFrame(draw);
+    }
+
+    buildGrid();
+    raf = requestAnimationFrame(draw);
+
+    // Rebuild on resize
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        cancelAnimationFrame(raf);
+        buildGrid();
+        raf = requestAnimationFrame(draw);
+      }, 180);
+    }, { passive: true });
+  })();
+
+  // ── Contact form (demo handler — no backend in local preview) ─────
+  const contactForm = document.getElementById('contact-form');
+  const formOk      = document.getElementById('form-ok');
+  contactForm.addEventListener('submit', async e => {
+    e.preventDefault();
+    const btn = contactForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name:    contactForm.querySelector('[name="name"]').value.trim(),
+          email:   contactForm.querySelector('[name="email"]').value.trim(),
+          subject: 'Portfolio contact form',
+          message: contactForm.querySelector('[name="message"]').value.trim()
+        })
+      });
+      if (res.ok) {
+        formOk.textContent = "Sent! I'll get back to you soon.";
+        formOk.classList.remove('hidden');
+        contactForm.reset();
+      } else {
+        formOk.textContent = 'Something went wrong. Email me directly at lex@lexmakesit.com';
+        formOk.classList.remove('hidden');
+      }
+    } catch (_) {
+      formOk.textContent = 'Could not send. Email me at lex@lexmakesit.com';
+      formOk.classList.remove('hidden');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Send Message';
+      setTimeout(() => formOk.classList.add('hidden'), 6000);
+    }
+  });
+</script>
+
 </body>
-
 </html>
