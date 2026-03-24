@@ -904,6 +904,48 @@ async def health_check(request: Request):
 
 
 # ============================================================================
+# SEO — sitemap + robots
+
+@app.get("/sitemap.xml", response_class=HTMLResponse)
+async def sitemap():
+    pages = [
+        ("https://lexmakesit.com/", "weekly", "1.0"),
+        ("https://lexmakesit.com/about", "monthly", "0.8"),
+        ("https://lexmakesit.com/pricing", "monthly", "0.8"),
+        ("https://lexmakesit.com/projects/ai-receptionist", "monthly", "0.7"),
+        ("https://lexmakesit.com/privacy-policy", "yearly", "0.3"),
+        ("https://lexmakesit.com/terms", "yearly", "0.3"),
+    ]
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    urls = "\n".join(
+        f"""  <url>
+    <loc>{loc}</loc>
+    <lastmod>{today}</lastmod>
+    <changefreq>{freq}</changefreq>
+    <priority>{pri}</priority>
+  </url>"""
+        for loc, freq, pri in pages
+    )
+    xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+{urls}
+</urlset>"""
+    return HTMLResponse(content=xml, media_type="application/xml")
+
+
+@app.get("/robots.txt")
+async def robots():
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /api/\n"
+        "\n"
+        "Sitemap: https://lexmakesit.com/sitemap.xml\n"
+    )
+    return HTMLResponse(content=content, media_type="text/plain")
+
+
+# ============================================================================
 # STRIPE PAYMENT INTEGRATION
 # ============================================================================
 
