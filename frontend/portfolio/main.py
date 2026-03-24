@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -664,26 +664,7 @@ async def send_contact_email(name: str, email: str, subject: str, message: str) 
 # Routes
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """
-    Main landing page implementing Cialdini's principles:
-    - Liking: Professional photo and relatable intro
-    - Authority: Certifications and expertise
-    - Social Proof: Client testimonials
-    - Reciprocity: Free resources
-    - Scarcity: Limited availability
-    """
-    return templates.TemplateResponse(
-        request=request,
-        name="index.html",
-        context={
-            "request": request,
-            "projects": PROJECTS,
-            "testimonials": TESTIMONIALS,
-            "tools": TOOLS_EXPERTISE,
-            "certifications": CERTIFICATIONS,
-            "availability": "Currently accepting 2 new clients for Q4 2025",
-        },
-    )
+    return FileResponse("static/index.html")
 
 
 @app.get("/pricing", response_class=HTMLResponse)
