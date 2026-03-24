@@ -56,4 +56,6 @@ jobs:
             docker cp ~/antigravity_bundle/apps/portfolio/templates/. portfolio-web-1:/app/templates/
             docker cp ~/antigravity_bundle/apps/portfolio/static/. portfolio-web-1:/app/static/
             docker cp ~/antigravity_bundle/apps/portfolio/main.py portfolio-web-1:/app/main.py
+            docker exec portfolio-web-1 sh -c 'touch /app/.env && sed -i "/^DISCORD_WEBHOOK_URL=/d" /app/.env && echo "DISCORD_WEBHOOK_URL=${{ secrets.DISCORD_WEBHOOK_URL }}" >> /app/.env'
+            docker exec portfolio-web-1 sh -c 'touch /app/.env && sed -i "/^SENDGRID_API_KEY=/d" /app/.env && echo "SENDGRID_API_KEY=${{ secrets.SENDGRID_API_KEY }}" >> /app/.env'
             docker restart portfolio-web-1

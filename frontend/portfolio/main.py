@@ -178,6 +178,7 @@ SMTP_FROM_EMAIL = os.getenv("SMTP_FROM_EMAIL", SMTP_USER)
 SMTP_FROM_NAME = os.getenv("SMTP_FROM_NAME", "Portfolio Contact")
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 CONTACT_RECIPIENT_EMAIL = os.getenv("CONTACT_RECIPIENT_EMAIL", "as42519256@gmail.com")
+DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
 
 # Global application state
 db_pool = None
@@ -661,6 +662,43 @@ async def send_contact_email(name: str, email: str, subject: str, message: str) 
         return False
 
 
+async def send_discord_notification(name: str, email: str, subject: str, message: str) -> bool:
+    """Send contact form notification to Discord via webhook."""
+    if not DISCORD_WEBHOOK_URL:
+        logger.warning("DISCORD_WEBHOOK_URL not configured - Discord notification skipped")
+        return False
+
+    import httpx
+
+    try:
+        payload = {
+            "embeds": [
+                {
+                    "title": f"📬 New Contact: {subject}",
+                    "color": 0x3B82F6,
+                    "fields": [
+                        {"name": "Name", "value": name, "inline": True},
+                        {"name": "Email", "value": email, "inline": True},
+                        {"name": "Message", "value": message[:1024]},
+                    ],
+                    "timestamp": datetime.utcnow().isoformat() + "Z",
+                    "footer": {"text": "lexmakesit.com contact form"},
+                }
+            ]
+        }
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(DISCORD_WEBHOOK_URL, json=payload, timeout=10)
+        if resp.status_code in (200, 204):
+            logger.info(f"Discord notification sent for contact from {name}")
+            return True
+        else:
+            logger.error(f"Discord webhook error: {resp.status_code} - {resp.text}")
+            return False
+    except Exception as e:
+        logger.error(f"Unexpected error sending Discord notification: {str(e)}")
+        return False
+
+
 # Routes
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
@@ -753,12 +791,21 @@ async def contact(request: Request, form_data: ContactForm):
         # Use default subject if not provided
         email_subject = form_data.subject or "lexmakesit email"
 
-        # Send email notification
-        email_sent = await send_contact_email(
-            name=form_data.name,
-            email=form_data.email,
-            subject=email_subject,
-            message=form_data.message,
+        # Send notifications (email + Discord) concurrently
+        import asyncio
+        email_sent, discord_sent = await asyncio.gather(
+            send_contact_email(
+                name=form_data.name,
+                email=form_data.email,
+                subject=email_subject,
+                message=form_data.message,
+            ),
+            send_discord_notification(
+                name=form_data.name,
+                email=form_data.email,
+                subject=email_subject,
+                message=form_data.message,
+            ),
         )
 
         # Log contact form submission (in production: save to database)
@@ -766,7 +813,7 @@ async def contact(request: Request, form_data: ContactForm):
         logger.info(
             f"Contact form submitted - ID: {contact_id}, "
             f"Name: {form_data.name}, Email: {form_data.email}, "
-            f"Email sent: {email_sent}"
+            f"Email sent: {email_sent}, Discord sent: {discord_sent}"
         )
 
         # Success response
