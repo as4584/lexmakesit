@@ -370,7 +370,7 @@
       .status-dot          { animation: none; }
       .t-cursor            { animation: none; }
       .project-card:hover  { transform: none; }
-      #hero-mesh           { display: none; }
+      /* #hero-mesh stays visible — JS renders one static frame instead */
     }
 
     /* ── Scrollbar ─────────────────────────────────────────────── */
@@ -1134,7 +1134,7 @@
 
   // ── Low-poly hero mesh ─────────────────────────────────────────────
   (function initMesh() {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     const canvas = document.getElementById('hero-mesh');
     if (!canvas) return;
@@ -1231,11 +1231,16 @@
         ctx.stroke();
       }
 
-      raf = requestAnimationFrame(draw);
+      if (!reducedMotion) raf = requestAnimationFrame(draw);
     }
 
     buildGrid();
-    raf = requestAnimationFrame(draw);
+    // Reduced motion: draw one static frame and stop. Full motion: animate.
+    if (reducedMotion) {
+      draw(0);
+    } else {
+      raf = requestAnimationFrame(draw);
+    }
 
     // Rebuild on resize
     let resizeTimer;
