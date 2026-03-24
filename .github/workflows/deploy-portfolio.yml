@@ -46,10 +46,14 @@ jobs:
           target: "~/antigravity_bundle/apps/portfolio/"
           strip_components: 2
 
-      - name: Restart container
+      - name: Deploy files into container and restart
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PORTFOLIO_HOST }}
           username: ${{ secrets.PORTFOLIO_USER }}
           key: ${{ secrets.PORTFOLIO_SSH_KEY }}
-          script: docker restart portfolio-web-1
+          script: |
+            docker cp ~/antigravity_bundle/apps/portfolio/templates/. portfolio-web-1:/app/templates/
+            docker cp ~/antigravity_bundle/apps/portfolio/static/. portfolio-web-1:/app/static/
+            docker cp ~/antigravity_bundle/apps/portfolio/main.py portfolio-web-1:/app/main.py
+            docker restart portfolio-web-1
