@@ -16,10 +16,19 @@ export default function SettingsPage() {
     const [name, setName] = useState('');
     const [industry, setIndustry] = useState('');
     const [description, setDescription] = useState('');
+    const [websiteUrl, setWebsiteUrl] = useState('');
+    const [learnStatus, setLearnStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+    const [learnMessage, setLearnMessage] = useState('');
     const [greetingStyle, setGreetingStyle] = useState('professional');
     const [businessHours, setBusinessHours] = useState('');
     const [commonServices, setCommonServices] = useState('');
     const [faqs, setFaqs] = useState<{ question: string; answer: string }[]>([]);
+
+    // Google Voice
+    const [googleVoiceNumber, setGoogleVoiceNumber] = useState('');
+    const [googleVoiceSaving, setGoogleVoiceSaving] = useState(false);
+    const [googleVoiceStatus, setGoogleVoiceStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [googleVoiceMessage, setGoogleVoiceMessage] = useState('');
 
     // Security fields
     const [currentPassword, setCurrentPassword] = useState('');
@@ -42,6 +51,16 @@ export default function SettingsPage() {
                 setBusinessHours(biz.business_hours || '');
                 setCommonServices(biz.common_services || '');
                 setFaqs(biz.faqs || [{ question: '', answer: '' }]);
+                setWebsiteUrl(biz.website_url || '');
+
+                // Load Google Voice number separately
+                try {
+                    const gvRes = await fetch('/api/voice/google-voice', { credentials: 'include' });
+                    if (gvRes.ok) {
+                        const gvData = await gvRes.json();
+                        setGoogleVoiceNumber(gvData.google_voice_number || '');
+                    }
+                } catch { /* non-fatal */ }
             } catch (err) {
                 console.error('Failed to load business data:', err);
                 setError('Failed to load settings');
@@ -66,6 +85,55 @@ export default function SettingsPage() {
         setFaqs(newFaqs);
     };
 
+    const handleSaveGoogleVoice = async () => {
+        setGoogleVoiceSaving(true);
+        setGoogleVoiceStatus('idle');
+        setGoogleVoiceMessage('');
+        try {
+            const res = await fetch('/api/voice/google-voice', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ google_voice_number: googleVoiceNumber || null }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || 'Failed to save');
+            }
+            setGoogleVoiceStatus('success');
+            setGoogleVoiceMessage(googleVoiceNumber ? 'Number saved. Callers can now be transferred to your Google Voice.' : 'Google Voice number removed.');
+        } catch (err: any) {
+            setGoogleVoiceStatus('error');
+            setGoogleVoiceMessage(err.message || 'Failed to save number');
+        } finally {
+            setGoogleVoiceSaving(false);
+        }
+    };
+
+    const handleLearnWebsite = async () => {
+        if (!websiteUrl) return;
+        setLearnStatus('loading');
+        setLearnMessage('');
+        try {
+            const res = await fetch('/api/business/learn-website', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ url: websiteUrl }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || 'Failed to learn from website');
+            }
+            const data = await res.json();
+            setLearnStatus('success');
+            setLearnMessage(data.message || 'Website learned successfully!');
+        } catch (err: any) {
+            setLearnStatus('error');
+            setLearnMessage(err.message || 'Failed to learn from website');
+        }
+    };
+
     const handleSave = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
@@ -78,6 +146,7 @@ export default function SettingsPage() {
                 name,
                 industry,
                 description,
+                website_url: websiteUrl,
                 greeting_style: greetingStyle,
                 business_hours: businessHours,
                 common_services: commonServices,
@@ -325,6 +394,45 @@ export default function SettingsPage() {
                                         style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', minHeight: '120px' }}
                                     />
                                 </div>
+
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Website URL</label>
+                                    <p style={{ color: '#666', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                                        Let Aria read your website so she can answer questions about your business accurately.
+                                    </p>
+                                    <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start', flexWrap: 'wrap' }}>
+                                        <input
+                                            type="url"
+                                            value={websiteUrl}
+                                            onChange={(e) => { setWebsiteUrl(e.target.value); setLearnStatus('idle'); }}
+                                            placeholder="https://yourbusiness.com"
+                                            style={{ flex: 1, minWidth: '200px', padding: '12px', borderRadius: '8px', border: '1px solid #ddd' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleLearnWebsite}
+                                            disabled={!websiteUrl || learnStatus === 'loading'}
+                                            style={{
+                                                padding: '12px 20px',
+                                                borderRadius: '8px',
+                                                background: learnStatus === 'success' ? '#28a745' : learnStatus === 'error' ? '#dc3545' : '#3d84ff',
+                                                color: 'white',
+                                                border: 'none',
+                                                fontWeight: 'bold',
+                                                cursor: (!websiteUrl || learnStatus === 'loading') ? 'not-allowed' : 'pointer',
+                                                opacity: (!websiteUrl || learnStatus === 'loading') ? 0.6 : 1,
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            {learnStatus === 'loading' ? 'Reading...' : learnStatus === 'success' ? 'Learned!' : learnStatus === 'error' ? 'Try Again' : 'Learn from Website'}
+                                        </button>
+                                    </div>
+                                    {learnMessage && (
+                                        <p style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: learnStatus === 'success' ? '#28a745' : '#dc3545' }}>
+                                            {learnMessage}
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </section>
 
@@ -351,6 +459,97 @@ export default function SettingsPage() {
                                     <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>Common Services / Prices</label>
                                     <textarea value={commonServices} onChange={(e) => setCommonServices(e.target.value)} placeholder="Listing your services and general pricing helps Aria answer questions accurately." style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', minHeight: '100px' }} />
                                 </div>
+                            </div>
+                        </section>
+
+                        {/* Section: Google Voice / Bring Your Own Number */}
+                        <section style={{ background: 'white', padding: '1.5rem', borderRadius: '16px', border: '1px solid #eee' }}>
+                            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>📱</span> Bring Your Own Number
+                            </h2>
+                            <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+                                Already have a Google Voice number you want to keep? Add it here and callers can be transferred
+                                to your existing number — no need to give out a new one.
+                            </p>
+
+                            {googleVoiceMessage && (
+                                <div style={{
+                                    background: googleVoiceStatus === 'success' ? '#d4edda' : '#f8d7da',
+                                    color: googleVoiceStatus === 'success' ? '#155724' : '#721c24',
+                                    padding: '0.75rem 1rem',
+                                    borderRadius: '8px',
+                                    marginBottom: '1.25rem',
+                                    fontSize: '0.9rem',
+                                    border: `1px solid ${googleVoiceStatus === 'success' ? '#c3e6cb' : '#f5c6cb'}`
+                                }}>
+                                    {googleVoiceMessage}
+                                </div>
+                            )}
+
+                            <div style={{ display: 'grid', gap: '1rem' }}>
+                                <div>
+                                    <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
+                                        Google Voice Number
+                                    </label>
+                                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                                        <input
+                                            type="tel"
+                                            value={googleVoiceNumber}
+                                            onChange={(e) => { setGoogleVoiceNumber(e.target.value); setGoogleVoiceStatus('idle'); }}
+                                            placeholder="(555) 867-5309"
+                                            style={{ flex: 1, minWidth: '180px', padding: '12px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '1rem' }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleSaveGoogleVoice}
+                                            disabled={googleVoiceSaving}
+                                            style={{
+                                                padding: '12px 24px',
+                                                borderRadius: '8px',
+                                                background: googleVoiceStatus === 'success' ? '#28a745' : '#3d84ff',
+                                                color: 'white',
+                                                border: 'none',
+                                                fontWeight: 'bold',
+                                                cursor: googleVoiceSaving ? 'not-allowed' : 'pointer',
+                                                opacity: googleVoiceSaving ? 0.6 : 1,
+                                                whiteSpace: 'nowrap',
+                                            }}
+                                        >
+                                            {googleVoiceSaving ? 'Saving...' : googleVoiceStatus === 'success' ? 'Saved' : 'Save Number'}
+                                        </button>
+                                        {googleVoiceNumber && (
+                                            <button
+                                                type="button"
+                                                onClick={() => { setGoogleVoiceNumber(''); setGoogleVoiceStatus('idle'); setGoogleVoiceMessage(''); }}
+                                                style={{
+                                                    padding: '12px 16px',
+                                                    borderRadius: '8px',
+                                                    background: 'none',
+                                                    border: '1px solid #ddd',
+                                                    color: '#999',
+                                                    cursor: 'pointer',
+                                                    whiteSpace: 'nowrap',
+                                                }}
+                                            >
+                                                Remove
+                                            </button>
+                                        )}
+                                    </div>
+                                    <p style={{ color: '#999', fontSize: '0.8rem', marginTop: '0.5rem' }}>
+                                        US numbers only. Enter 10 digits — we handle the formatting.
+                                    </p>
+                                </div>
+
+                                {googleVoiceNumber && (
+                                    <div style={{ padding: '1rem', background: '#f8f9ff', borderRadius: '12px', border: '1px solid #e0e8ff' }}>
+                                        <p style={{ margin: 0, fontSize: '0.9rem', color: '#3d84ff', fontWeight: 'bold' }}>
+                                            How this works
+                                        </p>
+                                        <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#555' }}>
+                                            When a caller asks to speak with someone or the AI can&apos;t help, they&apos;ll be transferred to {googleVoiceNumber} — so you never miss a lead even if you already have a number you love.
+                                        </p>
+                                    </div>
+                                )}
                             </div>
                         </section>
 

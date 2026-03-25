@@ -119,6 +119,9 @@ class CallMonitor:
             
             print("=" * 80 + "\n")
             
+            call_data["duration"] = duration
+            call_data["end_time"] = datetime.now().isoformat()
+            call_data["end_reason"] = reason
             self.call_history.append(call_data)
             del self.active_calls[call_sid]
     

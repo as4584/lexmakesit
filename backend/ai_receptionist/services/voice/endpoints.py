@@ -31,28 +31,31 @@ router = APIRouter(tags=["voice"])  # prefix moved to main.py
 
 
 @router.post("/voice")
-async def voice_entry(request: Request, CallSid: str = Form(...), From: str = Form(None)):
+async def voice_entry(request: Request, CallSid: str = Form(...), From: str = Form(None), To: str = Form(None)):
     """
     Entry point for incoming calls.
     Connects immediately to OpenAI Realtime API via WebSocket.
+    Passes the 'To' number so the stream can load the correct tenant config.
     """
-    print(f"DEBUG: voice_entry hit with CallSid={CallSid}", flush=True)
-    logger.info(f"Incoming call from {From} (Sid: {CallSid}) - Establishing Realtime Stream")
+    print(f"DEBUG: voice_entry hit with CallSid={CallSid} To={To}", flush=True)
+    logger.info(f"Incoming call from {From} to {To} (Sid: {CallSid}) - Establishing Realtime Stream")
 
     # Optional call monitor integration
     if MONITOR_ENABLED and monitor:
         monitor.log_incoming_call(CallSid, From)
-    
+
     # Initialize cost tracking
     tracker = get_cost_tracker(CallSid)
     tracker.log_inbound_call(duration_seconds=0)
 
     # Build TwiML response for Streaming
     resp = VoiceResponse()
-    
-    # Force public hostname for Twilio
+
+    # Pass the To number as a query param so the WebSocket handler can load the right tenant
     public_host = "receptionist.lexmakesit.com"
-    stream_url = f"wss://{public_host}/twilio/stream"
+    import urllib.parse
+    to_param = urllib.parse.quote(To or "", safe="")
+    stream_url = f"wss://{public_host}/twilio/stream?to={to_param}"
     logger.info(f"Connecting to stream: {stream_url}")
 
     # <Connect><Stream url="..." /></Connect>

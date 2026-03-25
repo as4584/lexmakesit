@@ -25,6 +25,9 @@ class Tenant(Base):
     custom_clone_voice_id = Column(String(255), nullable=True)                 # 1 clone per account
     custom_clone_voice_name = Column(String(255), nullable=True)
 
+    # Google Voice / bring-your-own-number
+    google_voice_number = Column(String(20), nullable=True)
+
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
 

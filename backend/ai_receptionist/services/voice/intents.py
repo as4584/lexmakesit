@@ -6,6 +6,7 @@ Detects user intent and generates appropriate responses.
 
 from typing import Optional, Tuple
 from .business_config import BUSINESS_NAME, SERVICES, HOURS, STAFF
+import ai_receptionist.services.voice.business_config as _bc
 from .messages import get_message
 
 
@@ -30,12 +31,15 @@ def detect_intent(user_input: str, language: str = "en") -> str:
     ]):
         return "availability"
 
-    # Services keywords - expanded
+    # Services keywords
     if any(word in user_input_lower for word in [
         "service", "services", "help with", "do you offer", "can you help", "need help",
-        "what do you do", "what can you", "practice area", "specialize", "handle",
-        "divorce", "custody", "estate", "will", "domestic violence", "family law",
-        "servicio", "servicios", "ofrecen", "pueden ayudar", "qué hacen", "especialidad"
+        "what do you do", "what can you", "specialize", "handle", "offer",
+        "formation", "llc", "incorporate", "business setup", "register", "licensing",
+        "license", "compliance", "website", "web", "app", "application", "software",
+        "ai", "automation", "digital", "email", "infrastructure", "nonprofit",
+        "servicio", "servicios", "ofrecen", "pueden ayudar", "qué hacen", "especialidad",
+        "formación", "licencia", "cumplimiento", "sitio web"
     ]):
         return "services"
 
@@ -144,6 +148,17 @@ def handle_intent(intent: str, language: str = "en", user_input: str = "") -> Tu
         response = get_message("HELP_MENU", language)
         return response, "gather"
 
-    else:  # "other" - Try to help instead of immediately escalating
+    else:  # "other" - use website context if available, otherwise ask for clarification
+        if _bc.WEBSITE_CONTEXT and user_input and len(user_input.strip()) > 3:
+            # Try a simple keyword search in the website content
+            snippets = [
+                line.strip() for line in _bc.WEBSITE_CONTEXT.split(".")
+                if any(word in line.lower() for word in user_input.lower().split()[:5])
+                and len(line.strip()) > 20
+            ]
+            if snippets:
+                answer = snippets[0][:200]
+                response = f"Based on our website: {answer}. Is there anything else I can help you with?" if language == "en" else f"Según nuestro sitio web: {answer}. ¿Puedo ayudarle en algo más?"
+                return response, "gather"
         response = get_message("CLARIFICATION_REQUEST", language)
         return response, "gather"

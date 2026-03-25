@@ -61,6 +61,11 @@ class Settings(BaseSettings):
 
     # ElevenLabs Configuration
     elevenlabs_api_key: Optional[str] = None
+
+    # SendGrid Configuration
+    sendgrid_api: Optional[str] = None
+    app_base_url: str = "https://dashboard.lexmakesit.com"
+    from_email: str = "noreply@lexmakesit.com"
     
     # Application Settings
     log_level: str = "INFO"

@@ -1,10 +1,8 @@
 """
-Business configuration for Carolann M. Aschoff, P.C.
+Business configuration for Innovation Business Development Solutions.
 
-Family law practice in Jersey City, NJ.
-
-Note: Contact information should be loaded from environment variables
-in production. These are defaults for development/testing.
+National business infrastructure firm — formation, licensing, digital systems,
+and compliance, coordinated as one integrated platform across all 50 states.
 """
 
 import logging
@@ -13,41 +11,45 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ===== BUSINESS IDENTITY =====
-BUSINESS_NAME = "Carolann M. Aschoff, P.C."
+BUSINESS_NAME = "Innovation Business Development Solutions"
 
 # ===== SERVICES OFFERED =====
 SERVICES = [
-    {"name": "Divorce and Separation", "price": "varies"},
-    {"name": "Child Custody and Support", "price": "varies"},
-    {"name": "Domestic Violence and Mediation", "price": "varies"},
-    {"name": "Wills and Estate Planning", "price": "varies"},
+    {"name": "Business Formation and LLC Setup", "price": "varies by state"},
+    {"name": "Multi-State Licensing and Compliance", "price": "varies"},
+    {"name": "Website and Growth Infrastructure", "price": "varies"},
+    {"name": "Custom Applications and Software", "price": "varies"},
+    {"name": "AI Systems and Automation", "price": "varies"},
+    {"name": "Digital Communication Setup", "price": "varies"},
 ]
 
 # ===== BUSINESS HOURS =====
 HOURS = {
-    "weekday": "Monday – Friday: 9:00 AM – 5:00 PM",
-    "weekend": "Saturday & Sunday: Closed",
-    "notes": "Evening appointments available by request at our Jersey City office",
+    "weekday": "Monday – Friday: 9:00 AM – 6:00 PM",
+    "weekend": "Saturday: By appointment",
+    "notes": "We serve clients across all 50 states remotely",
 }
 
 # ===== STAFF =====
 STAFF = [
-    {"role": "Founding Attorney", "name": "Carolann M. Aschoff"},
-    {"role": "Associate Attorney", "name": "Annmarie Jensen"},
-    {"role": "Administrative Team", "name": "Experienced support staff"},
+    {"role": "Founder", "name": "Damian"},
+    {"role": "Business Development Team", "name": "Available to assist you"},
 ]
 
 # ===== OFFICE LOCATION(S) =====
-LOCATION = "Jersey City, NJ"
+LOCATION = "Serving all 50 states"
 
 # ===== CONTACT INFO =====
-# These should ideally come from environment variables in production
 PHONE: Optional[str] = None  # Load from settings in production
-EMAIL = "info@aschofflaw.com"
+EMAIL = "info@innovationbusinessservices.com"
 
 # ===== ESCALATION =====
-ESCALATION_CONTACT = "Front Desk"
+ESCALATION_CONTACT = "Business Development Team"
 ESCALATION_PHONE: Optional[str] = None  # Load from settings in production
+
+# ===== WEBSITE CONTEXT (populated by Learn from Website feature) =====
+WEBSITE_CONTEXT: Optional[str] = None
+WEBSITE_URL: Optional[str] = None
 
 
 def get_phone_number() -> str:

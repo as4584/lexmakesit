@@ -5,34 +5,15 @@ import asyncio
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 import aiohttp
 from ai_receptionist.config.settings import get_settings
+from ai_receptionist.services.voice.tenant_configs import get_tenant_config
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["realtime"])
 
 # OpenAI Realtime API Configuration
-OPENAI_MODEL = "gpt-4o-realtime-preview" 
+OPENAI_MODEL = "gpt-4o-realtime-preview"
 VOICE = "shimmer"
-
-# TODO (Phase 2 – ElevenLabs TTS integration):
-# When ready to stream ElevenLabs voices in live calls:
-# 1. Load tenant's voice settings from DB (elevenlabs_voice_id, tts_provider)
-# 2. If tts_provider == 'elevenlabs', use ElevenLabs WebSocket TTS
-#    instead of OpenAI Realtime's built-in TTS.
-# 3. Pipe ElevenLabs audio into Twilio via the same media stream.
-# 4. Keep OpenAI Realtime for STT + LLM, but disable its TTS output.
-# See: ai_receptionist/services/elevenlabs/voice_service.py
-
-# Optimized system instructions for faster connection
-SYSTEM_INSTRUCTIONS = """You are Aria, an AI Receptionist for businesses. Be polite, professional, and concise.
-
-RULES:
-- Always start in English. Switch languages only if caller requests.
-- Keep responses brief (1-3 sentences) unless more detail is needed.
-- You're an AI assistant - be honest if asked.
-- Handle: appointments, messages, basic info, transfers.
-
-Each call is independent. Start fresh every time."""
 
 LOG_EVENT_TYPES = [
     'response.content.done',
@@ -48,11 +29,15 @@ LOG_EVENT_TYPES = [
 @router.websocket("/stream")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    logger.info("Twilio WebSocket connected")
-    
+
+    # Load tenant config from the 'to' query param passed by /twilio/voice
+    to_number = websocket.query_params.get("to", "")
+    tenant = get_tenant_config(to_number)
+    logger.info(f"Twilio WebSocket connected — tenant: {tenant['tenant_id']} (to={to_number})")
+
     settings = get_settings()
     api_key = settings.openai_api_key
-    
+
     logger.info(f"Connecting to OpenAI Realtime API. Key present: {bool(api_key)}")
     
     if not api_key:
@@ -79,7 +64,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     "type": "session.update",
                     "session": {
                         "modalities": ["audio", "text"],
-                        "instructions": SYSTEM_INSTRUCTIONS,
+                        "instructions": tenant["system_instructions"],
                         "voice": VOICE,
                         "input_audio_format": "g711_ulaw",
                         "output_audio_format": "g711_ulaw",
@@ -120,12 +105,12 @@ async def websocket_endpoint(websocket: WebSocket):
                                 
                                 # NOW send the greeting after we have stream_sid
                                 if not greeting_sent:
-                                    logger.info("Triggering initial greeting (after stream start)...")
+                                    logger.info(f"Triggering greeting for {tenant['tenant_id']}...")
                                     await openai_ws.send_json({
                                         "type": "response.create",
                                         "response": {
                                             "modalities": ["audio", "text"],
-                                            "instructions": "Say: Hi, this is Aria. How can I help you?" 
+                                            "instructions": f"Say exactly: {tenant['greeting']}"
                                         }
                                     })
                                     greeting_sent = True

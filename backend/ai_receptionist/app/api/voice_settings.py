@@ -293,3 +293,58 @@ async def get_usage(
         return usage
     except Exception as e:
         raise HTTPException(status_code=502, detail=f"Could not fetch usage: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Google Voice / Bring Your Own Number
+# ---------------------------------------------------------------------------
+
+class GoogleVoiceRequest(BaseModel):
+    google_voice_number: Optional[str] = None  # null to remove
+
+
+@router.put("/google-voice")
+def set_google_voice_number(
+    body: GoogleVoiceRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Save or remove a Google Voice number for this tenant.
+
+    When set, callers can choose to be transferred to this number
+    instead of (or after) speaking to the AI receptionist.
+    """
+    import re
+
+    tenant = _get_tenant(db, user)
+
+    number = body.google_voice_number
+    if number:
+        # Normalize to E.164 — strip formatting, add +1 if needed
+        digits = re.sub(r"\D", "", number)
+        if len(digits) == 10:
+            digits = "1" + digits
+        if len(digits) == 11 and digits.startswith("1"):
+            number = "+" + digits
+        else:
+            raise HTTPException(
+                status_code=422,
+                detail="Please enter a valid US phone number (10 digits)."
+            )
+
+    tenant.google_voice_number = number
+    db.commit()
+
+    logger.info(f"Tenant {tenant.id} set google_voice_number: {number}")
+    return {"ok": True, "google_voice_number": number}
+
+
+@router.get("/google-voice")
+def get_google_voice_number(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return the current Google Voice number for this tenant."""
+    tenant = _get_tenant(db, user)
+    return {"google_voice_number": tenant.google_voice_number}
