@@ -17,7 +17,7 @@ jobs:
         with:
           host: ${{ secrets.BACKEND_HOST }}
           username: ${{ secrets.BACKEND_USER }}
-          key: ${{ secrets.BACKEND_SSH_KEY }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
           source: "backend/"
           target: "/opt/ai-receptionist/"
           strip_components: 1
@@ -27,7 +27,7 @@ jobs:
         with:
           host: ${{ secrets.BACKEND_HOST }}
           username: ${{ secrets.BACKEND_USER }}
-          key: ${{ secrets.BACKEND_SSH_KEY }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
           script: |
             cd /opt/ai-receptionist
             docker compose -f docker-compose.prod.yml build app
