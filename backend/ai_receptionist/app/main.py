@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, Form, HTTPException, Request
 from fastapi.responses import JSONResponse, FileResponse, Response
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from pathlib import Path
 import logging
@@ -20,6 +21,19 @@ logger = logging.getLogger(__name__)
 
 
 app = FastAPI(title="AI Receptionist", version="0.1.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://auth.lexmakesit.com",
+        "https://dashboard.lexmakesit.com",
+        "https://receptionist.lexmakesit.com",
+        "https://api.lexmakesit.com",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Get static directory path
 BASE_DIR = Path(__file__).resolve().parent.parent
