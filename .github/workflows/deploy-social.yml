@@ -7,7 +7,7 @@ on:
       - 'frontend/social/**'
       - 'infra/nginx/social.lexmakesit.com.conf'
       - '.github/workflows/deploy-social.yml'
-  workflow_dispatch:  # allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -16,27 +16,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Copy static social pages to server
+      - name: Copy static pages to server home dir
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.PORTFOLIO_HOST }}
           username: ${{ secrets.PORTFOLIO_USER }}
           key: ${{ secrets.PORTFOLIO_SSH_KEY }}
           source: "frontend/social/"
-          target: "/tmp/social-deploy/"
+          target: "~/antigravity_bundle/apps/social/"
           strip_components: 2
 
-      - name: Copy Nginx config to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.PORTFOLIO_HOST }}
-          username: ${{ secrets.PORTFOLIO_USER }}
-          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
-          source: "infra/nginx/social.lexmakesit.com.conf"
-          target: "/tmp/"
-          strip_components: 2
-
-      - name: Install pages, configure Nginx, issue SSL cert
+      - name: Launch Nginx container for social site
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.PORTFOLIO_HOST }}
@@ -45,39 +35,76 @@ jobs:
           script: |
             set -e
 
-            # ── 1. Deploy static files ───────────────────────────────────────
-            mkdir -p /var/www/social/legal
-            cp -r /tmp/social-deploy/* /var/www/social/
-            chmod -R 755 /var/www/social
+            SOCIAL_DIR="$HOME/antigravity_bundle/apps/social"
 
-            # ── 2. Install Nginx config ──────────────────────────────────────
-            cp /tmp/social.lexmakesit.com.conf /etc/nginx/sites-available/social.lexmakesit.com
-            ln -sf /etc/nginx/sites-available/social.lexmakesit.com \
-                   /etc/nginx/sites-enabled/social.lexmakesit.com
+            # Stop + remove old container if it exists
+            docker rm -f social-web-1 2>/dev/null || true
 
-            # ── 3. Test Nginx config ─────────────────────────────────────────
-            nginx -t
+            # Run Nginx container serving static files on port 8082
+            docker run -d \
+              --name social-web-1 \
+              --restart unless-stopped \
+              -p 127.0.0.1:8082:80 \
+              -v "$SOCIAL_DIR:/usr/share/nginx/html:ro" \
+              nginx:alpine
 
-            # ── 4. Issue/renew SSL cert (certbot) ───────────────────────────
-            # certbot will skip if cert already valid
+            # Verify container is up
+            sleep 2
+            docker inspect social-web-1 --format='Container status: {{.State.Status}}'
+
+            echo "✅ social-web-1 container running on 127.0.0.1:8082"
+
+      - name: Configure host Nginx for social.lexmakesit.com
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          script: |
+            set -e
+
+            # Write Nginx vhost config (proxy to social-web-1 container on 8082)
+            sudo tee /etc/nginx/sites-available/social.lexmakesit.com > /dev/null << 'NGINXCONF'
+            server {
+                listen 80;
+                server_name social.lexmakesit.com;
+
+                # Static pages served via Docker container
+                location / {
+                    proxy_pass http://127.0.0.1:8082;
+                    proxy_set_header Host $host;
+                    proxy_set_header X-Real-IP $remote_addr;
+                }
+
+                # Clean URL rewrites for legal pages
+                location = /legal/terms {
+                    proxy_pass http://127.0.0.1:8082/legal/terms.html;
+                }
+                location = /legal/privacy {
+                    proxy_pass http://127.0.0.1:8082/legal/privacy.html;
+                }
+
+                # Security headers
+                add_header X-Frame-Options "SAMEORIGIN" always;
+                add_header X-Content-Type-Options "nosniff" always;
+            }
+            NGINXCONF
+
+            # Enable site
+            sudo ln -sf /etc/nginx/sites-available/social.lexmakesit.com \
+                        /etc/nginx/sites-enabled/social.lexmakesit.com
+
+            # Test config
+            sudo nginx -t
+
+            # Issue SSL cert (skips if already valid)
             if command -v certbot &>/dev/null; then
-              certbot --nginx -d social.lexmakesit.com \
-                --non-interactive \
-                --agree-tos \
+              sudo certbot --nginx -d social.lexmakesit.com \
+                --non-interactive --agree-tos \
                 --email admin@lexmakesit.com \
-                --redirect \
-                --keep-until-expiring
-            else
-              echo "certbot not found — installing..."
-              apt-get install -y certbot python3-certbot-nginx
-              certbot --nginx -d social.lexmakesit.com \
-                --non-interactive \
-                --agree-tos \
-                --email admin@lexmakesit.com \
-                --redirect
+                --redirect --keep-until-expiring
             fi
 
-            # ── 5. Reload Nginx ──────────────────────────────────────────────
-            systemctl reload nginx
-
-            echo "✅ social.lexmakesit.com deployed successfully"
+            # Reload
+            sudo systemctl reload nginx
+            echo "✅ social.lexmakesit.com is live"
