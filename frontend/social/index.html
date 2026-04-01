@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media Manager — Agentop</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh;padding:40px 24px}
+    .wrap{max-width:860px;margin:0 auto}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;flex-wrap:wrap;gap:12px}
+    h1{font-size:28px;font-weight:800;color:#f1f5f9}
+    .sub{color:#64748b;font-size:14px;margin-top:4px}
+    .badge{background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e;border-radius:9999px;padding:4px 14px;font-size:12px;font-weight:700}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-bottom:28px}
+    .card{background:#1a1a2e;border:1px solid #2d2d4e;border-radius:12px;padding:20px 24px}
+    .card h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700;margin-bottom:16px}
+    .plat{background:#0f0f1a;border:1px solid #2d2d4e;border-radius:10px;padding:14px 18px;margin-bottom:10px}
+    .plat-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+    .plat-name{font-weight:700;font-size:15px}
+    .ok{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:700;background:rgba(34,197,94,0.12);border:1px solid rgba(34,197,94,0.3);color:#22c55e}
+    .no{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:9999px;font-size:11px;font-weight:700;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);color:#ef4444}
+    .setup{background:#1a1a2e;border:1px solid #2d2d4e;border-radius:12px;padding:20px 24px;margin-bottom:28px}
+    .setup h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#64748b;font-weight:700;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;padding:7px 12px;color:#64748b;font-weight:600;border-bottom:1px solid #2d2d4e}
+    td{padding:8px 12px;border-bottom:1px solid #1e1e3a;color:#94a3b8}
+    td code{background:#1e1e3a;padding:2px 6px;border-radius:4px;font-size:12px;color:#a78bfa;font-family:monospace}
+    .btn{display:inline-block;padding:9px 20px;border-radius:8px;font-weight:700;font-size:13px;text-decoration:none;margin-top:16px;margin-right:8px}
+    .btn-purple{background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.4);color:#a78bfa}
+    .btn-gray{background:#1a1a2e;border:1px solid #2d2d4e;color:#64748b}
+    .footer{font-size:13px;color:#475569;text-align:center;margin-top:32px}
+    .footer a{color:#a78bfa;text-decoration:none}
+    .footer a:hover{text-decoration:underline}
+    hr{border:none;border-top:1px solid #1e1e3a;margin:28px 0}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div>
+      <h1>Social Media Manager</h1>
+      <p class="sub">Agentop · 24/7 autonomous posting &amp; analytics</p>
+    </div>
+    <span class="badge">● Live</span>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h2>Platform Status</h2>
+      <div class="plat">
+        <div class="plat-head"><span class="plat-name">TikTok</span><span class="ok">● Connected</span></div>
+        <div style="font-size:12px;color:#475569">Content Posting API · video.publish · video.list</div>
+      </div>
+      <div class="plat">
+        <div class="plat-head"><span class="plat-name">Facebook</span><span class="no">○ Pending</span></div>
+        <div style="font-size:12px;color:#475569">Graph API · Pages</div>
+      </div>
+      <div class="plat">
+        <div class="plat-head"><span class="plat-name">Instagram</span><span class="no">○ Pending</span></div>
+        <div style="font-size:12px;color:#475569">Graph API · Business</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>24/7 Monitoring</h2>
+      <table>
+        <tr><th>Job</th><th>Interval</th></tr>
+        <tr><td>TikTok analytics</td><td>Every 15 min</td></tr>
+        <tr><td>Instagram insights</td><td>Every 30 min</td></tr>
+        <tr><td>Facebook insights</td><td>Every 60 min</td></tr>
+        <tr><td>Viral velocity check</td><td>Every 6 hours</td></tr>
+        <tr><td>Daily report</td><td>Daily 6PM UTC</td></tr>
+        <tr><td>Token expiry check</td><td>Daily 2AM UTC</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="setup">
+    <h2>App Registration URLs</h2>
+    <table>
+      <tr><th>Field</th><th>URL</th><th>Purpose</th></tr>
+      <tr><td>Website URL</td><td><code>https://social.lexmakesit.com</code></td><td>This page</td></tr>
+      <tr><td>Redirect URI</td><td><code>https://social.lexmakesit.com/auth/tiktok/callback</code></td><td>OAuth callback</td></tr>
+      <tr><td>Terms of Service</td><td><code>https://social.lexmakesit.com/legal/terms</code></td><td>ToS page</td></tr>
+      <tr><td>Privacy Policy</td><td><code>https://social.lexmakesit.com/legal/privacy</code></td><td>Privacy page</td></tr>
+    </table>
+    <a href="/auth/tiktok/login" class="btn btn-purple">→ Authorize TikTok</a>
+    <a href="/legal/terms" class="btn btn-gray">Terms of Service</a>
+    <a href="/legal/privacy" class="btn btn-gray">Privacy Policy</a>
+  </div>
+
+  <hr>
+  <div class="footer">
+    <a href="/legal/terms">Terms of Service</a> &nbsp;·&nbsp;
+    <a href="/legal/privacy">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="https://lexmakesit.com">lexmakesit.com</a>
+  </div>
+</div>
+</body>
+</html>

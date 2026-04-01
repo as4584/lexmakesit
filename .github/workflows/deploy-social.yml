@@ -1,0 +1,83 @@
+name: Deploy social.lexmakesit.com
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'frontend/social/**'
+      - 'infra/nginx/social.lexmakesit.com.conf'
+      - '.github/workflows/deploy-social.yml'
+  workflow_dispatch:  # allow manual trigger from GitHub Actions UI
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy static social pages to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          source: "frontend/social/"
+          target: "/tmp/social-deploy/"
+          strip_components: 2
+
+      - name: Copy Nginx config to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          source: "infra/nginx/social.lexmakesit.com.conf"
+          target: "/tmp/"
+          strip_components: 2
+
+      - name: Install pages, configure Nginx, issue SSL cert
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.PORTFOLIO_HOST }}
+          username: ${{ secrets.PORTFOLIO_USER }}
+          key: ${{ secrets.PORTFOLIO_SSH_KEY }}
+          script: |
+            set -e
+
+            # ── 1. Deploy static files ───────────────────────────────────────
+            mkdir -p /var/www/social/legal
+            cp -r /tmp/social-deploy/* /var/www/social/
+            chmod -R 755 /var/www/social
+
+            # ── 2. Install Nginx config ──────────────────────────────────────
+            cp /tmp/social.lexmakesit.com.conf /etc/nginx/sites-available/social.lexmakesit.com
+            ln -sf /etc/nginx/sites-available/social.lexmakesit.com \
+                   /etc/nginx/sites-enabled/social.lexmakesit.com
+
+            # ── 3. Test Nginx config ─────────────────────────────────────────
+            nginx -t
+
+            # ── 4. Issue/renew SSL cert (certbot) ───────────────────────────
+            # certbot will skip if cert already valid
+            if command -v certbot &>/dev/null; then
+              certbot --nginx -d social.lexmakesit.com \
+                --non-interactive \
+                --agree-tos \
+                --email admin@lexmakesit.com \
+                --redirect \
+                --keep-until-expiring
+            else
+              echo "certbot not found — installing..."
+              apt-get install -y certbot python3-certbot-nginx
+              certbot --nginx -d social.lexmakesit.com \
+                --non-interactive \
+                --agree-tos \
+                --email admin@lexmakesit.com \
+                --redirect
+            fi
+
+            # ── 5. Reload Nginx ──────────────────────────────────────────────
+            systemctl reload nginx
+
+            echo "✅ social.lexmakesit.com deployed successfully"

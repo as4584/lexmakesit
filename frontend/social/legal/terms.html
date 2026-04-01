@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service — Agentop Social Media Manager</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e2e8f0;min-height:100vh;padding:48px 24px}
+    .wrap{max-width:760px;margin:0 auto}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:32px}
+    .back{color:#64748b;text-decoration:none;font-size:14px}
+    .badge{background:rgba(167,139,250,0.12);border:1px solid rgba(167,139,250,0.3);color:#a78bfa;border-radius:9999px;padding:3px 12px;font-size:12px;font-weight:600}
+    h1{font-size:36px;font-weight:800;color:#f1f5f9;margin-bottom:8px}
+    h2{font-size:18px;font-weight:700;color:#c4b5fd;margin-bottom:12px}
+    .meta{color:#475569;font-size:14px;margin-bottom:0}
+    hr{border:none;border-top:1px solid #1e1e3a;margin:32px 0}
+    section{margin-bottom:36px}
+    p{color:#94a3b8;line-height:1.8;font-size:15px;margin-bottom:12px}
+    ul{padding-left:24px;margin-bottom:12px}
+    li{color:#94a3b8;line-height:1.8;font-size:15px;margin-bottom:6px}
+    a{color:#a78bfa;text-decoration:none}
+    a:hover{text-decoration:underline}
+    code{background:#1e1e3a;padding:1px 6px;border-radius:4px;font-size:13px;font-family:monospace;color:#c4b5fd}
+    .footer{font-size:13px;color:#475569;text-align:center;margin-top:8px}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <a href="/" class="back">← Back</a>
+    <span class="badge">Legal</span>
+  </div>
+
+  <h1>Terms of Service</h1>
+  <p class="meta">Last updated: March 31, 2026 &nbsp;·&nbsp; Agentop</p>
+  <hr>
+
+  <section>
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using Agentop (the "Service"), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.</p>
+    <p>Agentop is a local-first, autonomous social media management system that connects to third-party platforms including TikTok, Facebook, and Instagram on your behalf using credentials and permissions you explicitly provide.</p>
+  </section>
+
+  <section>
+    <h2>2. Description of Service</h2>
+    <p>Agentop provides the following functionality:</p>
+    <ul>
+      <li>Posting content to connected social media accounts (TikTok, Facebook, Instagram)</li>
+      <li>Reading analytics and performance metrics from connected accounts</li>
+      <li>Scheduling and queuing social media posts</li>
+      <li>Monitoring engagement metrics and generating performance reports</li>
+      <li>Alerting on significant changes in account performance</li>
+    </ul>
+    <p>All actions taken by Agentop are initiated by you or by automated schedules you configure. The Service acts solely as an authorized agent on your behalf.</p>
+  </section>
+
+  <section>
+    <h2>3. Third-Party Platform Terms</h2>
+    <p>By connecting a social media account to Agentop, you represent and warrant that:</p>
+    <ul>
+      <li>You own or have the right to manage the connected account</li>
+      <li>You will comply with TikTok's <a href="https://www.tiktok.com/legal/terms-of-service" target="_blank">Terms of Service</a> and <a href="https://www.tiktok.com/legal/developer-terms-of-service" target="_blank">Developer Terms</a></li>
+      <li>You will comply with Meta's <a href="https://www.facebook.com/terms.php" target="_blank">Terms of Service</a> and <a href="https://developers.facebook.com/terms/" target="_blank">Platform Terms</a></li>
+      <li>Content posted through Agentop complies with all applicable platform community guidelines, including TikTok's requirement to set <code>is_aigc: true</code> for AI-generated content</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>4. Permitted Use</h2>
+    <p>You agree to use the Service only for lawful purposes. You may not:</p>
+    <ul>
+      <li>Post content that violates the terms or community guidelines of any connected platform</li>
+      <li>Use the Service to spam, harass, or engage in inauthentic behavior</li>
+      <li>Attempt to circumvent platform rate limits or API restrictions</li>
+      <li>Use the Service to collect personal data beyond what is necessary for the stated functionality</li>
+      <li>Share your access credentials with unauthorized parties</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>5. Data and Credentials</h2>
+    <p>Agentop stores your social media platform credentials locally on your device or server in environment configuration files. These credentials are never transmitted to any third party other than the respective platform APIs (TikTok, Facebook, Instagram).</p>
+    <p>Analytics data fetched from connected platforms is stored locally and is not shared with any third party.</p>
+    <p>You are solely responsible for securing your environment, access tokens, and any data stored by the Service.</p>
+  </section>
+
+  <section>
+    <h2>6. Content Responsibility</h2>
+    <p>You are solely responsible for all content posted to social media platforms through Agentop. You must ensure that:</p>
+    <ul>
+      <li>Content does not infringe any intellectual property rights</li>
+      <li>AI-generated content is properly disclosed per platform requirements</li>
+      <li>Paid partnerships and sponsored content are disclosed per applicable regulations</li>
+      <li>Content complies with all applicable laws in your jurisdiction</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>7. API Usage and Rate Limits</h2>
+    <p>Agentop uses third-party platform APIs subject to their respective rate limits and usage policies. The Service enforces the following limits:</p>
+    <ul>
+      <li>TikTok: maximum 6 API requests per minute per access token</li>
+      <li>Instagram: maximum 100 posts per 24-hour rolling window</li>
+      <li>Facebook: exponential backoff on rate limit errors (codes 4, 17, 341)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>8. Disclaimers</h2>
+    <p>THE SERVICE IS PROVIDED "AS IS" WITHOUT WARRANTIES OF ANY KIND. AGENTOP IS NOT AFFILIATED WITH, ENDORSED BY, OR SPONSORED BY TIKTOK, META, FACEBOOK, OR INSTAGRAM.</p>
+  </section>
+
+  <section>
+    <h2>9. Limitation of Liability</h2>
+    <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, AGENTOP SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES ARISING FROM YOUR USE OF THE SERVICE.</p>
+  </section>
+
+  <section>
+    <h2>10. Contact</h2>
+    <p>For questions about these Terms, contact: <a href="mailto:legal@lexmakesit.com">legal@lexmakesit.com</a></p>
+  </section>
+
+  <hr>
+  <div class="footer">
+    <a href="/legal/privacy">Privacy Policy</a> &nbsp;·&nbsp;
+    <a href="/">Social Media Dashboard</a> &nbsp;·&nbsp;
+    <a href="https://lexmakesit.com">lexmakesit.com</a>
+  </div>
+</div>
+</body>
+</html>
