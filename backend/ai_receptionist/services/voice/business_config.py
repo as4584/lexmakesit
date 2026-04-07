@@ -1,8 +1,10 @@
 """
-Business configuration for Innovation Business Development Solutions.
+Business configuration for LexMakesIt.
 
-National business infrastructure firm — formation, licensing, digital systems,
-and compliance, coordinated as one integrated platform across all 50 states.
+AI-powered receptionist solutions for businesses.
+
+Note: Contact information should be loaded from environment variables
+in production. These are defaults for development/testing.
 """
 
 import logging
@@ -11,45 +13,43 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # ===== BUSINESS IDENTITY =====
-BUSINESS_NAME = "Innovation Business Development Solutions"
+BUSINESS_NAME = "LexMakesIt"
 
 # ===== SERVICES OFFERED =====
 SERVICES = [
-    {"name": "Business Formation and LLC Setup", "price": "varies by state"},
-    {"name": "Multi-State Licensing and Compliance", "price": "varies"},
-    {"name": "Website and Growth Infrastructure", "price": "varies"},
-    {"name": "Custom Applications and Software", "price": "varies"},
-    {"name": "AI Systems and Automation", "price": "varies"},
-    {"name": "Digital Communication Setup", "price": "varies"},
+    {"name": "AI Receptionist", "price": "Custom plans available"},
+    {"name": "24/7 Call Answering", "price": "Included with AI Receptionist"},
+    {"name": "Appointment Scheduling", "price": "Included with AI Receptionist"},
+    {"name": "Missed Call Recovery", "price": "Included with AI Receptionist"},
+    {"name": "Custom Voice Cloning", "price": "Pro plan"},
+    {"name": "Bilingual Support (EN/ES)", "price": "Included"},
+    {"name": "CRM & Calendar Integration", "price": "Included"},
 ]
 
 # ===== BUSINESS HOURS =====
 HOURS = {
     "weekday": "Monday – Friday: 9:00 AM – 6:00 PM",
-    "weekend": "Saturday: By appointment",
-    "notes": "We serve clients across all 50 states remotely",
+    "weekend": "Saturday: By appointment | Sunday: Closed",
+    "notes": "Our AI Receptionist answers calls 24/7 — even when the office is closed!",
 }
 
 # ===== STAFF =====
 STAFF = [
-    {"role": "Founder", "name": "Damian"},
-    {"role": "Business Development Team", "name": "Available to assist you"},
+    {"role": "Founder & CEO", "name": "Alexander Santiago"},
+    {"role": "AI Receptionist", "name": "Aria (that's me!)"},
 ]
 
 # ===== OFFICE LOCATION(S) =====
-LOCATION = "Serving all 50 states"
+LOCATION = "Career Fair Demo — LexMakesIt"
 
 # ===== CONTACT INFO =====
-PHONE: Optional[str] = None  # Load from settings in production
-EMAIL = "info@innovationbusinessservices.com"
+# These should ideally come from environment variables in production
+PHONE: Optional[str] = "+12298215986"
+EMAIL = "thegamermasterninja@gmail.com"
 
 # ===== ESCALATION =====
-ESCALATION_CONTACT = "Business Development Team"
-ESCALATION_PHONE: Optional[str] = None  # Load from settings in production
-
-# ===== WEBSITE CONTEXT (populated by Learn from Website feature) =====
-WEBSITE_CONTEXT: Optional[str] = None
-WEBSITE_URL: Optional[str] = None
+ESCALATION_CONTACT = "Alexander Santiago"
+ESCALATION_PHONE: Optional[str] = "+12298215986"
 
 
 def get_phone_number() -> str:
