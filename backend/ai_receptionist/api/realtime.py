@@ -1,9 +1,11 @@
 import logging
 import json
 import asyncio
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from typing import Optional
+from fastapi import APIRouter, Query, WebSocket, WebSocketDisconnect
 import aiohttp
 from ai_receptionist.config.settings import get_settings
+from ai_receptionist.core.di import get_tenant_mapping
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +13,7 @@ router = APIRouter(tags=["realtime"])
 
 # OpenAI Realtime API Configuration
 OPENAI_MODEL = "gpt-4o-realtime-preview"
-VOICE = "shimmer"
+_DEFAULT_VOICE = "shimmer"
 
 # TODO (Phase 2 – ElevenLabs TTS integration):
 # When ready to stream ElevenLabs voices in live calls:
@@ -74,12 +76,44 @@ LOG_EVENT_TYPES = [
 
 
 @router.websocket("/stream")
-async def websocket_endpoint(websocket: WebSocket):
+async def websocket_endpoint(
+    websocket: WebSocket,
+    to: Optional[str] = Query(default=None, description="Dialed phone number (E.164)"),
+):
     await websocket.accept()
-    logger.info("Twilio WebSocket connected")
+    logger.info(f"Twilio WebSocket connected (to={to})")
 
     settings = get_settings()
     api_key = settings.openai_api_key
+
+    # --- Per-tenant voice resolution ---
+    voice = _DEFAULT_VOICE
+    tts_provider = "openai"
+    elevenlabs_voice_id: Optional[str] = None
+
+    if to:
+        try:
+            phone_map = get_tenant_mapping()
+            tenant_id = phone_map.get(to)
+            if tenant_id:
+                from ai_receptionist.core.database import get_db_session
+                from ai_receptionist.models.tenant import Tenant
+
+                with get_db_session() as db:
+                    tenant = db.query(Tenant).filter(Tenant.id == tenant_id).first()
+                    if tenant:
+                        tts_provider = tenant.tts_provider or "openai"
+                        voice = tenant.openai_voice or _DEFAULT_VOICE
+                        elevenlabs_voice_id = (
+                            tenant.custom_clone_voice_id or tenant.elevenlabs_voice_id
+                        )
+                        logger.info(
+                            f"Resolved tenant {tenant_id}: tts_provider={tts_provider}, voice={voice}"
+                        )
+            else:
+                logger.warning(f"No tenant found for To number {to}; using defaults")
+        except Exception as exc:
+            logger.warning(f"Tenant lookup failed ({exc}); using defaults")
 
     logger.info(f"Connecting to OpenAI Realtime API. Key present: {bool(api_key)}")
 
@@ -102,15 +136,16 @@ async def websocket_endpoint(websocket: WebSocket):
                 logger.info(f"Connected to OpenAI Realtime API ({OPENAI_MODEL})")
 
                 # Phase 1.2: Force Audio Output First
-                # Enable server-side VAD for automatic turn detection
+                # Enable server-side VAD for automatic turn detection.
+                # When ElevenLabs is the TTS provider, disable OpenAI audio
+                # output entirely — text output only, synthesis handled below.
+                use_elevenlabs = tts_provider == "elevenlabs" and bool(elevenlabs_voice_id)
                 session_update = {
                     "type": "session.update",
                     "session": {
-                        "modalities": ["audio", "text"],
+                        "modalities": ["text"] if use_elevenlabs else ["audio", "text"],
                         "instructions": SYSTEM_INSTRUCTIONS,
-                        "voice": VOICE,
                         "input_audio_format": "g711_ulaw",
-                        "output_audio_format": "g711_ulaw",
                         "turn_detection": {
                             "type": "server_vad",
                             "threshold": 0.5,
@@ -120,8 +155,28 @@ async def websocket_endpoint(websocket: WebSocket):
                         "temperature": 0.7,
                     },
                 }
-                logger.info("Sending session.update...")
+                if not use_elevenlabs:
+                    session_update["session"]["voice"] = voice
+                    session_update["session"]["output_audio_format"] = "g711_ulaw"
+                logger.info(f"Sending session.update (tts_provider={tts_provider})...")
                 await openai_ws.send_json(session_update)
+
+                # Lazy-load ElevenLabs service when needed
+                el_service = None
+                if use_elevenlabs:
+                    try:
+                        from ai_receptionist.services.elevenlabs.voice_service import (
+                            ElevenLabsVoiceService,
+                        )
+                        el_service = ElevenLabsVoiceService()
+                    except Exception as exc:
+                        logger.warning(f"ElevenLabs service init failed ({exc}); falling back to OpenAI TTS")
+                        use_elevenlabs = False
+                        # Re-issue session.update to re-enable OpenAI audio
+                        session_update["session"]["modalities"] = ["audio", "text"]
+                        session_update["session"]["voice"] = voice
+                        session_update["session"]["output_audio_format"] = "g711_ulaw"
+                        await openai_ws.send_json(session_update)
 
                 stream_sid = None
                 greeting_sent = False
@@ -150,11 +205,12 @@ async def websocket_endpoint(websocket: WebSocket):
                                     logger.info(
                                         "Triggering initial greeting (after stream start)..."
                                     )
+                                    greeting_modalities = ["text"] if use_elevenlabs else ["audio", "text"]
                                     await openai_ws.send_json(
                                         {
                                             "type": "response.create",
                                             "response": {
-                                                "modalities": ["audio", "text"],
+                                                "modalities": greeting_modalities,
                                                 "instructions": "Say: Hey there! I'm Aria, the AI Receptionist built by LexMakesIt. Welcome to the career fair! How can I help you today?",
                                             },
                                         }
@@ -172,14 +228,16 @@ async def websocket_endpoint(websocket: WebSocket):
 
                 async def receive_from_openai():
                     nonlocal stream_sid
+                    import base64
+                    accumulated_text: list[str] = []
                     try:
                         async for msg in openai_ws:
                             if msg.type == aiohttp.WSMsgType.TEXT:
                                 response = json.loads(msg.data)
                                 event_type = response.get("type")
 
-                                if event_type == "response.audio.delta":
-                                    # Forward audio to Twilio
+                                if not use_elevenlabs and event_type == "response.audio.delta":
+                                    # Forward OpenAI audio directly to Twilio
                                     audio_delta = response.get("delta")
                                     if audio_delta and stream_sid:
                                         await websocket.send_json(
@@ -189,6 +247,38 @@ async def websocket_endpoint(websocket: WebSocket):
                                                 "media": {"payload": audio_delta},
                                             }
                                         )
+
+                                elif use_elevenlabs and event_type == "response.text.delta":
+                                    # Accumulate text for ElevenLabs synthesis
+                                    delta = response.get("delta", "")
+                                    if delta:
+                                        accumulated_text.append(delta)
+
+                                elif use_elevenlabs and event_type == "response.text.done":
+                                    # Full turn text ready — synthesize with ElevenLabs
+                                    full_text = "".join(accumulated_text).strip()
+                                    accumulated_text.clear()
+                                    if full_text and stream_sid and el_service:
+                                        try:
+                                            audio_bytes = await el_service.synthesize_for_call(
+                                                elevenlabs_voice_id, full_text
+                                            )
+                                            # Encode and send as Twilio media frame(s)
+                                            payload = base64.b64encode(audio_bytes).decode("ascii")
+                                            await websocket.send_json(
+                                                {
+                                                    "event": "media",
+                                                    "streamSid": stream_sid,
+                                                    "media": {"payload": payload},
+                                                }
+                                            )
+                                            logger.debug(
+                                                f"ElevenLabs: sent {len(audio_bytes)} bytes for text={full_text[:40]!r}"
+                                            )
+                                        except Exception as exc:
+                                            logger.error(
+                                                f"ElevenLabs synthesis failed ({exc}); turn dropped"
+                                            )
 
                                 elif event_type == "input_audio_buffer.speech_started":
                                     # INTERRUPTION HANDLING: User started speaking

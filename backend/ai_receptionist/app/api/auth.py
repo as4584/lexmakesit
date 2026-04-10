@@ -171,7 +171,7 @@ def _failed_login_key(email: str) -> str:
 
 def _extract_bearer_token(authorization: Optional[str]) -> str:
     if not authorization or not authorization.lower().startswith("bearer "):
-        raise HTTPException(status_code=401, detail="missing bearer token")
+        raise HTTPException(status_code=401, detail="invalid Authorization header format")
     return authorization.split(" ", 1)[1]
 
 
@@ -274,7 +274,7 @@ def _extract_token_from_request(request: Request, authorization: Optional[str]) 
     cookie_token = request.cookies.get("lex_token")
     if cookie_token:
         return cookie_token
-    raise HTTPException(status_code=401, detail="missing bearer token")
+    raise HTTPException(status_code=401, detail="authentication required")
 
 
 def _cookie_secure(request: Request) -> bool:

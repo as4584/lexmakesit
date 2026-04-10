@@ -56,6 +56,7 @@ class VoiceSelectRequest(BaseModel):
 
 class VoiceSettingsOut(BaseModel):
     tts_provider: str
+    openai_voice: Optional[str] = "shimmer"
     elevenlabs_voice_id: Optional[str] = None
     elevenlabs_voice_name: Optional[str] = None
     elevenlabs_voice_preview_url: Optional[str] = None
@@ -130,6 +131,7 @@ def get_current_voice(
     tenant = _get_tenant(db, user)
     return VoiceSettingsOut(
         tts_provider=tenant.tts_provider or "openai",
+        openai_voice=tenant.openai_voice or "shimmer",
         elevenlabs_voice_id=tenant.elevenlabs_voice_id,
         elevenlabs_voice_name=tenant.elevenlabs_voice_name,
         elevenlabs_voice_preview_url=tenant.elevenlabs_voice_preview_url,
@@ -154,8 +156,7 @@ def select_voice(
     tenant.elevenlabs_voice_id = body.voice_id
     tenant.elevenlabs_voice_name = body.voice_name
     tenant.elevenlabs_voice_preview_url = body.preview_url
-    # Future: uncomment when ready to switch live calls
-    # tenant.tts_provider = "elevenlabs"
+    tenant.tts_provider = "elevenlabs"
     db.commit()
 
     logger.info(f"Tenant {tenant.id} selected voice: {body.voice_name} ({body.voice_id})")
@@ -358,3 +359,34 @@ def get_google_voice_number(
     """Return the current Google Voice number for this tenant."""
     tenant = _get_tenant(db, user)
     return {"google_voice_number": tenant.google_voice_number}
+
+
+# ---------------------------------------------------------------------------
+# OpenAI Voice Selection
+# ---------------------------------------------------------------------------
+
+OPENAI_VOICES = {"alloy", "ash", "coral", "echo", "onyx", "sage", "shimmer", "verse"}
+
+
+class OpenAIVoiceRequest(BaseModel):
+    voice: str
+
+
+@router.put("/openai-voice")
+def select_openai_voice(
+    body: OpenAIVoiceRequest,
+    user: TokenData = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Select an OpenAI built-in voice and switch provider to 'openai'."""
+    if body.voice not in OPENAI_VOICES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown OpenAI voice: {body.voice}. Choose from: {', '.join(sorted(OPENAI_VOICES))}",
+        )
+    tenant = _get_tenant(db, user)
+    tenant.openai_voice = body.voice
+    tenant.tts_provider = "openai"
+    db.commit()
+    logger.info(f"Tenant {tenant.id} set openai_voice: {body.voice}")
+    return {"ok": True, "openai_voice": body.voice}

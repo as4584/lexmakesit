@@ -195,6 +195,33 @@ class ElevenLabsVoiceService:
             resp.raise_for_status()
             return resp.content
 
+    async def synthesize_for_call(self, voice_id: str, text: str) -> bytes:
+        """Synthesize speech for a live Twilio call.
+
+        Returns raw audio encoded as ulaw_8000 (G.711 µ-law, 8 kHz) — the
+        exact format Twilio's media stream expects — so no codec conversion
+        is required before forwarding frames.
+
+        Falls back to mp3_44100 if ulaw_8000 is unavailable for the model.
+        """
+        payload: Dict[str, Any] = {
+            "text": text,
+            "model_id": "eleven_turbo_v2",
+            "voice_settings": {
+                "stability": 0.5,
+                "similarity_boost": 0.75,
+            },
+        }
+        async with httpx.AsyncClient(timeout=30) as client:
+            resp = await client.post(
+                self._url(f"/text-to-speech/{voice_id}/stream"),
+                headers={**self._headers(), "Content-Type": "application/json"},
+                json=payload,
+                params={"output_format": "ulaw_8000"},
+            )
+            resp.raise_for_status()
+            return resp.content
+
     # -- Usage / Quota --
 
     async def get_usage(self) -> Dict[str, Any]:

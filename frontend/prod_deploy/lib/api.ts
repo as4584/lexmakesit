@@ -32,6 +32,12 @@ export async function safeFetch<T = unknown>(
     const parsed = raw ? JSON.parse(raw) : null;
 
     if (!response.ok) {
+        if (response.status === 401) {
+            if (typeof window !== 'undefined') {
+                window.location.href = 'https://auth.lexmakesit.com';
+            }
+            throw new Error('session_expired');
+        }
         const message = parsed?.detail || parsed?.message || `HTTP ${response.status}`;
         throw new Error(message);
     }

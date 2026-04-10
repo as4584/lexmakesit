@@ -74,6 +74,8 @@ api.lexmakesit.com {
 }
 
 # Auth Frontend (SPA served by separate container; source not in this repo)
+# Auth Frontend (SPA served by separate container; source not in this repo)
+# Auth Frontend (SPA served by separate container; source not in this repo)
 auth.lexmakesit.com {
     import security_headers
 
@@ -86,6 +88,23 @@ auth.lexmakesit.com {
 
     log {
         output file /var/log/caddy/auth.log
+        format json
+    }
+}
+
+# Dashboard (settings, voice, business management)
+dashboard.lexmakesit.com {
+    import security_headers
+
+    reverse_proxy dashboard-frontend.internal:3000 {
+        lb_policy random
+        health_uri /
+        health_interval 15s
+        health_timeout 5s
+    }
+
+    log {
+        output file /var/log/caddy/dashboard.log
         format json
     }
 }
