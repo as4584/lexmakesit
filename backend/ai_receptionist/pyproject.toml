@@ -6,12 +6,7 @@ authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [
-  { include = "app" },
-  { include = "core" },
-  { include = "services" },
-  { include = "models" },
-  { include = "db" },
-  { include = "workers" },
+  { include = "ai_receptionist", from = ".." },
 ]
 
 [tool.poetry.dependencies]
@@ -48,8 +43,6 @@ types-requests = "^2.32.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = [".."]
-pythonpath = ["."]
 addopts = "-q"
 
 [tool.ruff]
