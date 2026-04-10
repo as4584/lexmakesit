@@ -11,10 +11,4 @@ __author__ = "AI Receptionist Team"
 from ai_receptionist.config import get_settings, Settings
 from ai_receptionist.agent import ConversationBot, ToolCall
 
-__all__ = [
-    "get_settings",
-    "Settings",
-    "ConversationBot",
-    "ToolCall",
-    "__version__"
-]
+__all__ = ["get_settings", "Settings", "ConversationBot", "ToolCall", "__version__"]

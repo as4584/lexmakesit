@@ -20,14 +20,15 @@ class VectorStore(Protocol):
     Single Responsibility: expose retrieval by tenant namespace.
     """
 
-    def query(self, tenant_id: str, text: str, top_k: int = 5) -> List[Dict[str, Any]]:
-        ...
+    def query(self, tenant_id: str, text: str, top_k: int = 5) -> List[Dict[str, Any]]: ...
 
 
 class NoopVectorStore:
     """Fallback store used when no backend is configured."""
 
-    def query(self, tenant_id: str, text: str, top_k: int = 5) -> List[Dict[str, Any]]:  # noqa: D401
+    def query(
+        self, tenant_id: str, text: str, top_k: int = 5
+    ) -> List[Dict[str, Any]]:  # noqa: D401
         return []
 
 
@@ -78,13 +79,18 @@ class ConcreteVectorStore:
     def from_env(cls) -> "ConcreteVectorStore":
         import os
 
-        return cls(index_name=os.getenv("PINECONE_INDEX", "receptionist-index"), api_key=os.getenv("PINECONE_API_KEY"))
+        return cls(
+            index_name=os.getenv("PINECONE_INDEX", "receptionist-index"),
+            api_key=os.getenv("PINECONE_API_KEY"),
+        )
 
 
 class PromptTemplate:
     """Template Method for assembling the prompt text."""
 
-    def build(self, tenant_config: Dict[str, Any], user_text: str, retrieved: List[Dict[str, Any]]) -> str:
+    def build(
+        self, tenant_config: Dict[str, Any], user_text: str, retrieved: List[Dict[str, Any]]
+    ) -> str:
         header = self._build_header(tenant_config)
         guidance = self._build_guidance(tenant_config)
         context = self._build_context(retrieved)
@@ -99,16 +105,12 @@ class PromptTemplate:
         return (
             f"You are the AI receptionist for {tenant_name}.\n"
             f"Business hours: {hours}.\n"
-            f"Cancellation policy: {policy}.\n"
-            + (f"Top FAQs:\n- {faqs_str}\n" if faqs_str else "")
+            f"Cancellation policy: {policy}.\n" + (f"Top FAQs:\n- {faqs_str}\n" if faqs_str else "")
         )
 
     def _build_guidance(self, tenant_config: Dict[str, Any]) -> str:
         booking_rules = tenant_config.get("booking_rules", "")
-        return (
-            "Follow these booking rules strictly.\n"
-            f"Booking rules: {booking_rules}"
-        )
+        return "Follow these booking rules strictly.\n" f"Booking rules: {booking_rules}"
 
     def _build_context(self, retrieved: List[Dict[str, Any]]) -> str:
         if not retrieved:

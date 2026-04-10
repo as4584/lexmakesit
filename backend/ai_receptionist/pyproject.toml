@@ -6,12 +6,7 @@ authors = ["Your Name <you@example.com>"]
 license = "MIT"
 readme = "README.md"
 packages = [
-  { include = "app" },
-  { include = "core" },
-  { include = "services" },
-  { include = "models" },
-  { include = "db" },
-  { include = "workers" },
+  { include = "ai_receptionist", from = ".." },
 ]
 
 [tool.poetry.dependencies]
@@ -30,6 +25,7 @@ alembic = "^1.13"
 psycopg2-binary = "^2.9"
 # Auth
 PyJWT = "^2.10"
+cryptography = "^42.0"
 passlib = { version = "^1.7", extras = ["bcrypt"] }
 bcrypt = "^4.0"
 # Cache
@@ -48,7 +44,6 @@ types-requests = "^2.32.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
 addopts = "-q"
 
 [tool.ruff]

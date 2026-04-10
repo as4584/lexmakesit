@@ -7,8 +7,7 @@ from typing import Protocol
 class ReceptionLogRepository(Protocol):
     """Port for persisting reception events/logs."""
 
-    def save_event(self, event: dict) -> None:
-        ...
+    def save_event(self, event: dict) -> None: ...
 
 
 @dataclass

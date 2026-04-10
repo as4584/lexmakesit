@@ -22,7 +22,9 @@ class VoiceSession:
     def add_turn(self, user_input: str, bot_response: str) -> None:
         """Add a conversation turn."""
         self.turn_count += 1
-        self.conversation_history.append({"user": user_input, "bot": bot_response, "turn": self.turn_count})
+        self.conversation_history.append(
+            {"user": user_input, "bot": bot_response, "turn": self.turn_count}
+        )
 
     def get_last_user_input(self) -> Optional[str]:
         """Get the last thing the user said."""

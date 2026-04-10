@@ -49,6 +49,7 @@ def set_plan(
     # Persist plan to DB (best-effort – table may not exist yet)
     try:
         from ai_receptionist.models.tenant import Tenant
+
         tenant = db.query(Tenant).get(tenant_id)
         if tenant:
             tenant.plan = plan
@@ -60,14 +61,24 @@ def set_plan(
 
 
 @router.put("/tenants/{tenant_id}/flags/{flag}")
-def set_flag(tenant_id: str, flag: str, body: Dict[str, bool], svc: FeatureFlagService = Depends(get_feature_flag_service), _: Dict = Depends(_verify_admin_jwt)):
+def set_flag(
+    tenant_id: str,
+    flag: str,
+    body: Dict[str, bool],
+    svc: FeatureFlagService = Depends(get_feature_flag_service),
+    _: Dict = Depends(_verify_admin_jwt),
+):
     enable = bool((body or {}).get("enable"))
     flags = svc.set_tenant_flag(tenant_id, flag, enable, admin_user="api")
     return {"ok": True, "tenant": tenant_id, "flag": flag, "enable": enable, "flags": flags}
 
 
 @router.get("/tenants/{tenant_id}/flags")
-def show_flags(tenant_id: str, svc: FeatureFlagService = Depends(get_feature_flag_service), _: Dict = Depends(_verify_admin_jwt)):
+def show_flags(
+    tenant_id: str,
+    svc: FeatureFlagService = Depends(get_feature_flag_service),
+    _: Dict = Depends(_verify_admin_jwt),
+):
     return svc.get_effective_flags(tenant_id)
 
 
@@ -93,6 +104,7 @@ def provision_phone_number(
 
     # Verify tenant exists
     from ai_receptionist.models.tenant import Tenant
+
     tenant = db.query(Tenant).get(tenant_id)
     if not tenant:
         raise HTTPException(status_code=404, detail=f"tenant '{tenant_id}' not found")
@@ -120,6 +132,7 @@ def provision_phone_number(
 
     # Persist in DB
     from ai_receptionist.models.phone_number import PhoneNumber
+
     pn = PhoneNumber(
         tenant_id=tenant_id,
         phone_number=purchased.phone_number,

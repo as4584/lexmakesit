@@ -1,4 +1,3 @@
-
 import logging
 import json
 import asyncio
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["realtime"])
 
 # OpenAI Realtime API Configuration
-OPENAI_MODEL = "gpt-4o-realtime-preview" 
+OPENAI_MODEL = "gpt-4o-realtime-preview"
 VOICE = "shimmer"
 
 # TODO (Phase 2 – ElevenLabs TTS integration):
@@ -63,26 +62,27 @@ RULES:
 - Sound excited about the tech — you ARE the product."""
 
 LOG_EVENT_TYPES = [
-    'response.content.done',
-    'rate_limits.updated',
-    'response.done',
-    'input_audio_buffer.committed',
-    'input_audio_buffer.speech_stopped',
-    'input_audio_buffer.speech_started',
-    'session.created',
-    'response.cancelled'
+    "response.content.done",
+    "rate_limits.updated",
+    "response.done",
+    "input_audio_buffer.committed",
+    "input_audio_buffer.speech_stopped",
+    "input_audio_buffer.speech_started",
+    "session.created",
+    "response.cancelled",
 ]
+
 
 @router.websocket("/stream")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     logger.info("Twilio WebSocket connected")
-    
+
     settings = get_settings()
     api_key = settings.openai_api_key
-    
+
     logger.info(f"Connecting to OpenAI Realtime API. Key present: {bool(api_key)}")
-    
+
     if not api_key:
         logger.critical("OpenAI API Key is missing! Cannot connect to Realtime API.")
         await websocket.close(code=1008)
@@ -96,11 +96,11 @@ async def websocket_endpoint(websocket: WebSocket):
         }
         url = f"wss://api.openai.com/v1/realtime?model={OPENAI_MODEL}"
         logger.info(f"OpenAI WSS URL: {url}")
-        
+
         try:
             async with session.ws_connect(url, headers=headers) as openai_ws:
                 logger.info(f"Connected to OpenAI Realtime API ({OPENAI_MODEL})")
-                
+
                 # Phase 1.2: Force Audio Output First
                 # Enable server-side VAD for automatic turn detection
                 session_update = {
@@ -115,14 +115,14 @@ async def websocket_endpoint(websocket: WebSocket):
                             "type": "server_vad",
                             "threshold": 0.5,
                             "prefix_padding_ms": 200,
-                            "silence_duration_ms": 400
+                            "silence_duration_ms": 400,
                         },
                         "temperature": 0.7,
-                    }
+                    },
                 }
                 logger.info("Sending session.update...")
                 await openai_ws.send_json(session_update)
-                
+
                 stream_sid = None
                 greeting_sent = False
 
@@ -132,30 +132,33 @@ async def websocket_endpoint(websocket: WebSocket):
                         async for message in websocket.iter_text():
                             data = json.loads(message)
                             event_type = data.get("event")
-                            
+
                             if event_type == "media":
                                 # Forward audio to OpenAI
-                                # Only forward if we have established connection? 
+                                # Only forward if we have established connection?
                                 # Realtime API accepts buffer append anytime.
                                 audio_payload = data["media"]["payload"]
-                                await openai_ws.send_json({
-                                    "type": "input_audio_buffer.append",
-                                    "audio": audio_payload
-                                })
+                                await openai_ws.send_json(
+                                    {"type": "input_audio_buffer.append", "audio": audio_payload}
+                                )
                             elif event_type == "start":
                                 stream_sid = data["start"]["streamSid"]
                                 logger.info(f"Stream started: {stream_sid}")
-                                
+
                                 # NOW send the greeting after we have stream_sid
                                 if not greeting_sent:
-                                    logger.info("Triggering initial greeting (after stream start)...")
-                                    await openai_ws.send_json({
-                                        "type": "response.create",
-                                        "response": {
-                                            "modalities": ["audio", "text"],
-                                            "instructions": "Say: Hey there! I'm Aria, the AI Receptionist built by LexMakesIt. Welcome to the career fair! How can I help you today?"
+                                    logger.info(
+                                        "Triggering initial greeting (after stream start)..."
+                                    )
+                                    await openai_ws.send_json(
+                                        {
+                                            "type": "response.create",
+                                            "response": {
+                                                "modalities": ["audio", "text"],
+                                                "instructions": "Say: Hey there! I'm Aria, the AI Receptionist built by LexMakesIt. Welcome to the career fair! How can I help you today?",
+                                            },
                                         }
-                                    })
+                                    )
                                     greeting_sent = True
                             elif event_type == "stop":
                                 logger.info("Stream stopped from Twilio side")
@@ -174,45 +177,42 @@ async def websocket_endpoint(websocket: WebSocket):
                             if msg.type == aiohttp.WSMsgType.TEXT:
                                 response = json.loads(msg.data)
                                 event_type = response.get("type")
-                                
+
                                 if event_type == "response.audio.delta":
                                     # Forward audio to Twilio
                                     audio_delta = response.get("delta")
                                     if audio_delta and stream_sid:
-                                        await websocket.send_json({
-                                            "event": "media",
-                                            "streamSid": stream_sid,
-                                            "media": {
-                                                "payload": audio_delta
+                                        await websocket.send_json(
+                                            {
+                                                "event": "media",
+                                                "streamSid": stream_sid,
+                                                "media": {"payload": audio_delta},
                                             }
-                                        })
-                                        
+                                        )
+
                                 elif event_type == "input_audio_buffer.speech_started":
                                     # INTERRUPTION HANDLING: User started speaking
                                     # Cancel any ongoing AI response immediately
                                     logger.info("User interrupted - cancelling AI response")
-                                    await openai_ws.send_json({
-                                        "type": "response.cancel"
-                                    })
+                                    await openai_ws.send_json({"type": "response.cancel"})
                                     # Clear Twilio's audio buffer to stop playback
                                     if stream_sid:
-                                        await websocket.send_json({
-                                            "event": "clear",
-                                            "streamSid": stream_sid
-                                        })
-                                        
+                                        await websocket.send_json(
+                                            {"event": "clear", "streamSid": stream_sid}
+                                        )
+
                                 elif event_type == "response.cancelled":
                                     logger.info("AI response cancelled due to interruption")
-                                    
+
                                 elif event_type == "response.audio.done":
                                     logger.debug("AI finished speaking")
-                                    
+
                                 elif event_type == "error":
                                     logger.error(f"OpenAI Error: {response}")
-                                    
+
                                 elif event_type in LOG_EVENT_TYPES:
                                     logger.debug(f"OpenAI Event: {event_type}")
-                                    
+
                             elif msg.type == aiohttp.WSMsgType.ERROR:
                                 logger.error("OpenAI WebSocket connection closed with error")
                                 break
@@ -224,6 +224,6 @@ async def websocket_endpoint(websocket: WebSocket):
 
         except Exception as e:
             logger.error(f"Failed to connect to OpenAI or runtime error: {e}")
-            # Try to inform Twilio? 
+            # Try to inform Twilio?
             # Usually if WS closes, Twilio call ends or proceeds to next TwiML
             await websocket.close()

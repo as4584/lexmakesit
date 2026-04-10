@@ -6,13 +6,13 @@ Reads SENDGRID_API and FROM_EMAIL from settings/environment.
 """
 
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
 
 def _get_settings():
     from ai_receptionist.config.settings import get_settings
+
     return get_settings()
 
 

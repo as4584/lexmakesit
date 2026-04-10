@@ -23,11 +23,11 @@ class BillingRepository(Protocol):
     In a real implementation, this would use an async DB client and proper schemas.
     """
 
-    def add_usage(self, tenant_id: str, minutes: int, ts: Optional[datetime] = None) -> None:
-        ...
+    def add_usage(self, tenant_id: str, minutes: int, ts: Optional[datetime] = None) -> None: ...
 
-    def get_usage_for_month(self, tenant_id: str, year: int, month: int) -> List[Tuple[datetime, int]]:
-        ...
+    def get_usage_for_month(
+        self, tenant_id: str, year: int, month: int
+    ) -> List[Tuple[datetime, int]]: ...
 
     def get_rate_plan(self, tenant_id: str) -> Dict[str, Any]:
         """Return plan config: { 'mrc': Decimal, 'rate_per_minute': Decimal, 'currency': 'usd' }"""
@@ -47,13 +47,11 @@ class InMemoryBillingRepository:
         ts = ts or datetime.now(timezone.utc)
         self.usage.setdefault(tenant_id, []).append((ts, minutes))
 
-    def get_usage_for_month(self, tenant_id: str, year: int, month: int) -> List[Tuple[datetime, int]]:
+    def get_usage_for_month(
+        self, tenant_id: str, year: int, month: int
+    ) -> List[Tuple[datetime, int]]:
         events = self.usage.get(tenant_id, [])
-        return [
-            (ts, mins)
-            for (ts, mins) in events
-            if ts.year == year and ts.month == month
-        ]
+        return [(ts, mins) for (ts, mins) in events if ts.year == year and ts.month == month]
 
     def get_rate_plan(self, tenant_id: str) -> Dict[str, Any]:
         return self.plans.get(
@@ -65,8 +63,7 @@ class InMemoryBillingRepository:
 class StripeClient(Protocol):
     """Abstraction over Stripe for DI and testability."""
 
-    def create_invoice(self, customer_id: str, amount_cents: int, description: str) -> str:
-        ...
+    def create_invoice(self, customer_id: str, amount_cents: int, description: str) -> str: ...
 
 
 @dataclass
@@ -100,7 +97,9 @@ class BillingService:
             return
         self.repo.add_usage(tenant_id, minutes)
 
-    def compute_monthly_bill(self, tenant_id: str, when: Optional[datetime] = None) -> Dict[str, Any]:
+    def compute_monthly_bill(
+        self, tenant_id: str, when: Optional[datetime] = None
+    ) -> Dict[str, Any]:
         when = when or datetime.now(timezone.utc)
         plan = self.repo.get_rate_plan(tenant_id)
         mrc: Decimal = plan.get("mrc", Decimal("0.00"))
@@ -110,7 +109,9 @@ class BillingService:
         events = self.repo.get_usage_for_month(tenant_id, when.year, when.month)
         total_minutes = sum(mins for _, mins in events)
 
-        usage_cost = (rate * Decimal(total_minutes)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        usage_cost = (rate * Decimal(total_minutes)).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
         total = (mrc + usage_cost).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
         return {
@@ -128,7 +129,9 @@ class BillingService:
     def create_invoice(self, tenant_id: str, when: Optional[datetime] = None) -> Dict[str, Any]:
         bill = self.compute_monthly_bill(tenant_id, when=when)
         amount_decimal = Decimal(bill["total"])  # already quantized to 2 decimals
-        amount_cents = int((amount_decimal * Decimal("100")).to_integral_value(rounding=ROUND_HALF_UP))
+        amount_cents = int(
+            (amount_decimal * Decimal("100")).to_integral_value(rounding=ROUND_HALF_UP)
+        )
 
         # In a real app, lookup stripe customer id from DB/config
         customer_id = None
@@ -137,7 +140,9 @@ class BillingService:
         customer_id = customer_id or f"customer_{tenant_id}"
 
         description = f"AI Receptionist monthly invoice {bill['year']}-{bill['month']:02d}"
-        invoice_id = self.stripe.create_invoice(customer_id=customer_id, amount_cents=amount_cents, description=description)
+        invoice_id = self.stripe.create_invoice(
+            customer_id=customer_id, amount_cents=amount_cents, description=description
+        )
         return {
             "invoice_id": invoice_id,
             "amount_cents": amount_cents,

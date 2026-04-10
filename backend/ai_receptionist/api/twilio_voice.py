@@ -7,7 +7,7 @@ and returns TwiML responses for Twilio to speak back to the caller.
 
 import logging
 from typing import Optional
-from fastapi import APIRouter, Form, Request, Response, Depends
+from fastapi import APIRouter, Form, Request, Depends
 from fastapi.responses import Response as FastAPIResponse
 
 from ai_receptionist import ConversationBot, get_settings
@@ -26,14 +26,14 @@ async def handle_voice_call(
     To: Optional[str] = Form(None),
     SpeechResult: Optional[str] = Form(None),
     Confidence: Optional[float] = Form(None),
-    settings: Settings = Depends(get_settings)
+    settings: Settings = Depends(get_settings),
 ) -> FastAPIResponse:
     """
     Twilio Voice webhook endpoint.
-    
+
     Receives incoming voice calls, processes caller speech with ConversationBot,
     and returns TwiML XML for Twilio to speak the AI response.
-    
+
     Args:
         request: FastAPI request object
         CallSid: Twilio call identifier
@@ -42,38 +42,40 @@ async def handle_voice_call(
         SpeechResult: Transcribed speech from caller (optional)
         Confidence: Speech recognition confidence (optional)
         settings: Application settings
-        
+
     Returns:
         TwiML XML response with <Say> and <Gather> for continuing conversation
     """
-    
+
     logger.info(
         f"Incoming call - CallSid: {CallSid}, From: {From}, "
         f"Speech: {SpeechResult or 'None'}, Confidence: {Confidence}"
     )
-    
+
     # Initialize conversation bot
     bot = ConversationBot()
-    
+
     # Handle first call (no speech yet)
     if not SpeechResult:
         greeting = "Hello! Thank you for calling. How can I help you today?"
         logger.info(f"New call - sending greeting: {greeting}")
         twiml = _create_twiml_response(greeting)
         return _twiml_response(twiml)
-    
+
     # Process caller's speech
     try:
         logger.info(f"Processing speech from {From}: '{SpeechResult}'")
         ai_response = bot.handle_user_message(SpeechResult)
         logger.info(f"AI response: {ai_response}")
-        
+
         twiml = _create_twiml_response(ai_response)
         return _twiml_response(twiml)
-        
+
     except Exception as e:
         logger.error(f"Error processing call {CallSid}: {e}", exc_info=True)
-        error_message = "I apologize, but I'm having technical difficulties. Please try again later."
+        error_message = (
+            "I apologize, but I'm having technical difficulties. Please try again later."
+        )
         twiml = _create_twiml_response(error_message, continue_listening=False)
         return _twiml_response(twiml)
 
@@ -81,11 +83,11 @@ async def handle_voice_call(
 def _create_twiml_response(message: str, continue_listening: bool = True) -> str:
     """
     Create TwiML XML response with <Say> and optional <Gather> for speech input.
-    
+
     Args:
         message: Text for Twilio to speak
         continue_listening: Whether to continue listening for more speech
-        
+
     Returns:
         TwiML XML string
     """
@@ -103,22 +105,18 @@ def _create_twiml_response(message: str, continue_listening: bool = True) -> str
     <Say voice="Polly.Joanna">{message}</Say>
     <Hangup/>
 </Response>"""
-    
+
     return twiml
 
 
 def _twiml_response(twiml_content: str) -> FastAPIResponse:
     """
     Create FastAPI Response with proper TwiML content type.
-    
+
     Args:
         twiml_content: TwiML XML string
-        
+
     Returns:
         FastAPI Response with application/xml content type
     """
-    return FastAPIResponse(
-        content=twiml_content,
-        media_type="application/xml",
-        status_code=200
-    )
+    return FastAPIResponse(content=twiml_content, media_type="application/xml", status_code=200)

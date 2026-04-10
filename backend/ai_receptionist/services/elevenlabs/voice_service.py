@@ -30,9 +30,9 @@ ELEVENLABS_BASE = "https://api.elevenlabs.io/v1"
 class VoiceInfo:
     voice_id: str
     name: str
-    category: str                # e.g. "premade", "cloned", "professional"
+    category: str  # e.g. "premade", "cloned", "professional"
     description: Optional[str]
-    labels: Dict[str, str]       # {"accent": "american", "gender": "female", …}
+    labels: Dict[str, str]  # {"accent": "american", "gender": "female", …}
     preview_url: Optional[str]
 
     def to_dict(self) -> Dict[str, Any]:
@@ -89,14 +89,16 @@ class ElevenLabsVoiceService:
 
         voices: List[VoiceInfo] = []
         for v in data.get("voices", []):
-            voices.append(VoiceInfo(
-                voice_id=v["voice_id"],
-                name=v["name"],
-                category=v.get("category", "premade"),
-                description=v.get("description"),
-                labels=v.get("labels") or {},
-                preview_url=v.get("preview_url"),
-            ))
+            voices.append(
+                VoiceInfo(
+                    voice_id=v["voice_id"],
+                    name=v["name"],
+                    category=v.get("category", "premade"),
+                    description=v.get("description"),
+                    labels=v.get("labels") or {},
+                    preview_url=v.get("preview_url"),
+                )
+            )
         return voices
 
     async def get_voice(self, voice_id: str) -> VoiceInfo:
@@ -120,7 +122,9 @@ class ElevenLabsVoiceService:
 
     # -- Instant Voice Clone --
 
-    async def clone_voice(self, name: str, audio_bytes: bytes, filename: str = "clip.mp3") -> VoiceInfo:
+    async def clone_voice(
+        self, name: str, audio_bytes: bytes, filename: str = "clip.mp3"
+    ) -> VoiceInfo:
         """Create an instant voice clone from an audio file (30 s – 5 min).
 
         Returns:
@@ -164,7 +168,11 @@ class ElevenLabsVoiceService:
 
     # -- TTS Preview --
 
-    async def generate_preview(self, voice_id: str, text: str = "Hi, this is your AI receptionist. How can I help you today?") -> bytes:
+    async def generate_preview(
+        self,
+        voice_id: str,
+        text: str = "Hi, this is your AI receptionist. How can I help you today?",
+    ) -> bytes:
         """Generate a short TTS clip (returns raw mp3 bytes).
 
         Uses eleven_turbo_v2 for lowest latency.  Keep *text* short

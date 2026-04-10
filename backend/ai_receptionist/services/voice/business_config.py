@@ -55,15 +55,16 @@ ESCALATION_PHONE: Optional[str] = "+12298215986"
 def get_phone_number() -> str:
     """
     Get business phone number, with fallback to environment.
-    
+
     Returns:
         Phone number string
     """
     if PHONE:
         return PHONE
-    
+
     try:
         from ai_receptionist.config import get_settings
+
         settings = get_settings()
         return settings.twilio_phone_number or "Contact office"
     except Exception as e:
@@ -74,11 +75,11 @@ def get_phone_number() -> str:
 def get_escalation_phone() -> str:
     """
     Get escalation phone number, with fallback to environment.
-    
+
     Returns:
         Escalation phone number string
     """
     if ESCALATION_PHONE:
         return ESCALATION_PHONE
-    
+
     return get_phone_number()  # Default to main phone

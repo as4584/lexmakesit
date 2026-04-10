@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Depends, Form, Request
-from fastapi.responses import JSONResponse, FileResponse, RedirectResponse
+from fastapi import FastAPI, Depends, Request
+from fastapi.responses import JSONResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 import logging
@@ -23,9 +23,11 @@ STATIC_DIR = BASE_DIR / "static"
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
+
 @app.get("/health")
 def health(settings: Settings = Depends(get_settings)):
     return {"status": "ok", "env": settings.app_env}
+
 
 # Serve the ChatGPT-style UI at root
 @app.get("/")
@@ -35,24 +37,27 @@ def root():
         return FileResponse(str(html_path))
     return JSONResponse({"name": "ai-receptionist", "version": "0.1.0"})
 
+
 # --- Business/Onboarding Endpoints ---
 @app.post("/api/business")
 @app.post("/business")
 async def create_business_endpoint(request: Request):
     try:
         data = await request.json()
-    except:
+    except Exception:
         data = {}
-    
+
     logger.info(f"Creating business: {data}")
     # Simulate DB save
     return {
         "id": "demo-biz-123",
         "name": data.get("name", "Demo Business"),
-        "phone_number": data.get("phone_number") or os.getenv("TWILIO_PHONE_NUMBER", "+12298215986"),
+        "phone_number": data.get("phone_number")
+        or os.getenv("TWILIO_PHONE_NUMBER", "+12298215986"),
         "timezone": data.get("timezone", "America/New_York"),
-        "status": "active"
+        "status": "active",
     }
+
 
 @app.get("/api/business/me")
 @app.get("/business/me")
@@ -62,16 +67,28 @@ async def get_my_business():
         "name": "Lex Personal",
         "phone_number": os.getenv("TWILIO_PHONE_NUMBER", "+12298215986"),
         "timezone": "America/New_York",
-        "google_calendar_connected": True
+        "google_calendar_connected": True,
     }
+
 
 @app.get("/api/business/calls")
 @app.get("/business/calls")
 async def get_business_calls():
     return [
-        {"from_number": "+15551234567", "status": "completed", "duration": 120, "created_at": "2026-01-19T10:00:00Z"},
-        {"from_number": "+15559876543", "status": "in-progress", "duration": 45, "created_at": "2026-01-19T11:15:00Z"}
+        {
+            "from_number": "+15551234567",
+            "status": "completed",
+            "duration": 120,
+            "created_at": "2026-01-19T10:00:00Z",
+        },
+        {
+            "from_number": "+15559876543",
+            "status": "in-progress",
+            "duration": 45,
+            "created_at": "2026-01-19T11:15:00Z",
+        },
     ]
+
 
 # Mount core routers
 # Twilio webhooks prefix

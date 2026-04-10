@@ -12,7 +12,9 @@ LANGUAGE_SELECTION: Dict[str, str] = {
 }
 
 # Combined language selection (both languages in one message)
-LANGUAGE_SELECTION_COMBINED: str = "Hello! Press 1 for English or say English. ¡Hola! Presione 2 para español o diga Español."
+LANGUAGE_SELECTION_COMBINED: str = (
+    "Hello! Press 1 for English or say English. ¡Hola! Presione 2 para español o diga Español."
+)
 
 
 # Greeting (after language selected)

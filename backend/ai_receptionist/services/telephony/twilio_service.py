@@ -39,7 +39,9 @@ class TwilioTelephonyService(TelephonyService):
             except Exception:
                 self._redis = None
 
-    def validate_signature(self, headers: Mapping[str, str], body: bytes, url: str | None = None) -> bool:
+    def validate_signature(
+        self, headers: Mapping[str, str], body: bytes, url: str | None = None
+    ) -> bool:
         """Validate Twilio signature.
 
         Note: Keep mockable for tests. In production, use twilio.request_validator.RequestValidator.

@@ -69,30 +69,36 @@ async def get_available_numbers():
     In production, this would query Twilio's API for purchased numbers.
     """
     import os
-    
+
     # Get Twilio credentials from environment
     account_sid = os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-    
+
     if not account_sid or not auth_token:
         # Return demo number if Twilio not configured
-        return [{"phoneNumber": "+12298215986", "friendlyName": "AI Receptionist Demo (+1 229-821-5986)"}]
-    
+        return [
+            {
+                "phoneNumber": "+12298215986",
+                "friendlyName": "AI Receptionist Demo (+1 229-821-5986)",
+            }
+        ]
+
     try:
         from twilio.rest import Client
+
         client = Client(account_sid, auth_token)
-        
+
         # Fetch purchased phone numbers from the account
         incoming_numbers = client.incoming_phone_numbers.list(limit=20)
-        
+
         return [
             {
                 "phoneNumber": num.phone_number,
-                "friendlyName": num.friendly_name or f"Line ({num.phone_number})"
+                "friendlyName": num.friendly_name or f"Line ({num.phone_number})",
             }
             for num in incoming_numbers
         ]
-    except Exception as e:
+    except Exception:
         # Fallback to configured number if API fails
         phone = os.getenv("TWILIO_PHONE_NUMBER", "+12298215986")
         return [{"phoneNumber": phone, "friendlyName": f"Configured Line ({phone})"}]
@@ -105,12 +111,6 @@ async def get_my_numbers():
     This is a placeholder - in production, query from database based on auth.
     """
     import os
-    phone = os.getenv("TWILIO_PHONE_NUMBER", "+12298215986")
-    return [
-        {
-            "phoneNumber": phone,
-            "friendlyName": "AI Receptionist Line",
-            "status": "active"
-        }
-    ]
 
+    phone = os.getenv("TWILIO_PHONE_NUMBER", "+12298215986")
+    return [{"phoneNumber": phone, "friendlyName": "AI Receptionist Line", "status": "active"}]

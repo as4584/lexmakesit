@@ -13,20 +13,28 @@ from ai_receptionist.models.base import Base
 class Tenant(Base):
     __tablename__ = "tenants"
 
-    id: Mapped[str] = mapped_column(String(255), primary_key=True)              # slug, e.g. "innovation"
-    name: Mapped[str] = mapped_column(String(255), nullable=False)               # display name
+    id: Mapped[str] = mapped_column(String(255), primary_key=True)  # slug, e.g. "innovation"
+    name: Mapped[str] = mapped_column(String(255), nullable=False)  # display name
     owner_user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
     plan: Mapped[str] = mapped_column(String(50), nullable=False, default="starter")
 
     # Voice settings
-    tts_provider: Mapped[str] = mapped_column(String(50), nullable=False, default="openai")       # 'openai' | 'elevenlabs'
-    elevenlabs_voice_id: Mapped[str | None] = mapped_column(String(255), nullable=True)                   # selected library voice
+    tts_provider: Mapped[str] = mapped_column(
+        String(50), nullable=False, default="openai"
+    )  # 'openai' | 'elevenlabs'
+    elevenlabs_voice_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )  # selected library voice
     elevenlabs_voice_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     elevenlabs_voice_preview_url: Mapped[str | None] = mapped_column(Text, nullable=True)
-    custom_clone_voice_id: Mapped[str | None] = mapped_column(String(255), nullable=True)                 # 1 clone per account
+    custom_clone_voice_id: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )  # 1 clone per account
     custom_clone_voice_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

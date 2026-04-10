@@ -25,15 +25,13 @@ class FallbackRepository(Protocol):
 class SlackNotifier(Protocol):
     """Abstraction over Slack notification."""
 
-    def notify(self, channel: str, text: str) -> None:
-        ...
+    def notify(self, channel: str, text: str) -> None: ...
 
 
 class FallbackQueue(Protocol):
     """Abstraction over an event queue with escalate events."""
 
-    def pop(self) -> Optional[Dict[str, Any]]:
-        ...
+    def pop(self) -> Optional[Dict[str, Any]]: ...
 
 
 @dataclass
@@ -113,7 +111,9 @@ class FallbackWorker:
         reason = event.get("reason") or "unspecified"
 
         entry_id = self.repo.add_entry(tenant_id=tenant_id, caller=caller, reason=reason, raw=event)
-        text = f"Escalation for tenant={tenant_id} caller={caller} reason={reason} entry_id={entry_id}"
+        text = (
+            f"Escalation for tenant={tenant_id} caller={caller} reason={reason} entry_id={entry_id}"
+        )
         self.notifier.notify(self.channel, text)
         return entry_id
 

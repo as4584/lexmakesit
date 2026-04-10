@@ -30,12 +30,15 @@ class CostTracker:
     def log_operation(self, op_type: str, details: str, cost: float) -> None:
         """Log a billable operation."""
         self.operations.append(
-            {"timestamp": datetime.now(timezone.utc), "type": op_type, "details": details, "cost": cost}
+            {
+                "timestamp": datetime.now(timezone.utc),
+                "type": op_type,
+                "details": details,
+                "cost": cost,
+            }
         )
         running_total = self.total_cost()
-        logger.info(
-            f"💰 [{op_type}] {details} → ${cost:.4f} (Total so far: ${running_total:.4f})"
-        )
+        logger.info(f"💰 [{op_type}] {details} → ${cost:.4f} (Total so far: ${running_total:.4f})")
 
     def log_inbound_call(self, duration_seconds: float) -> None:
         """Log inbound call cost."""

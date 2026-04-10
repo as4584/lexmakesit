@@ -12,9 +12,16 @@ from ai_receptionist.services.billing import (
 
 def test_billing_compute_and_invoice_simple_plan():
     # Arrange a simple rate plan: $100 MRC + $0.05 per minute
-    repo = InMemoryBillingRepository(usage={}, plans={
-        "tenant_1": {"mrc": Decimal("100.00"), "rate_per_minute": Decimal("0.05"), "currency": "usd"}
-    })
+    repo = InMemoryBillingRepository(
+        usage={},
+        plans={
+            "tenant_1": {
+                "mrc": Decimal("100.00"),
+                "rate_per_minute": Decimal("0.05"),
+                "currency": "usd",
+            }
+        },
+    )
     stripe = FakeStripeClient(created=[])
     svc = BillingService(repo=repo, stripe=stripe, stripe_customers={"tenant_1": "cus_123"})
 
@@ -43,12 +50,20 @@ def test_billing_compute_and_invoice_simple_plan():
 
 
 def test_record_minutes_ignores_non_positive():
-    repo = InMemoryBillingRepository(usage={}, plans={
-        "t": {"mrc": Decimal("0.00"), "rate_per_minute": Decimal("0.10"), "currency": "usd"}
-    })
+    repo = InMemoryBillingRepository(
+        usage={},
+        plans={
+            "t": {"mrc": Decimal("0.00"), "rate_per_minute": Decimal("0.10"), "currency": "usd"}
+        },
+    )
     stripe = FakeStripeClient(created=[])
     svc = BillingService(repo=repo, stripe=stripe)
 
     svc.record_minutes("t", 0)
     svc.record_minutes("t", -5)
-    assert repo.get_usage_for_month("t", datetime.now(timezone.utc).year, datetime.now(timezone.utc).month) == []
+    assert (
+        repo.get_usage_for_month(
+            "t", datetime.now(timezone.utc).year, datetime.now(timezone.utc).month
+        )
+        == []
+    )

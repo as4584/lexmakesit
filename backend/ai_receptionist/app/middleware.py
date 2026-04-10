@@ -16,9 +16,7 @@ request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 tenant_id_var: ContextVar[str] = ContextVar("tenant_id", default="-")
 
 # Auth event context – auth.py writes here; middleware flushes on response
-_auth_event_var: ContextVar[Optional[dict[str, Any]]] = ContextVar(
-    "_auth_event", default=None
-)
+_auth_event_var: ContextVar[Optional[dict[str, Any]]] = ContextVar("_auth_event", default=None)
 
 AuthEventType = Literal[
     "login_success",
@@ -57,12 +55,13 @@ def emit_auth_event(
 # Logging
 # ---------------------------------------------------------------------------
 
+
 class _ContextFilter(logging.Filter):
     """Inject request_id and tenant_id into every log record."""
 
     def filter(self, record: logging.LogRecord) -> bool:
         record.request_id = request_id_var.get()  # type: ignore[attr-defined]
-        record.tenant_id = tenant_id_var.get()    # type: ignore[attr-defined]
+        record.tenant_id = tenant_id_var.get()  # type: ignore[attr-defined]
         return True
 
 
@@ -106,14 +105,11 @@ def configure_logging(structured: bool = False) -> None:
 # Request / response middleware
 # ---------------------------------------------------------------------------
 
+
 async def request_context_middleware(request: Request, call_next: Callable):
     """Attach request_id + tenant_id to context; log structured access events."""
     rid = request.headers.get("X-Request-ID") or str(uuid.uuid4())
-    tid = (
-        request.headers.get("X-Tenant-ID")
-        or request.query_params.get("tenant_id")
-        or "-"
-    )
+    tid = request.headers.get("X-Tenant-ID") or request.query_params.get("tenant_id") or "-"
 
     request_id_var.set(rid)
     tenant_id_var.set(tid)
@@ -143,9 +139,8 @@ async def request_context_middleware(request: Request, call_next: Callable):
         # Emit dedicated auth-event log so Loki can alert on it
         level = (
             logging.WARNING
-            if auth_event["event_type"] in (
-                "login_failure", "login_locked", "dependency_degraded", "readiness_failed"
-            )
+            if auth_event["event_type"]
+            in ("login_failure", "login_locked", "dependency_degraded", "readiness_failed")
             else logging.INFO
         )
         _auth_event_logger.log(level, json.dumps(auth_event, default=str))

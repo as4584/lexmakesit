@@ -31,8 +31,14 @@ router = APIRouter(prefix="/api/voice", tags=["voice"])
 # Max upload size: 10 MB
 MAX_AUDIO_SIZE = 10 * 1024 * 1024
 ALLOWED_CONTENT_TYPES = {
-    "audio/mpeg", "audio/mp3", "audio/wav", "audio/x-wav",
-    "audio/mp4", "audio/m4a", "audio/x-m4a", "audio/ogg",
+    "audio/mpeg",
+    "audio/mp3",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/mp4",
+    "audio/m4a",
+    "audio/x-m4a",
+    "audio/ogg",
     "audio/webm",
 }
 
@@ -40,6 +46,7 @@ ALLOWED_CONTENT_TYPES = {
 # ---------------------------------------------------------------------------
 # Pydantic schemas
 # ---------------------------------------------------------------------------
+
 
 class VoiceSelectRequest(BaseModel):
     voice_id: str
@@ -64,6 +71,7 @@ class VoiceSettingsOut(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def _get_tenant(db: Session, user: TokenData) -> Tenant:
     tenant = db.query(Tenant).filter(Tenant.owner_user_id == user.user_id).first()
     if not tenant:
@@ -74,6 +82,7 @@ def _get_tenant(db: Session, user: TokenData) -> Tenant:
 # ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
+
 
 @router.get("/browse")
 async def browse_voices(
@@ -192,7 +201,9 @@ async def clone_voice(
     if len(audio_bytes) > MAX_AUDIO_SIZE:
         raise HTTPException(status_code=413, detail="File too large (max 10 MB)")
     if len(audio_bytes) < 1024:
-        raise HTTPException(status_code=422, detail="Audio file is too small — needs at least 30 seconds")
+        raise HTTPException(
+            status_code=422, detail="Audio file is too small — needs at least 30 seconds"
+        )
 
     # Create clone via ElevenLabs
     try:
@@ -298,6 +309,7 @@ async def get_usage(
 # Google Voice / Bring Your Own Number
 # ---------------------------------------------------------------------------
 
+
 class GoogleVoiceRequest(BaseModel):
     google_voice_number: Optional[str] = None  # null to remove
 
@@ -305,7 +317,7 @@ class GoogleVoiceRequest(BaseModel):
 @router.put("/google-voice")
 def set_google_voice_number(
     body: GoogleVoiceRequest,
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
@@ -328,8 +340,7 @@ def set_google_voice_number(
             number = "+" + digits
         else:
             raise HTTPException(
-                status_code=422,
-                detail="Please enter a valid US phone number (10 digits)."
+                status_code=422, detail="Please enter a valid US phone number (10 digits)."
             )
 
     tenant.google_voice_number = number
@@ -341,7 +352,7 @@ def set_google_voice_number(
 
 @router.get("/google-voice")
 def get_google_voice_number(
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Return the current Google Voice number for this tenant."""
