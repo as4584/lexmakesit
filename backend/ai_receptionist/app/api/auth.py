@@ -286,6 +286,7 @@ def _cookie_secure(request: Request) -> bool:
 
 def _set_auth_cookie(response: Response, token: str, request: Request) -> None:
     max_age = ACCESS_TOKEN_EXPIRE_MINUTES * 60
+    _settings = get_settings()
     response.set_cookie(
         key="lex_token",
         value=token,
@@ -294,11 +295,12 @@ def _set_auth_cookie(response: Response, token: str, request: Request) -> None:
         samesite="lax",
         max_age=max_age,
         path="/",
+        domain=_settings.cookie_domain,
     )
 
 
 def _clear_auth_cookie(response: Response) -> None:
-    response.delete_cookie(key="lex_token", path="/")
+    response.delete_cookie(key="lex_token", path="/", domain=get_settings().cookie_domain)
 
 
 def _get_current_user_token(

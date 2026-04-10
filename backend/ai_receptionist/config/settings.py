@@ -78,6 +78,9 @@ class Settings(BaseSettings):
         validation_alias="CORS_ALLOWED_ORIGINS",
     )
 
+    # Cookie domain — set to ".lexmakesit.com" in production to share across subdomains
+    cookie_domain: Optional[str] = Field(default=None, validation_alias="COOKIE_DOMAIN")
+
     # Application Settings
     log_level: str = "INFO"
     structured_logging: bool = Field(default=False, validation_alias="STRUCTURED_LOGGING")
