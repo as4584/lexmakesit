@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from workers.fallback import (
+from ai_receptionist.workers.fallback import (
     InMemoryFallbackRepository,
     FakeSlackNotifier,
     FallbackWorker,

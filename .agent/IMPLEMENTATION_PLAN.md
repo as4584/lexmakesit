@@ -5,6 +5,78 @@
 
 ---
 
+## 🔐 SECURITY HARDENING UPDATE (2026-03-06)
+
+### Sprint 1 Started — Implemented in Code ✅
+- [x] Removed hardcoded encryption fallback secret in `backend/ai_receptionist/utils/encryption.py`
+- [x] Added strict `ENCRYPTION_KEY` validation for Fernet format
+- [x] Added fail-fast behavior when no encryption secret is configured
+- [x] Reduced JWT token TTL from 24h to 1h in `backend/ai_receptionist/app/api/auth.py`
+- [x] Added `JWT_SECRET_KEY` support with controlled fallback to `ADMIN_PRIVATE_KEY`
+- [x] Added `nbf` claim to issued JWTs for safer validation windows
+- [x] Replaced wildcard CORS default with explicit production domains in `frontend/portfolio/main.py`
+- [x] Removed TrustedHost wildcard bypass in non-production mode
+- [x] Added `ENCRYPTION_KEY` and `JWT_SECRET_KEY` fields to centralized settings in `backend/ai_receptionist/config/settings.py`
+
+### Verification Pending
+- [ ] Run backend auth tests (`pytest backend/tests -k auth`)
+- [ ] Run portfolio API smoke tests for CORS + host middleware behavior
+- [ ] Confirm environment variables are set on production hosts before rollout
+
+### Sprint 2 Started — Implemented in Code ✅
+- [x] Moved portfolio rate limiting storage default to Redis with env override in `frontend/portfolio/main.py`
+- [x] Added Redis-password-aware limiter default URI generation
+- [x] Added non-root runtime users and healthchecks to `backend/Dockerfile` and `frontend/portfolio/Dockerfile`
+- [x] Hardened Redis in `backend/docker-compose.prod.yml` with auth + AOF persistence + authenticated healthcheck
+- [x] Hardened Redis in `backend/docker-compose.dev.yml` with auth, localhost-only bind, volume, and healthcheck
+- [x] Updated env templates with `REDIS_PASSWORD` and secure `RATE_LIMIT_STORAGE` examples
+
+### Sprint 2 Verification Pending
+- [ ] Validate compose config with environment substitution (`docker compose config`)
+- [ ] Launch stack and verify Redis auth-required behavior
+- [ ] Confirm rate limit behavior across multiple workers
+
+### Sprint 3 Started — Implemented in Code ✅
+- [x] Added env-managed encryption salt support in `backend/ai_receptionist/utils/encryption.py`
+- [x] Added legacy-salt fallback decryption path with migration warning logging
+- [x] Added `ENCRYPTION_SALT` field in centralized settings (`backend/ai_receptionist/config/settings.py`)
+- [x] Added startup critical warning in `backend/ai_receptionist/app/main.py` when legacy/default salt remains configured
+- [x] Created migration utility `backend/scripts/migrate_encrypt_tokens.py` with `--dry-run`, old/new salt support, and non-zero exit on failures
+- [x] Updated backend env template with `ENCRYPTION_SALT`
+
+### Sprint 3 Verification Pending
+- [ ] Run `python scripts/migrate_encrypt_tokens.py --dry-run` in backend environment
+- [ ] Rotate `ENCRYPTION_SALT` in deployment env and run live migration
+- [ ] Confirm calendar token decrypt/refresh works after migration
+
+### Sprint 4 Started — Implemented in Code ✅
+- [x] Added JWT `jti` claim generation in `backend/ai_receptionist/app/api/auth.py`
+- [x] Added Redis-backed token revocation checks in auth token decode path
+- [x] Added `POST /api/auth/logout` revocation behavior for bearer token `jti`
+- [x] Added `POST /api/auth/refresh` endpoint for bounded token renewal
+- [x] Added failed-login throttling (5 attempts / 15 minutes) with Redis counters
+- [x] Added Redis password support in settings-derived URL logic (`backend/ai_receptionist/config/settings.py`)
+- [x] Added server hardening verification checklist to `docs/infra/server-hardening.md`
+
+### Sprint 4 Verification Pending
+- [x] Validate `refresh` and `logout` routes with valid/invalid bearer tokens (local integration test)
+- [x] Validate revocation blocks reused logged-out tokens (local integration test)
+- [x] Validate brute-force lockout returns `429` after 5 failed attempts (local integration test)
+- [x] Verify Redis-backed auth state on production environment
+- [x] Validate the same lifecycle checks against deployed production/staging API
+
+### Sprint 4 Production Verification (2026-03-06)
+- [x] Probed live auth OpenAPI on server (`http://localhost:8002/openapi.json`)
+- [x] Confirmed initial production route mismatch: `/api/auth/refresh` not present on deployed backend
+- [x] Confirmed initial logout did not revoke bearer token on deployed backend (`/api/auth/me` remained `200`)
+- [x] Deployed Sprint 4 auth changes to production app service and set `REDIS_URL=redis://redis:6379/0`
+- [x] Re-validated production auth lifecycle:
+   - `POST /api/auth/refresh` returns `200` with a new access token
+   - `POST /api/auth/logout` revokes current token (`/api/auth/me` returns `401` for logged-out token)
+   - failed login lockout triggers `429` on 5th bad attempt and blocks immediate correct login
+
+---
+
 ## ✅ COMPLETED TODAY (2026-01-19)
 
 ### Workstream 1: Mobile UI ✅

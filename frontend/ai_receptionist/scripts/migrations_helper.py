@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchecmy import create_engine, text
+from sqlalchemy import create_engine, text
 
 
 def record_schema_version(db_url: str, version: str, applied_at: Optional[datetime] = None) -> None:
@@ -15,6 +15,6 @@ def record_schema_version(db_url: str, version: str, applied_at: Optional[dateti
         applied_at: optional datetime; if None uses now
     """
     engine = create_engine(db_url)
-    ts = applied_at or datetime.utcnow()
+    ts = applied_at or datetime.now(timezone.utc)
     with engine.begin() as conn:
         conn.execute(text("INSERT INTO schema_version (version, applied_at) VALUES (:v, :t)"), {"v": version, "t": ts})

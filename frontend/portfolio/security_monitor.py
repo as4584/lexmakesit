@@ -7,7 +7,7 @@ import asyncio
 import json
 import logging
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List
 
 logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ class SecurityMonitor:
     ):
         """Log suspicious activity for analysis"""
         event = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": activity_type,
             "details": details,
         }
@@ -126,11 +126,11 @@ class SecurityMonitor:
             event
             for event in self.suspicious_activity
             if datetime.fromisoformat(event["timestamp"])
-            > datetime.utcnow() - timedelta(hours=1)
+            > datetime.now(timezone.utc) - timedelta(hours=1)
         ]
 
         return {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "failed_attempts_last_hour": recent_attempts,
             "currently_blocked_ips": blocked_count,
             "suspicious_activities_last_hour": len(recent_suspicious),

@@ -2,9 +2,10 @@
 Tenant model – represents a business / organisation.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column
 
 from ai_receptionist.models.base import Base
 
@@ -12,24 +13,26 @@ from ai_receptionist.models.base import Base
 class Tenant(Base):
     __tablename__ = "tenants"
 
-    id = Column(String(255), primary_key=True)              # slug, e.g. "innovation"
-    name = Column(String(255), nullable=False)               # display name
-    owner_user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    plan = Column(String(50), nullable=False, default="starter")
+    id: Mapped[str] = mapped_column(String(255), primary_key=True)              # slug, e.g. "innovation"
+    name: Mapped[str] = mapped_column(String(255), nullable=False)               # display name
+    owner_user_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id"), nullable=False)
+    plan: Mapped[str] = mapped_column(String(50), nullable=False, default="starter")
 
     # Voice settings
-    tts_provider = Column(String(50), nullable=False, default="openai")       # 'openai' | 'elevenlabs'
-    elevenlabs_voice_id = Column(String(255), nullable=True)                   # selected library voice
-    elevenlabs_voice_name = Column(String(255), nullable=True)
-    elevenlabs_voice_preview_url = Column(Text, nullable=True)
-    custom_clone_voice_id = Column(String(255), nullable=True)                 # 1 clone per account
-    custom_clone_voice_name = Column(String(255), nullable=True)
+    tts_provider: Mapped[str] = mapped_column(String(50), nullable=False, default="openai")       # 'openai' | 'elevenlabs'
+    elevenlabs_voice_id: Mapped[str | None] = mapped_column(String(255), nullable=True)                   # selected library voice
+    elevenlabs_voice_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    elevenlabs_voice_preview_url: Mapped[str | None] = mapped_column(Text, nullable=True)
+    custom_clone_voice_id: Mapped[str | None] = mapped_column(String(255), nullable=True)                 # 1 clone per account
+    custom_clone_voice_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
 
-    # Google Voice / bring-your-own-number
-    google_voice_number = Column(String(20), nullable=True)
-
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+    )
 
     def __repr__(self) -> str:
         return f"<Tenant(id='{self.id}', plan='{self.plan}')>"

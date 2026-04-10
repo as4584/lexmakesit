@@ -76,7 +76,7 @@ VOICE_LOADER = """
 VOICE_EFFECT_CALL = """        loadVoiceSettings();"""
 
 
-def patch_file(filepath):
+def patch_file(filepath: str) -> None:
     with open(filepath, 'r') as f:
         content = f.read()
 

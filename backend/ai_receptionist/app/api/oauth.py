@@ -4,7 +4,7 @@ OAuth endpoints for Google Calendar integration.
 Implements OAuth 2.0 flow for connecting Google Calendar accounts.
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -189,7 +189,7 @@ async def google_oauth_callback(
             logger.warning(f"No refresh token for {tenant_id} - may need re-auth later")
         
         # Calculate expiration time
-        expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+        expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
         
         # Encrypt tokens
         access_token_encrypted = encrypt_token(access_token)
@@ -207,7 +207,7 @@ async def google_oauth_callback(
             existing.expires_at = expires_at
             existing.scope = scope
             existing.is_connected = True
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = datetime.now(timezone.utc)
             logger.info(f"Updated OAuth tokens for tenant {tenant_id}")
         else:
             # Create new record
@@ -289,7 +289,7 @@ def google_oauth_status(
             "message": "Google Calendar was disconnected",
         }
     
-    is_expired = token.expires_at < datetime.utcnow()
+    is_expired = token.expires_at < datetime.now(timezone.utc)
     has_refresh = bool(token.refresh_token_encrypted)
     
     return {
@@ -320,7 +320,7 @@ def google_oauth_disconnect(
         return {"success": True, "message": "No calendar was connected"}
     
     token.is_connected = False
-    token.updated_at = datetime.utcnow()
+    token.updated_at = datetime.now(timezone.utc)
     db.commit()
     
     logger.info(f"Disconnected Google Calendar for tenant {business_id}")

@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { cloneVoice, deleteClone, selectVoice, getClonePreviewUrl } from '@/lib/voiceApi';
-import { API_BASE_URL } from '@/lib/config';
+import { cloneVoice, deleteClone, selectVoice, getClonePreviewUrl } from '../lib/voiceApi';
+import { API_BASE_URL } from '../lib/config';
 
 interface VoiceCloneProps {
     hasClone: boolean;
@@ -27,7 +27,7 @@ export default function VoiceClone({
     const [name, setName] = useState('');
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [playingPreview, setPlayingPreview] = useState(false);
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
     const isCloneActive = hasClone && cloneVoiceId === currentVoiceId;
@@ -119,7 +119,7 @@ export default function VoiceClone({
         };
     }
 
-    function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    function handleFileChange(e: any) {
         const file = e.target.files?.[0];
         if (!file) return;
 
@@ -269,7 +269,7 @@ export default function VoiceClone({
                         <input
                             type="text"
                             value={name}
-                            onChange={e => setName(e.target.value)}
+                            onChange={(e: any) => setName(e.target.value)}
                             placeholder="e.g. My Voice"
                             style={{
                                 width: '100%', padding: '10px',

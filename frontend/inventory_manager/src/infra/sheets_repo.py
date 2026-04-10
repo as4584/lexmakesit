@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import contextlib
 from dataclasses import dataclass
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 # Import via services.sheets re-exports so tests can patch
@@ -100,13 +100,13 @@ class SheetsRepository:
         cache_key = "inventory"
         if self.enable_cache and cache_key in self._cache:
             exp, val = self._cache[cache_key]
-            if datetime.utcnow() < exp:
+            if datetime.now(timezone.utc) < exp:
                 return val.copy()
         ws = self._worksheet(INVENTORY_WS)
         records = self._retry_call(ws.get_all_records)
         df = self._sheets_to_dataframe(records)
         if self.enable_cache:
-            self._cache[cache_key] = (datetime.utcnow() + timedelta(seconds=self.cache_ttl), df.copy())
+            self._cache[cache_key] = (datetime.now(timezone.utc) + timedelta(seconds=self.cache_ttl), df.copy())
         return df
 
     def get_config(self) -> dict[str, int]:

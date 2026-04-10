@@ -6,8 +6,8 @@ Logs to console after each operation.
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Dict, List
+from datetime import datetime, timezone
+from typing import Any, Dict, List
 import logging
 
 logger = logging.getLogger(__name__)
@@ -24,13 +24,13 @@ class CostTracker:
     """Tracks costs for a single call."""
 
     call_sid: str
-    start_time: datetime = field(default_factory=datetime.utcnow)
-    operations: List[Dict] = field(default_factory=list)
+    start_time: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    operations: List[Dict[str, Any]] = field(default_factory=list)
 
     def log_operation(self, op_type: str, details: str, cost: float) -> None:
         """Log a billable operation."""
         self.operations.append(
-            {"timestamp": datetime.utcnow(), "type": op_type, "details": details, "cost": cost}
+            {"timestamp": datetime.now(timezone.utc), "type": op_type, "details": details, "cost": cost}
         )
         running_total = self.total_cost()
         logger.info(
@@ -66,7 +66,7 @@ class CostTracker:
 
     def summary(self) -> str:
         """Generate a call summary with cost breakdown."""
-        duration = (datetime.utcnow() - self.start_time).total_seconds()
+        duration = (datetime.now(timezone.utc) - self.start_time).total_seconds()
         total = self.total_cost()
         breakdown = {}
         for op in self.operations:

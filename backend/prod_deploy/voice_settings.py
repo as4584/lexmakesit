@@ -8,7 +8,7 @@ All endpoints require an authenticated user (cookie or Bearer JWT).
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
@@ -17,7 +17,7 @@ from sqlalchemy.orm import Session
 import io
 
 from ai_receptionist.core.database import get_db
-from ai_receptionist.core.auth import get_current_user, TokenData
+from ai_receptionist.app.api.auth import get_current_user, TokenData
 from ai_receptionist.models.business import Business
 from ai_receptionist.services.elevenlabs.voice_service import (
     ElevenLabsVoiceService,
@@ -143,7 +143,7 @@ def select_voice(
     body: VoiceSelectRequest,
     user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Confirm a voice selection (from library or from clone).
 
     Saves the voice ID and name to the business record.
@@ -172,7 +172,7 @@ async def clone_voice(
     user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
-):
+) -> dict[str, Any]:
     """Upload an audio clip to create an instant voice clone.
 
     Limit: **1 clone per account**.  Delete the existing clone first
@@ -232,7 +232,7 @@ async def delete_clone(
     user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
-):
+) -> dict[str, Any]:
     """Delete the user's cloned voice (allows re-cloning)."""
     biz = _get_business(db, user)
 

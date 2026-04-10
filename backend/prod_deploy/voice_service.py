@@ -64,16 +64,17 @@ class ElevenLabsVoiceService:
     """
 
     def __init__(self, api_key: Optional[str] = None):
-        self._api_key = api_key or os.environ.get("ELEVENLABS_API_KEY")
+        resolved_api_key = api_key or os.environ.get("ELEVENLABS_API_KEY")
         # Also try loading from settings if available
-        if not self._api_key:
+        if not resolved_api_key:
             try:
                 from ai_receptionist.config.settings import get_settings
-                self._api_key = getattr(get_settings(), 'elevenlabs_api_key', None)
+                resolved_api_key = getattr(get_settings(), 'elevenlabs_api_key', None)
             except Exception:
                 pass
-        if not self._api_key:
+        if not resolved_api_key:
             raise RuntimeError("ELEVENLABS_API_KEY is not configured")
+        self._api_key: str = resolved_api_key
 
     # -- helpers --
 
@@ -175,7 +176,7 @@ class ElevenLabsVoiceService:
         Uses eleven_turbo_v2 for lowest latency.  Keep *text* short
         (~20 words) to stay well within free-tier character limits.
         """
-        payload = {
+        payload: Dict[str, Any] = {
             "text": text,
             "model_id": "eleven_turbo_v2",
             "voice_settings": {

@@ -4,7 +4,7 @@ from typing import Any, Dict, List
 
 import pytest
 
-from services import rag
+from ai_receptionist.services import rag
 
 
 class FakeVectorStore(rag.VectorStore):

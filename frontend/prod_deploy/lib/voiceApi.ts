@@ -5,8 +5,8 @@
  * All calls use cookie-based auth automatically through safeFetch.
  */
 
-import { safeFetch } from './api';
-import { API_BASE_URL } from './config';
+import { safeFetch } from './api.ts';
+import { API_BASE_URL } from './config.ts';
 
 // ============================================================================
 // Types

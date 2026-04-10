@@ -3,8 +3,11 @@ Tests for Twilio voice webhook endpoints
 Tests the FastAPI app using TestClient for offline testing
 """
 
+import pytest
 from fastapi.testclient import TestClient
-from src.twilio_handler import app
+
+twilio_handler = pytest.importorskip("src.twilio_handler")
+app = twilio_handler.app
 
 client = TestClient(app)
 

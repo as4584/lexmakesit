@@ -3,7 +3,7 @@ Database models for Hype Resale Item Manager.
 SQLAlchemy ORM models for products, variants, consignors, sales, and reserves.
 """
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
 from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text, create_engine
 from sqlalchemy import Enum as SQLEnum
@@ -283,12 +283,12 @@ class Reserve(Base):
     @property
     def is_active(self):
         """Check if reserve is still active."""
-        return self.status == ReserveStatus.ACTIVE and datetime.utcnow() < self.hold_until
+        return self.status == ReserveStatus.ACTIVE and datetime.now(timezone.utc) < self.hold_until
 
     @property
     def is_expired(self):
         """Check if reserve has expired."""
-        return self.status == ReserveStatus.ACTIVE and datetime.utcnow() >= self.hold_until
+        return self.status == ReserveStatus.ACTIVE and datetime.now(timezone.utc) >= self.hold_until
 
 
 class Payout(Base):

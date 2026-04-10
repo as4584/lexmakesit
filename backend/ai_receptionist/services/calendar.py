@@ -8,7 +8,7 @@ Handles:
 """
 
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional, Dict, Any, List, Tuple
 
 import httpx
@@ -103,7 +103,7 @@ class CalendarService:
             raise TokenNotFoundError(f"No connected calendar for tenant {tenant_id}")
         
         # Check if token is expired (with 5 minute buffer)
-        if token_record.expires_at > datetime.utcnow() + timedelta(minutes=5):
+        if token_record.expires_at > datetime.now(timezone.utc) + timedelta(minutes=5):
             # Token is still valid
             return decrypt_token(token_record.access_token_encrypted)
         
@@ -136,8 +136,8 @@ class CalendarService:
             expires_in = token_data.get("expires_in", 3600)
             
             token_record.access_token_encrypted = encrypt_token(new_access_token)
-            token_record.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
-            token_record.updated_at = datetime.utcnow()
+            token_record.expires_at = datetime.now(timezone.utc) + timedelta(seconds=expires_in)
+            token_record.updated_at = datetime.now(timezone.utc)
             
             self.db.commit()
             

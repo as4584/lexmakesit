@@ -8,7 +8,7 @@ All endpoints require an authenticated user (Bearer JWT).
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
@@ -17,8 +17,7 @@ from sqlalchemy.orm import Session
 import io
 
 from ai_receptionist.core.database import get_db
-from ai_receptionist.app.api.auth import get_current_user
-from ai_receptionist.models.user import User
+from ai_receptionist.app.api.auth import TokenData, get_current_user
 from ai_receptionist.models.tenant import Tenant
 from ai_receptionist.services.elevenlabs.voice_service import (
     ElevenLabsVoiceService,
@@ -65,8 +64,8 @@ class VoiceSettingsOut(BaseModel):
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _get_tenant(db: Session, user: User) -> Tenant:
-    tenant = db.query(Tenant).filter(Tenant.owner_user_id == user.id).first()
+def _get_tenant(db: Session, user: TokenData) -> Tenant:
+    tenant = db.query(Tenant).filter(Tenant.owner_user_id == user.user_id).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="tenant not found for user")
     return tenant
@@ -79,7 +78,7 @@ def _get_tenant(db: Session, user: User) -> Tenant:
 @router.get("/browse")
 async def browse_voices(
     category: Optional[str] = None,
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
 ):
     """Browse the ElevenLabs voice library.
@@ -102,7 +101,7 @@ async def browse_voices(
 @router.get("/browse/{voice_id}")
 async def get_voice_detail(
     voice_id: str,
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
 ):
     """Get details for a single voice."""
@@ -115,7 +114,7 @@ async def get_voice_detail(
 
 @router.get("/current", response_model=VoiceSettingsOut)
 def get_current_voice(
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """Return the user's current voice selection."""
@@ -134,9 +133,9 @@ def get_current_voice(
 @router.put("/select")
 def select_voice(
     body: VoiceSelectRequest,
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
-):
+) -> dict[str, Any]:
     """Confirm a voice selection (from library or from clone).
 
     Saves the voice ID and name to the tenant record.
@@ -162,10 +161,10 @@ def select_voice(
 async def clone_voice(
     name: str = Form(..., description="Display name for the cloned voice"),
     audio_file: UploadFile = File(..., description="Audio file (mp3/wav/m4a, 30s-5min)"),
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
-):
+) -> dict[str, Any]:
     """Upload an audio clip to create an instant voice clone.
 
     Limit: **1 clone per account**.  Delete the existing clone first
@@ -222,10 +221,10 @@ async def clone_voice(
 
 @router.delete("/clone")
 async def delete_clone(
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
-):
+) -> dict[str, Any]:
     """Delete the user's cloned voice (allows re-cloning)."""
     tenant = _get_tenant(db, user)
 
@@ -256,7 +255,7 @@ async def delete_clone(
 
 @router.get("/clone/preview")
 async def preview_clone(
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     db: Session = Depends(get_db),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
 ):
@@ -284,7 +283,7 @@ async def preview_clone(
 
 @router.get("/usage")
 async def get_usage(
-    user: User = Depends(get_current_user),
+    user: TokenData = Depends(get_current_user),
     el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
 ):
     """Return ElevenLabs character usage / quota info."""

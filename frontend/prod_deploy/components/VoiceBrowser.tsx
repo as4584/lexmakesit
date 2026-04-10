@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import { browseVoices, selectVoice, VoiceInfo } from '@/lib/voiceApi';
+import { browseVoices, selectVoice, VoiceInfo } from '../lib/voiceApi';
 
 interface VoiceBrowserProps {
     currentVoiceId?: string | null;
@@ -29,8 +29,9 @@ export default function VoiceBrowser({ currentVoiceId, onVoiceSelected }: VoiceB
         try {
             const data = await browseVoices();
             setVoices(data);
-        } catch (err: any) {
-            setError(err.message || 'Failed to load voices');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to load voices';
+            setError(message);
         } finally {
             setLoading(false);
         }
@@ -78,8 +79,9 @@ export default function VoiceBrowser({ currentVoiceId, onVoiceSelected }: VoiceB
             setSuccessId(voice.voice_id);
             onVoiceSelected?.(voice.voice_id, voice.name);
             setTimeout(() => setSuccessId(null), 3000);
-        } catch (err: any) {
-            setError(err.message || 'Failed to select voice');
+        } catch (err: unknown) {
+            const message = err instanceof Error ? err.message : 'Failed to select voice';
+            setError(message);
         } finally {
             setSelecting(null);
         }
@@ -96,12 +98,12 @@ export default function VoiceBrowser({ currentVoiceId, onVoiceSelected }: VoiceB
     }, []);
 
     // Filter and search
-    const filteredVoices = voices.filter(v => {
+    const filteredVoices = voices.filter((v: VoiceInfo) => {
         if (filter !== 'all' && v.category.toLowerCase() !== filter) return false;
         if (search) {
             const q = search.toLowerCase();
             const nameMatch = v.name.toLowerCase().includes(q);
-            const labelMatch = Object.values(v.labels || {}).some(l => l.toLowerCase().includes(q));
+            const labelMatch = (Object.values(v.labels || {}) as string[]).some((label: string) => label.toLowerCase().includes(q));
             const descMatch = v.description?.toLowerCase().includes(q);
             return nameMatch || labelMatch || descMatch;
         }
@@ -109,7 +111,7 @@ export default function VoiceBrowser({ currentVoiceId, onVoiceSelected }: VoiceB
     });
 
     // Get unique categories for filter
-    const categories = ['all', ...Array.from(new Set(voices.map(v => v.category.toLowerCase())))];
+    const categories = ['all', ...Array.from(new Set(voices.map((v: VoiceInfo) => v.category.toLowerCase())))];
 
     if (loading) {
         return (
@@ -153,7 +155,7 @@ export default function VoiceBrowser({ currentVoiceId, onVoiceSelected }: VoiceB
                     type="text"
                     placeholder="Search voices..."
                     value={search}
-                    onChange={e => setSearch(e.target.value)}
+                    onChange={(e: any) => setSearch(e.target.value)}
                     style={{
                         padding: '8px 12px', borderRadius: '8px',
                         border: '1px solid #ddd', flex: '1',
@@ -194,7 +196,7 @@ export default function VoiceBrowser({ currentVoiceId, onVoiceSelected }: VoiceB
                     </div>
                 )}
 
-                {filteredVoices.map(voice => {
+                {filteredVoices.map((voice: VoiceInfo) => {
                     const isActive = currentVoiceId === voice.voice_id;
                     const isPlaying = playingId === voice.voice_id;
                     const isSelecting = selecting === voice.voice_id;

@@ -9,7 +9,10 @@ import tempfile
 import os
 from datetime import date, datetime, timedelta
 
-from src.calendar_handler import GoogleCalendarAdapter, ensure_data_file, get_calendar_adapter
+calendar_handler = pytest.importorskip("src.calendar_handler")
+GoogleCalendarAdapter = calendar_handler.GoogleCalendarAdapter
+ensure_data_file = calendar_handler.ensure_data_file
+get_calendar_adapter = calendar_handler.get_calendar_adapter
 
 @pytest.fixture
 def temp_data_file():

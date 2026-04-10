@@ -53,13 +53,16 @@ services:
 
   redis:
     image: redis:7
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    command: ["sh", "-c", "redis-server --appendonly yes --requirepass \"$${REDIS_PASSWORD}\""]
     volumes:
       - redisdata:/data
     networks:
       - lex_net
     restart: unless-stopped
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD-SHELL", "redis-cli -a ${REDIS_PASSWORD} ping" ]
       interval: 10s
       timeout: 5s
       retries: 3

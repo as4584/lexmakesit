@@ -9,7 +9,7 @@ import logging.handlers
 import os
 import secrets
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from pathlib import Path
@@ -43,7 +43,7 @@ class StructuredFormatter(logging.Formatter):
 
     def format(self, record):
         log_entry = {
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": datetime.now(timezone.utc).isoformat() + "Z",
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -154,7 +154,9 @@ def setup_logging():
 SECRET_KEY = os.getenv("SECRET_KEY", secrets.token_urlsafe(32))
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("SESSION_EXPIRE_MINUTES", "30"))
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS", "https://lexmakesit.com,https://www.lexmakesit.com"
+).split(",")
 TRUSTED_HOSTS = os.getenv(
     "TRUSTED_HOSTS",
     "localhost,127.0.0.1,104.236.100.245,104.236.100.245:8000,testserver,lexmakesit.com,www.lexmakesit.com",
@@ -168,6 +170,13 @@ logger = logging.getLogger(__name__)
 # Rate limiting configuration
 RATE_LIMIT_PER_MINUTE = os.getenv("RATE_LIMIT_PER_MINUTE", "60") or "60"
 RATE_LIMIT_BURST = int(os.getenv("RATE_LIMIT_BURST") or "10")
+REDIS_PASSWORD = os.getenv("REDIS_PASSWORD")
+DEFAULT_RATE_LIMIT_STORAGE = (
+    f"redis://:{REDIS_PASSWORD}@redis:6379/1"
+    if REDIS_PASSWORD
+    else "redis://redis:6379/1"
+)
+RATE_LIMIT_STORAGE = os.getenv("RATE_LIMIT_STORAGE", DEFAULT_RATE_LIMIT_STORAGE)
 
 # Email configuration
 SMTP_HOST = os.getenv("SMTP_HOST", "smtp.gmail.com")
@@ -224,7 +233,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 limiter = Limiter(
     key_func=get_remote_address,
     default_limits=[f"{RATE_LIMIT_PER_MINUTE}/minute"],
-    storage_uri=os.getenv("RATE_LIMIT_STORAGE", "memory://"),
+    storage_uri=RATE_LIMIT_STORAGE,
 )
 
 # Initialize FastAPI app with security defaults and lifespan
@@ -263,7 +272,7 @@ app.add_middleware(
 
 # Trusted Host Middleware - Use environment configuration
 app.add_middleware(
-    TrustedHostMiddleware, allowed_hosts=TRUSTED_HOSTS if PRODUCTION else ["*"]
+    TrustedHostMiddleware, allowed_hosts=TRUSTED_HOSTS
 )
 
 
@@ -558,9 +567,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     """Create JWT access token"""
     to_encode = data.copy()
     if expires_delta:
-        expire = datetime.utcnow() + expires_delta
+        expire = datetime.now(timezone.utc) + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
+        expire = datetime.now(timezone.utc) + timedelta(minutes=15)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
@@ -622,7 +631,7 @@ async def send_contact_email(name: str, email: str, subject: str, message: str) 
                             </p>
                             <p style="margin: 5px 0;"><strong>Subject:</strong> {subject}</p>
                             <p style="margin: 5px 0;">
-                                <strong>Time:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC
+                                <strong>Time:</strong> {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')} UTC
                             </p>
                         </div>
 
@@ -896,7 +905,7 @@ async def health_check(request: Request):
     """Health check endpoint with rate limiting"""
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "deployment": "LexMakesIt-v1.3.0",
         "date": "2026-01-21",
         # version info for deployment verification
