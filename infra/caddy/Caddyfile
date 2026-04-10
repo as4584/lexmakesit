@@ -55,7 +55,45 @@ lexmakesit.com, www.lexmakesit.com {
     }
 }
 
-# AI Receptionist
+# AI Receptionist — REST / Auth API
+# Primary entry point for all client applications (auth.lexmakesit.com SPA, etc.)
+api.lexmakesit.com {
+    import security_headers
+
+    reverse_proxy ai.internal:8002 {
+        lb_policy random
+        health_uri /health
+        health_interval 10s
+        health_timeout 5s
+    }
+
+    log {
+        output file /var/log/caddy/api.log
+        format json
+    }
+}
+
+# Auth Frontend (SPA served by separate container; source not in this repo)
+auth.lexmakesit.com {
+    import security_headers
+
+    reverse_proxy auth-frontend.internal:3000 {
+        lb_policy random
+        health_uri /
+        health_interval 15s
+        health_timeout 5s
+    }
+
+    log {
+        output file /var/log/caddy/auth.log
+        format json
+    }
+}
+
+# AI Receptionist — Twilio Webhook endpoint
+# ⚠️  DO NOT rename or remove: Twilio phone number is hardcoded to this domain.
+#     This proxies to the SAME backend as api.lexmakesit.com but kept separate
+#     so the Twilio configuration never needs to change.
 receptionist.lexmakesit.com {
     import security_headers
     

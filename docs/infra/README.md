@@ -29,28 +29,31 @@
 Internet
     │
     ▼
-┌─────────────────────────────────────┐
-│  104.236.100.245 (Frontend Server)  │
-│                                     │
-│  Caddy (antigravity_caddy)          │
-│  ├─ lexmakesit.com → portfolio:8001│
-│  ├─ dashboard.lexmakesit.com → ...  │
-│  └─ receptionist.lexmakesit.com     │
-│        → 174.138.67.169:8010        │
-│                                     │
-│  Docker Network: apps_antigravity_net│
-│  ├─ portfolio-web-1 (:8001)         │
-│  └─ Other frontend containers       │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  104.236.100.245 (Frontend Server)      │
+│                                         │
+│  Caddy (antigravity_caddy)              │
+│  ├─ lexmakesit.com       → portfolio:8001│
+│  ├─ auth.lexmakesit.com  → auth-frontend:3000│
+│  ├─ api.lexmakesit.com   → 174.138.67.169:8002│
+│  ├─ receptionist.lexmakesit.com (Twilio only)│
+│  │       → 174.138.67.169:8002          │
+│  ├─ inventory.lexmakesit.com → inventory:8010│
+│  └─ monitor.lexmakesit.com  → grafana:3000│
+│                                         │
+│  Docker Network: apps_antigravity_net   │
+│  ├─ portfolio-web-1 (:8001)             │
+│  └─ auth-frontend (:3000)               │
+└─────────────────────────────────────────┘
 
-┌─────────────────────────────────────┐
-│  174.138.67.169 (Backend Server)    │
-│                                     │
-│  ai_receptionist_app (:8010)        │
-│  PostgreSQL (:5432, internal)       │
-│  Redis (:6379, internal)            │
-│  Qdrant (:6333, internal)           │
-└─────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  174.138.67.169 (Backend Server)        │
+│                                         │
+│  ai_receptionist_active (:8002)         │
+│  PostgreSQL (:5432, internal)           │
+│  Redis (:6379, internal)                │
+│  Qdrant (:6333, internal)               │
+└─────────────────────────────────────────┘
 ```
 
 ---

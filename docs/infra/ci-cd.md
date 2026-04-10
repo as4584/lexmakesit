@@ -6,78 +6,130 @@
 
 ## Monorepo Structure
 
-The repository contains multiple services, each with its own CI lifecycle:
+Root-level workflows fire on matching path changes. Each service has a dedicated pipeline.
 
-| Service | Path | Trigger | Pipeline |
-|---------|------|---------|----------|
-| Portfolio | `frontend/portfolio/` | `portfolio/**` | `deploy-portfolio.yml` |
-| Inventory Manager | `frontend/inventory_manager/` | `inventory_manager/**` | `deploy-inventory.yml` |
-| AI Receptionist | `backend/` | `backend/**` | — (manual deploy) |
-| Infrastructure | `infra/` | — | — |
+| Service | Path Trigger | Workflow |
+|---------|-------------|----------|
+| Backend (AI Receptionist) | `backend/**` | `.github/workflows/ci-backend.yml` |
+| Portfolio | `frontend/portfolio/**` | `.github/workflows/ci-portfolio.yml` |
+| Infrastructure | `infra/**` | — (manual) |
 
----
-
-## Workflow Strategy
-
-**Path-Filtered Triggers** — Each service pipeline fires only when its own files change.
-
-- **Global Guardian**: Runs on ALL pushes. Checks repo health, linting, security policies.
-- **Service Pipelines**: Trigger only for matching path changes.
+> **Historical note:** Prior to 2026-03, workflow files lived inside service subdirectories (`backend/.github/workflows/`). They were inaccessible to GitHub Actions. Root-level workflows were added to fix this.
 
 ---
 
-## Deployment Chain
+## Pipeline Stages
 
-1. **Test**: Unit tests (`pytest`) + Static Analysis (`ruff`, `mypy`)
-2. **Audit**: Security scanning (`pip-audit`, `safety`)
-3. **Build**: Docker image creation (`docker build`)
-4. **Push**: Upload to GHCR (`ghcr.io`) (if configured)
-5. **Deploy**: SSH into DigitalOcean → `docker compose pull` → `docker compose up`
+Every CI run follows four gates:
+
+```
+push / PR
+    │
+    ▼
+┌───────────────────────────────┐
+│  1. TEST                      │
+│  • Postgres 15 + Redis 7      │
+│    (service containers)       │
+│  • poetry install             │
+│  • ruff + black               │
+│  • pytest -q                  │
+└───────────────┬───────────────┘
+                │ (main branch only)
+                ▼
+┌───────────────────────────────┐
+│  2. IMAGE                     │
+│  • docker build               │
+│  • smoke: /health + /readiness│
+│  • push to GHCR               │
+└───────────────┬───────────────┘
+                │
+                ▼
+┌───────────────────────────────┐
+│  3. DEPLOY                    │
+│  • SSH to DigitalOcean server │
+│  • doppler secrets download   │
+│  • docker run (blue slot)     │
+│  • 3 × /readiness == 200      │
+│  • swap slot, retire old      │
+└───────────────────────────────┘
+```
 
 ---
 
-## Security Architecture
+## Secrets Management — Doppler
 
-- **Secrets Management**: All sensitive data via GitHub Secrets (`*_ENV`, `SSH_KEY`)
-- **Vulnerability Management**:
-  - High/Critical CVEs block deployment
-  - Low/Medium CVEs may be allowed with documented justification
-- **Network**: All services behind Caddy with automatic HTTPS
+All runtime secrets are managed in [Doppler](https://www.doppler.com). A single `DOPPLER_TOKEN` GitHub Secret (service token) replaces all previous `*_ENV` blob secrets.
+
+| GitHub Secret | Purpose |
+|---------------|---------|
+| `DOPPLER_TOKEN` | Service token — Doppler fetches all app secrets at deploy time |
+| `SERVER_HOST` | DigitalOcean droplet IP |
+| `SERVER_USER` | SSH login user |
+| `SSH_PRIVATE_KEY` | Deploy key |
+| `GITHUB_TOKEN` | GHCR read/write (built-in) |
+
+**Doppler stores** (keep GHCR_TOKEN, DB credentials, JWT secret, OpenAI key, Twilio credentials here, not in GitHub Secrets).
+
+### How secrets reach the container
+
+```bash
+# On the server during deploy:
+doppler secrets download --format env --no-file > /tmp/run.env
+docker run --env-file /tmp/run.env ... IMAGE
+rm /tmp/run.env
+```
+
+The env file is written to a tmpfs path with `chmod 600` and deleted immediately after `docker run` returns.
+
+---
+
+## Blue/Green Deployment
+
+- **Readiness gate**: 3 consecutive `HTTP 200` responses at `/readiness` (not `/health`)
+- `/readiness` probes PostgreSQL + Redis; returns 503 if either is down
+- If the gate fails, the new slot is removed and the old slot remains active
+- Slot naming: `ai_receptionist_blue` / `ai_receptionist_green` (same for portfolio)
+
+---
+
+## Local Parity with `act`
+
+Run CI locally using [act](https://github.com/nektos/act):
+
+```bash
+# Install act, then run the backend test job
+act push -W .github/workflows/ci-backend.yml -j test
+```
+
+Config: `.actrc` (runner image, secrets file path, reuse containers)
+Secrets: Copy `.act/secrets.example` → `.act/secrets` and fill in `DOPPLER_TOKEN`.
 
 ---
 
 ## Deployment Safety Contract
 
-> See `frontend/docs/deployment.md` for the full Deployment Guardian contract
-
-### Push Protection Rules
-
-Before any push, ALL of the following must pass:
+Before any push, ALL must pass:
 - ✅ Tests (`pytest` — 100% green)
 - ✅ Linting (`ruff check .` + `black --check .`)
 - ✅ Docker build (no failing layers)
-- ✅ Docker health (container reaches "healthy")
-- ✅ No uncommitted migrations
-- ✅ No secrets in staged files
+- ✅ Smoke test (`/health` ok + `/readiness` 200 or 503)
+- ✅ Readiness gate (3 consecutive passes before slot promotion)
 
 ### Forbidden Actions
 - ❌ Push with failing tests
 - ❌ Disable linting to bypass errors
-- ❌ Push directly to production branches
-- ❌ Deploy unreviewed code
-
----
-
-## Blue/Green Deployment (AI Receptionist)
-
-- **Strategy**: Blue/Green with health gate
-- **Orchestration**: GitHub Actions → SSH → Docker Compose
-- **Traffic Switching**: Caddy → `ai.internal:8002`
-- **Readiness Gate**: 3 consecutive health checks at `/health`
+- ❌ Push `--no-verify` to skip pre-push checks
+- ❌ Deploy unreviewed code to production
 
 ---
 
 ## Change Log
+
+| Date | Change | Author |
+|------|--------|--------|
+| 2026-02-28 | Initial CI/CD strategy | Antigravity |
+| 2026-03 | Root-level workflows, Doppler secrets, readiness gate at `/readiness` | Antigravity |
+
 
 | Date | Change | Author |
 |------|--------|--------|

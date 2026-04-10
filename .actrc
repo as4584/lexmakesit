@@ -1,0 +1,33 @@
+# .actrc — act configuration for local GitHub Actions parity
+# ─────────────────────────────────────────────────────────────────────────────
+# Prerequisites:
+#   - Docker Desktop for Windows with WSL2 backend enabled
+#   - act installed: winget install nektos.act  (or brew/choco)
+#   - Copy .act/secrets.example -> .act/secrets and fill in values
+#
+# Usage:
+#   act push -W .github/workflows/ci-backend.yml    # run backend CI locally
+#   act push -W .github/workflows/ci-portfolio.yml  # run portfolio CI locally
+#   act -l                                          # list all available jobs
+#
+# The -P flag below sets the runner image. ubuntu-latest maps to the full
+# catthehacker image that closely mirrors GitHub's hosted ubuntu runners.
+# Using a smaller image (node:16-buster-slim) speeds up pulls but omits
+# tools like Docker-in-Docker needed for image-build jobs — comment out the
+# override line if you need image-build jobs locally.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Use a fuller runner image for best GitHub parity
+-P ubuntu-latest=catthehacker/ubuntu:act-22.04
+
+# Load secrets from file (don't commit the actual secrets file)
+--secret-file .act/secrets
+
+# Set GITHUB_TOKEN from the secrets file
+--secret GITHUB_TOKEN
+
+# Reuse containers across runs for faster re-execution
+--reuse
+
+# Default event
+--eventpath .act/event.json

@@ -29,6 +29,9 @@ credentials/
 *.pem
 *.key
 
+# act local secrets (never commit)
+.act/secrets
+
 # Tar archives
 *.tar
 

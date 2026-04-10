@@ -1,0 +1,236 @@
+name: CI — Backend
+
+on:
+  push:
+    branches: ["**"]
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+      - "scripts/ci/backend-*.sh"
+  pull_request:
+    paths:
+      - "backend/**"
+      - ".github/workflows/ci-backend.yml"
+      - "scripts/ci/backend-*.sh"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ──────────────────────────────────────────────────────────────────────────
+  # Lint + test (with real Redis and Postgres service containers)
+  # ──────────────────────────────────────────────────────────────────────────
+  test:
+    name: Test (Python 3.11)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/ai_receptionist
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: test
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: test_ai_receptionist
+        options: >-
+          --health-cmd "pg_isready -U test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+        ports:
+          - 6379:6379
+
+    env:
+      DATABASE_URL: postgresql://test:test@localhost:5432/test_ai_receptionist
+      REDIS_URL: redis://localhost:6379/0
+      JWT_SECRET_KEY: ci-test-secret-not-for-production
+      STRUCTURED_LOGGING: "true"
+      ENVIRONMENT: ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Lint (ruff)
+        run: poetry run ruff check .
+
+      - name: Format check (black)
+        run: poetry run black --check .
+
+      # Run the full test suite including the new auth lifecycle tests
+      - name: Test suite
+        run: poetry run pytest -q --tb=short
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Docker image build + smoke test (main branch only)
+  # ──────────────────────────────────────────────────────────────────────────
+  image:
+    name: Image build + smoke test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          push: false
+          tags: |
+            ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          load: true
+
+      - name: Smoke test — liveness + readiness
+        run: |
+          docker run -d --name smoke \
+            -e JWT_SECRET_KEY=smoke-test-key \
+            -e ENVIRONMENT=ci \
+            -p 8002:8002 \
+            ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+
+          for i in $(seq 1 15); do
+            STATUS=$(curl -sf http://localhost:8002/health | python3 -c "import sys,json; print(json.load(sys.stdin)['status'])" 2>/dev/null || echo "")
+            if [ "$STATUS" = "ok" ]; then
+              echo "✓ /health returned ok"
+              break
+            fi
+            [ "$i" -eq 15 ] && (docker logs smoke; exit 1)
+            sleep 2
+          done
+
+          # Readiness is allowed to return 200 or 503 (no DB in smoke run)
+          HTTP=$(curl -so /dev/null -w "%{http_code}" http://localhost:8002/readiness)
+          echo "readiness returned HTTP $HTTP"
+          [[ "$HTTP" == "200" || "$HTTP" == "503" ]] || exit 1
+
+          docker stop smoke
+
+      - name: Push image
+        if: success()
+        uses: docker/build-push-action@v5
+        with:
+          context: backend
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:${{ github.run_id }}
+            ghcr.io/${{ github.repository }}:latest
+
+  # ──────────────────────────────────────────────────────────────────────────
+  # Deploy (main + image build passed)
+  # ──────────────────────────────────────────────────────────────────────────
+  deploy:
+    name: Deploy to production (blue/green)
+    needs: image
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          DOPPLER_TOKEN: ${{ secrets.DOPPLER_TOKEN }}
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: DOPPLER_TOKEN
+          script: |
+            set -euo pipefail
+            IMAGE="ghcr.io/${{ github.repository }}:${{ github.run_id }}"
+
+            # Install Doppler CLI if not present
+            command -v doppler >/dev/null 2>&1 || \
+              (curl -Ls --tlsv1.2 --proto "=https" --retry 3 https://cli.doppler.com/install.sh | sh)
+
+            # Login to GHCR using GHCR_TOKEN stored in Doppler
+            doppler secrets get GHCR_TOKEN --plain | \
+              docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+            docker pull "$IMAGE"
+
+            # Determine inactive slot
+            ACTIVE=$(docker ps --filter "name=ai_receptionist_blue" --format "{{.Names}}" | head -1)
+            if [ -n "$ACTIVE" ]; then
+              NEW_SLOT=green; OLD_SLOT=blue
+            else
+              NEW_SLOT=blue; OLD_SLOT=green
+            fi
+
+            # Write secrets to a scoped temp file, remove after container start
+            SECRETS_FILE=$(mktemp)
+            chmod 600 "$SECRETS_FILE"
+            doppler secrets download --format env --no-file > "$SECRETS_FILE"
+
+            docker run -d \
+              --name "ai_receptionist_${NEW_SLOT}" \
+              --env-file "$SECRETS_FILE" \
+              -p 8003:8002 \
+              "$IMAGE"
+
+            rm -f "$SECRETS_FILE"
+
+            # Wait for readiness (3 consecutive 200 responses)
+            PASS=0
+            for _ in $(seq 1 30); do
+              HTTP=$(curl -so /dev/null -w "%{http_code}" http://localhost:8003/readiness || echo "000")
+              if [ "$HTTP" = "200" ]; then
+                PASS=$((PASS+1))
+                [ "$PASS" -ge 3 ] && break
+              else
+                PASS=0
+              fi
+              sleep 2
+            done
+
+            if [ "$PASS" -lt 3 ]; then
+              echo "New slot failed readiness check — aborting and removing"
+              docker rm -f "ai_receptionist_${NEW_SLOT}" || true
+              exit 1
+            fi
+
+            # Promote new slot and retire old
+            docker rm -f "ai_receptionist_${OLD_SLOT}" 2>/dev/null || true
+            docker rename "ai_receptionist_${NEW_SLOT}" ai_receptionist_active 2>/dev/null || true

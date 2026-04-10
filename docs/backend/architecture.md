@@ -37,7 +37,8 @@ The AI Receptionist is a **voice-enabled AI assistant** that answers phone calls
 ✅ **Fully operational** as of December 22, 2025
 - Connection time: 2-3 seconds (recently optimized from 10 seconds)
 - Cost per 3-minute call: ~$0.95
-- Deployed at: https://receptionist.lexmakesit.com
+- **REST API**: `https://api.lexmakesit.com`
+- **Twilio webhook** (voice calls): `https://receptionist.lexmakesit.com` — ⚠️ hardcoded in Twilio, do not change
 
 ---
 
@@ -61,6 +62,7 @@ The AI Receptionist is a **voice-enabled AI assistant** that answers phone calls
 ┌─────────────────────────────────────┐
 │    Caddy Reverse Proxy (SSL/TLS)   │
 │  receptionist.lexmakesit.com        │
+│  (Twilio webhook — unchanged)       │
 └──────┬──────────────────────────────┘
        │
        ↓

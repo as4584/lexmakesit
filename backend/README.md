@@ -36,11 +36,12 @@ Intelligent Voice Receptionist powered by OpenAI Realtime API, Twilio, and Qdran
 ## Deployment
 
 This repository uses **Blue/Green Deployment** via GitHub Actions.
-- **Trigger**: Push to `main`.
-- **CI/CD**: `.github/workflows/deploy.yml`.
+- **Trigger**: Push to `main` with changes under `backend/**`
+- **CI/CD**: `.github/workflows/ci-backend.yml` (root-level)
+- **API URL**: `https://api.lexmakesit.com`
 
 ### Secrets
-Secrets are managed in GitHub Actions and injected into `/srv/env/ai_receptionist/.env` on the server.
+Secrets are managed in [Doppler](https://www.doppler.com). The deploy job uses a `DOPPLER_TOKEN` GitHub Secret (service token) to inject all runtime secrets at container start — no `.env` files on disk. Add secrets at: https://dashboard.doppler.com
 
 ## Documentation
 - **[AI_RECEPTIONIST_SOURCE_OF_TRUTH.md](AI_RECEPTIONIST_SOURCE_OF_TRUTH.md)** - ⚠️ CRITICAL: System configuration reference

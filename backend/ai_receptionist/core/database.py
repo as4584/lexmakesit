@@ -4,12 +4,12 @@ Database connection and session management.
 Provides SQLAlchemy engine and session for database operations.
 """
 
-import os
 import logging
+import os
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Tuple
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
 
 from ai_receptionist.config.settings import get_settings
@@ -90,3 +90,24 @@ def get_db_session() -> Generator[Session, None, None]:
         raise
     finally:
         db.close()
+
+
+def check_db_health() -> Tuple[bool, str]:
+    """
+    Probe database reachability without raising.
+
+    Returns:
+        (True, "ok") if a simple SELECT 1 succeeds.
+        (False, "<error message>") if the database is unreachable or not yet
+        configured.
+    """
+    try:
+        engine = get_engine()
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+        return True, "ok"
+    except RuntimeError as exc:
+        # DATABASE_URL not configured
+        return False, str(exc)
+    except Exception as exc:
+        return False, str(exc)

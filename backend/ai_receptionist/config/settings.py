@@ -44,6 +44,7 @@ class Settings(BaseSettings):
     
     # Redis Configuration
     redis_url: Optional[str] = None
+    redis_password: Optional[str] = None
     redis_host: str = "localhost"
     redis_port: int = 6379
     redis_db: int = 0
@@ -58,6 +59,9 @@ class Settings(BaseSettings):
     
     # Admin/Security
     admin_private_key: Optional[str] = None
+    encryption_key: Optional[str] = Field(default=None, validation_alias="ENCRYPTION_KEY")
+    encryption_salt: Optional[str] = Field(default=None, validation_alias="ENCRYPTION_SALT")
+    jwt_secret_key: Optional[str] = Field(default=None, validation_alias="JWT_SECRET_KEY")
 
     # ElevenLabs Configuration
     elevenlabs_api_key: Optional[str] = None
@@ -67,8 +71,15 @@ class Settings(BaseSettings):
     app_base_url: str = "https://dashboard.lexmakesit.com"
     from_email: str = "noreply@lexmakesit.com"
     
+    # CORS
+    cors_allowed_origins: str = Field(
+        default="https://auth.lexmakesit.com,https://dashboard.lexmakesit.com",
+        validation_alias="CORS_ALLOWED_ORIGINS",
+    )
+
     # Application Settings
     log_level: str = "INFO"
+    structured_logging: bool = Field(default=False, validation_alias="STRUCTURED_LOGGING")
     
     if SettingsConfigDict:
         model_config = SettingsConfigDict(
@@ -85,6 +96,10 @@ class Settings(BaseSettings):
             case_sensitive = False
             extra = "ignore"
     
+    def get_cors_origins(self) -> list[str]:
+        """Return the list of allowed CORS origins."""
+        return [o.strip() for o in self.cors_allowed_origins.split(",") if o.strip()]
+
     @property
     def is_production(self) -> bool:
         """Check if running in production environment."""
@@ -122,8 +137,9 @@ class Settings(BaseSettings):
         """
         if self.redis_url:
             return self.redis_url
-        
-        return f"redis://{self.redis_host}:{self.redis_port}/{self.redis_db}"
+
+        auth_part = f":{self.redis_password}@" if self.redis_password else ""
+        return f"redis://{auth_part}{self.redis_host}:{self.redis_port}/{self.redis_db}"
     
     def validate_twilio_config(self) -> bool:
         """

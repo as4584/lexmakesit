@@ -30,21 +30,25 @@ ssh lex@104.236.100.245 "docker exec antigravity_caddy caddy reload --config /et
 curl -s https://lexmakesit.com/api/health
 ```
 
-### AI Receptionist (receptionist.lexmakesit.com)
+### AI Receptionist API (api.lexmakesit.com)
+
+Deployed via blue/green CI pipeline. For hotfixes:
 
 ```bash
-# Restart the app
-ssh lex@174.138.67.169 "cd /home/lex/antigravity_bundle/apps && docker compose -f docker-compose.yml -f docker-compose.hotfix.yml restart ai_receptionist_app"
-
 # View logs
-ssh lex@174.138.67.169 "docker logs --tail 100 ai_receptionist_app"
+ssh lex@174.138.67.169 "docker logs --tail 100 ai_receptionist_active"
 
-# Copy updated file (hotfix)
-scp backend/ai_receptionist/api/realtime.py lex@174.138.67.169:/home/lex/antigravity_bundle/apps/ai_receptionist_new/ai_receptionist/api/realtime.py
+# Liveness check
+curl -s https://api.lexmakesit.com/health
 
-# Health check
-curl -s https://receptionist.lexmakesit.com/health
+# Readiness check (probes DB + Redis)
+curl -s https://api.lexmakesit.com/readiness
+
+# Manual restart (preserves secrets via Doppler)
+ssh lex@174.138.67.169 "docker restart ai_receptionist_active"
 ```
+
+> **Note:** `receptionist.lexmakesit.com` also proxies to the same backend and is kept for Twilio webhook compatibility. Do not use it for API access.
 
 ---
 
