@@ -21,7 +21,9 @@ class FakeTelephonyService(TelephonyService):
     def __init__(self, queue: List[Dict[str, Any]]):
         self.queue = queue
 
-    def validate_signature(self, headers: Mapping[str, str], body: bytes, url: str | None = None) -> bool:
+    def validate_signature(
+        self, headers: Mapping[str, str], body: bytes, url: str | None = None
+    ) -> bool:
         return True
 
     async def enqueue_call(self, event: Dict[str, Any]) -> None:
@@ -43,7 +45,6 @@ def override_telephony_dependency(mocked_redis_queue):
 
     def _provider():
         return FakeTelephonyService(queue=mocked_redis_queue)
-
 
     app.dependency_overrides[get_telephony_service] = _provider
     yield

@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import importlib
-import os
 
 import jwt
 import pytest
@@ -170,6 +169,7 @@ def test_failed_login_lockout_after_five_attempts(client: TestClient):
 # CORS / preflight
 # ============================================================================
 
+
 def test_cors_preflight_from_allowed_origin(client: TestClient):
     """OPTIONS preflight from an allowed origin must return 200 with CORS headers."""
     response = client.options(
@@ -205,6 +205,7 @@ def test_cors_header_present_on_login_response(client: TestClient):
 # ============================================================================
 # Redis-unavailable degradation
 # ============================================================================
+
 
 @pytest.fixture()
 def client_no_redis(monkeypatch: pytest.MonkeyPatch):
@@ -288,6 +289,7 @@ def test_revoked_token_not_enforced_when_redis_unavailable(client_no_redis: Test
 # Startup: missing JWT config
 # ============================================================================
 
+
 def test_jwt_key_missing_raises_at_auth_call(monkeypatch: pytest.MonkeyPatch):
     """If JWT_SECRET_KEY is absent, the first auth call must raise 500."""
     monkeypatch.delenv("JWT_SECRET_KEY", raising=False)
@@ -295,6 +297,7 @@ def test_jwt_key_missing_raises_at_auth_call(monkeypatch: pytest.MonkeyPatch):
 
     # Reload settings cache and auth module state
     from ai_receptionist.config import settings as settings_mod
+
     importlib.reload(settings_mod)
     auth_api._redis_client = None
 
@@ -333,6 +336,7 @@ def test_jwt_key_missing_raises_at_auth_call(monkeypatch: pytest.MonkeyPatch):
 # Readiness probe
 # ============================================================================
 
+
 def test_readiness_endpoint_returns_ready_fields(client: TestClient):
     """/readiness must return JSON with 'ready' and 'checks' keys."""
     response = client.get("/readiness")
@@ -355,6 +359,7 @@ def test_liveness_always_ok(client: TestClient):
 # Auth event emission (structured logging)
 # ============================================================================
 
+
 def test_login_success_emits_auth_event(client: TestClient, monkeypatch: pytest.MonkeyPatch):
     """A successful login should emit a login_success auth event."""
     events: list[dict] = []
@@ -369,6 +374,7 @@ def test_login_success_emits_auth_event(client: TestClient, monkeypatch: pytest.
 
     monkeypatch.setattr(mw, "emit_auth_event", capture_emit)
     import ai_receptionist.app.api.auth as _auth_mod
+
     monkeypatch.setattr(_auth_mod, "emit_auth_event", capture_emit)
 
     _signup(client, "event-user@example.com")

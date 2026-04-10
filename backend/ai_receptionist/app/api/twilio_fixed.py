@@ -11,6 +11,7 @@ from ai_receptionist.services.telephony.telephony import TelephonyService
 
 router = APIRouter()
 
+
 @router.post("/webhook")
 async def twilio_webhook(
     request: Request,
@@ -44,6 +45,7 @@ async def twilio_webhook(
 
     return Response(status_code=status.HTTP_200_OK)
 
+
 @router.get("/available-numbers")
 async def get_available_numbers():
     """
@@ -51,23 +53,34 @@ async def get_available_numbers():
     """
     account_sid = os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
-    
+
     if not account_sid or not auth_token:
         # Return demo number if Twilio not configured
-        return [{"phoneNumber": "+12298215986", "friendlyName": "AI Receptionist Demo (+1 229-821-5986)"}]
-    
+        return [
+            {
+                "phoneNumber": "+12298215986",
+                "friendlyName": "AI Receptionist Demo (+1 229-821-5986)",
+            }
+        ]
+
     try:
         from twilio.rest import Client
+
         client = Client(account_sid, auth_token)
         incoming_numbers = client.incoming_phone_numbers.list(limit=20)
-        
+
         if not incoming_numbers:
-             return [{"phoneNumber": "+12298215986", "friendlyName": "AI Receptionist Demo (+1 229-821-5986)"}]
+            return [
+                {
+                    "phoneNumber": "+12298215986",
+                    "friendlyName": "AI Receptionist Demo (+1 229-821-5986)",
+                }
+            ]
 
         return [
             {
                 "phoneNumber": num.phone_number,
-                "friendlyName": num.friendly_name or f"Line ({num.phone_number})"
+                "friendlyName": num.friendly_name or f"Line ({num.phone_number})",
             }
             for num in incoming_numbers
         ]
@@ -76,13 +89,8 @@ async def get_available_numbers():
         phone = os.getenv("TWILIO_PHONE_NUMBER", "+12298215986")
         return [{"phoneNumber": phone, "friendlyName": f"Configured Line ({phone})"}]
 
+
 @router.get("/my-numbers")
 async def get_my_numbers():
     phone = os.getenv("TWILIO_PHONE_NUMBER", "+12298215986")
-    return [
-        {
-            "phoneNumber": phone,
-            "friendlyName": "AI Receptionist Line",
-            "status": "active"
-        }
-    ]
+    return [{"phoneNumber": phone, "friendlyName": "AI Receptionist Line", "status": "active"}]

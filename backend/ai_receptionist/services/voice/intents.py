@@ -24,62 +24,199 @@ def detect_intent(user_input: str, language: str = "en") -> str:
     user_input_lower = user_input.lower()
 
     # Availability keywords - expanded
-    if any(word in user_input_lower for word in [
-        "appointment", "schedule", "available", "availability", "book", "booking", "reserve", "reservation",
-        "meet", "meeting", "consultation", "consult", "slot", "time slot", "visit",
-        "cita", "disponibilidad", "reserva", "reunión", "consulta"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "appointment",
+            "schedule",
+            "available",
+            "availability",
+            "book",
+            "booking",
+            "reserve",
+            "reservation",
+            "meet",
+            "meeting",
+            "consultation",
+            "consult",
+            "slot",
+            "time slot",
+            "visit",
+            "cita",
+            "disponibilidad",
+            "reserva",
+            "reunión",
+            "consulta",
+        ]
+    ):
         return "availability"
 
     # Services keywords
-    if any(word in user_input_lower for word in [
-        "service", "services", "help with", "do you offer", "can you help", "need help",
-        "what do you do", "what can you", "specialize", "handle", "offer",
-        "formation", "llc", "incorporate", "business setup", "register", "licensing",
-        "license", "compliance", "website", "web", "app", "application", "software",
-        "ai", "automation", "digital", "email", "infrastructure", "nonprofit",
-        "servicio", "servicios", "ofrecen", "pueden ayudar", "qué hacen", "especialidad",
-        "formación", "licencia", "cumplimiento", "sitio web"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "service",
+            "services",
+            "help with",
+            "do you offer",
+            "can you help",
+            "need help",
+            "what do you do",
+            "what can you",
+            "specialize",
+            "handle",
+            "offer",
+            "formation",
+            "llc",
+            "incorporate",
+            "business setup",
+            "register",
+            "licensing",
+            "license",
+            "compliance",
+            "website",
+            "web",
+            "app",
+            "application",
+            "software",
+            "ai",
+            "automation",
+            "digital",
+            "email",
+            "infrastructure",
+            "nonprofit",
+            "servicio",
+            "servicios",
+            "ofrecen",
+            "pueden ayudar",
+            "qué hacen",
+            "especialidad",
+            "formación",
+            "licencia",
+            "cumplimiento",
+            "sitio web",
+        ]
+    ):
         return "services"
 
     # Hours keywords - expanded
-    if any(word in user_input_lower for word in [
-        "hours", "open", "close", "closed", "when are you", "what time", "business hours",
-        "operating hours", "available when", "schedule",
-        "horario", "abierto", "cerrado", "cuándo", "qué hora"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "hours",
+            "open",
+            "close",
+            "closed",
+            "when are you",
+            "what time",
+            "business hours",
+            "operating hours",
+            "available when",
+            "schedule",
+            "horario",
+            "abierto",
+            "cerrado",
+            "cuándo",
+            "qué hora",
+        ]
+    ):
         return "hours"
 
     # Staff keywords - expanded
-    if any(word in user_input_lower for word in [
-        "staff", "attorney", "lawyer", "team", "who works", "who is", "who can",
-        "partner", "associate", "counsel", "paralegal", "legal team",
-        "abogado", "abogada", "equipo", "quién", "personal"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "staff",
+            "attorney",
+            "lawyer",
+            "team",
+            "who works",
+            "who is",
+            "who can",
+            "partner",
+            "associate",
+            "counsel",
+            "paralegal",
+            "legal team",
+            "abogado",
+            "abogada",
+            "equipo",
+            "quién",
+            "personal",
+        ]
+    ):
         return "staff"
 
     # Pricing keywords - expanded
-    if any(word in user_input_lower for word in [
-        "price", "prices", "cost", "costs", "fee", "fees", "how much", "charge", "charges",
-        "rate", "rates", "payment", "afford", "expensive", "budget",
-        "precio", "precios", "costo", "costos", "cuánto", "tarifa", "pago"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "price",
+            "prices",
+            "cost",
+            "costs",
+            "fee",
+            "fees",
+            "how much",
+            "charge",
+            "charges",
+            "rate",
+            "rates",
+            "payment",
+            "afford",
+            "expensive",
+            "budget",
+            "precio",
+            "precios",
+            "costo",
+            "costos",
+            "cuánto",
+            "tarifa",
+            "pago",
+        ]
+    ):
         return "pricing"
 
     # General help/menu request
-    if any(word in user_input_lower for word in [
-        "help", "options", "menu", "what can", "tell me about", "information",
-        "ayuda", "opciones", "menú", "información"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "help",
+            "options",
+            "menu",
+            "what can",
+            "tell me about",
+            "information",
+            "ayuda",
+            "opciones",
+            "menú",
+            "información",
+        ]
+    ):
         return "help_menu"
 
     # Goodbye keywords - expanded
-    if any(word in user_input_lower for word in [
-        "goodbye", "bye", "thank", "thanks", "that's all", "that is all", "no more",
-        "done", "finished", "nothing else", "have a good",
-        "adiós", "gracias", "eso es todo", "nada más", "terminé"
-    ]):
+    if any(
+        word in user_input_lower
+        for word in [
+            "goodbye",
+            "bye",
+            "thank",
+            "thanks",
+            "that's all",
+            "that is all",
+            "no more",
+            "done",
+            "finished",
+            "nothing else",
+            "have a good",
+            "adiós",
+            "gracias",
+            "eso es todo",
+            "nada más",
+            "terminé",
+        ]
+    ):
         return "goodbye"
 
     # Unclear (very short or garbled)
@@ -90,7 +227,9 @@ def detect_intent(user_input: str, language: str = "en") -> str:
     return "other"
 
 
-def handle_intent(intent: str, language: str = "en", user_input: str = "") -> Tuple[str, Optional[str]]:
+def handle_intent(
+    intent: str, language: str = "en", user_input: str = ""
+) -> Tuple[str, Optional[str]]:
     """
     Generate response for an intent.
 
@@ -117,7 +256,9 @@ def handle_intent(intent: str, language: str = "en", user_input: str = "") -> Tu
         weekday = HOURS.get("weekday", "Monday to Friday, 9 AM to 5 PM")
         weekend = HOURS.get("weekend", "Closed on weekends")
         notes = HOURS.get("notes", "")
-        response = get_message("HOURS_RESPONSE", language, weekday_hours=weekday, weekend_hours=weekend, notes=notes)
+        response = get_message(
+            "HOURS_RESPONSE", language, weekday_hours=weekday, weekend_hours=weekend, notes=notes
+        )
         return response, "gather"
 
     elif intent == "staff":
@@ -131,9 +272,15 @@ def handle_intent(intent: str, language: str = "en", user_input: str = "") -> Tu
         if SERVICES:
             service_name = SERVICES[0]["name"]
             price = SERVICES[0].get("price", "varies")
-            response = get_message("PRICING_RESPONSE", language, service_name=service_name, price=price)
+            response = get_message(
+                "PRICING_RESPONSE", language, service_name=service_name, price=price
+            )
         else:
-            response = "Our pricing varies by service. Please call us for details." if language == "en" else "Nuestros precios varían según el servicio. Por favor llámenos para más detalles."
+            response = (
+                "Our pricing varies by service. Please call us for details."
+                if language == "en"
+                else "Nuestros precios varían según el servicio. Por favor llámenos para más detalles."
+            )
         return response, "gather"
 
     elif intent == "unclear":
@@ -152,13 +299,18 @@ def handle_intent(intent: str, language: str = "en", user_input: str = "") -> Tu
         if _bc.WEBSITE_CONTEXT and user_input and len(user_input.strip()) > 3:
             # Try a simple keyword search in the website content
             snippets = [
-                line.strip() for line in _bc.WEBSITE_CONTEXT.split(".")
+                line.strip()
+                for line in _bc.WEBSITE_CONTEXT.split(".")
                 if any(word in line.lower() for word in user_input.lower().split()[:5])
                 and len(line.strip()) > 20
             ]
             if snippets:
                 answer = snippets[0][:200]
-                response = f"Based on our website: {answer}. Is there anything else I can help you with?" if language == "en" else f"Según nuestro sitio web: {answer}. ¿Puedo ayudarle en algo más?"
+                response = (
+                    f"Based on our website: {answer}. Is there anything else I can help you with?"
+                    if language == "en"
+                    else f"Según nuestro sitio web: {answer}. ¿Puedo ayudarle en algo más?"
+                )
                 return response, "gather"
         response = get_message("CLARIFICATION_REQUEST", language)
         return response, "gather"

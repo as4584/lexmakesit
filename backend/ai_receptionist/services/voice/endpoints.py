@@ -11,7 +11,7 @@ from twilio.twiml.voice_response import VoiceResponse, Gather
 from ai_receptionist.services.voice.business_config import BUSINESS_NAME
 from ai_receptionist.services.voice.session import get_session, clear_session
 from ai_receptionist.services.voice.cost_tracker import get_cost_tracker
-from ai_receptionist.services.voice.messages import LANGUAGE_SELECTION_COMBINED, get_message
+from ai_receptionist.services.voice.messages import get_message
 from ai_receptionist.services.voice.intents import detect_intent, handle_intent
 
 logger = logging.getLogger(__name__)
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 # Optional call monitor integration
 try:
     from call_monitor import monitor
+
     MONITOR_ENABLED = True
 except ImportError:
     MONITOR_ENABLED = False
@@ -31,14 +32,18 @@ router = APIRouter(tags=["voice"])  # prefix moved to main.py
 
 
 @router.post("/voice")
-async def voice_entry(request: Request, CallSid: str = Form(...), From: str = Form(None), To: str = Form(None)):
+async def voice_entry(
+    request: Request, CallSid: str = Form(...), From: str = Form(None), To: str = Form(None)
+):
     """
     Entry point for incoming calls.
     Connects immediately to OpenAI Realtime API via WebSocket.
     Passes the 'To' number so the stream can load the correct tenant config.
     """
     print(f"DEBUG: voice_entry hit with CallSid={CallSid} To={To}", flush=True)
-    logger.info(f"Incoming call from {From} to {To} (Sid: {CallSid}) - Establishing Realtime Stream")
+    logger.info(
+        f"Incoming call from {From} to {To} (Sid: {CallSid}) - Establishing Realtime Stream"
+    )
 
     # Optional call monitor integration
     if MONITOR_ENABLED and monitor:
@@ -54,6 +59,7 @@ async def voice_entry(request: Request, CallSid: str = Form(...), From: str = Fo
     # Pass the To number as a query param so the WebSocket handler can load the right tenant
     public_host = "receptionist.lexmakesit.com"
     import urllib.parse
+
     to_param = urllib.parse.quote(To or "", safe="")
     stream_url = f"wss://{public_host}/twilio/stream?to={to_param}"
     logger.info(f"Connecting to stream: {stream_url}")
@@ -66,7 +72,12 @@ async def voice_entry(request: Request, CallSid: str = Form(...), From: str = Fo
 
 
 @router.post("/language-selected")
-async def language_selected(request: Request, CallSid: str = Form(...), Digits: str = Form(None), SpeechResult: str = Form(None)):
+async def language_selected(
+    request: Request,
+    CallSid: str = Form(...),
+    Digits: str = Form(None),
+    SpeechResult: str = Form(None),
+):
     """
     Handle language selection.
     1 = English, 2 = Spanish, or speech input "English"/"Español"
@@ -82,7 +93,7 @@ async def language_selected(request: Request, CallSid: str = Form(...), Digits: 
     else:
         # Default to English if unclear
         session.language = "en"
-    
+
     # Log language selection to monitor
     if MONITOR_ENABLED and monitor:
         monitor.log_language_selection(CallSid, session.language)
@@ -100,7 +111,7 @@ async def language_selected(request: Request, CallSid: str = Form(...), Digits: 
     )
     gather.say(greeting, language="en" if session.language == "en" else "es")
     tracker.log_tts(greeting)
-    
+
     # Log AI greeting to monitor
     if MONITOR_ENABLED and monitor:
         monitor.log_ai_response(CallSid, greeting, "greeting")
@@ -124,7 +135,7 @@ async def gather_input(request: Request, CallSid: str = Form(...), SpeechResult:
 
     if SpeechResult:
         tracker.log_speech_recognition()
-        
+
         # Log user input to monitor
         if MONITOR_ENABLED and monitor:
             monitor.log_user_input(CallSid, SpeechResult)
@@ -136,7 +147,7 @@ async def gather_input(request: Request, CallSid: str = Form(...), SpeechResult:
     # Track conversation
     session.add_turn(user_input, bot_response)
     session.current_intent = intent
-    
+
     # Log AI response to monitor
     if MONITOR_ENABLED and monitor:
         monitor.log_ai_response(CallSid, bot_response, intent)
@@ -154,7 +165,7 @@ async def gather_input(request: Request, CallSid: str = Form(...), SpeechResult:
         logger.info("\n" + "=" * 50)
         logger.info(summary)
         logger.info("=" * 50 + "\n")
-        
+
         # Log call end to monitor
         if MONITOR_ENABLED and monitor:
             monitor.log_call_end(CallSid, "user_goodbye")
@@ -197,7 +208,7 @@ async def repeat_last(request: Request, CallSid: str = Form(...)):
         unclear_msg = get_message("HELP_MENU", session.language)
     else:
         unclear_msg = get_message("CLARIFICATION_REQUEST", session.language)
-    
+
     # Log to monitor
     if MONITOR_ENABLED and monitor:
         monitor.log_ai_response(CallSid, unclear_msg, "unclear")
@@ -220,7 +231,7 @@ async def repeat_last(request: Request, CallSid: str = Form(...)):
         escalation_msg = get_message("ESCALATION_RESPONSE", session.language)
         resp.say(escalation_msg, language="en" if session.language == "en" else "es")
         tracker.log_tts(escalation_msg)
-        
+
         goodbye = get_message("GOODBYE", session.language, business_name=BUSINESS_NAME)
         resp.say(goodbye, language="en" if session.language == "en" else "es")
         tracker.log_tts(goodbye)
@@ -231,7 +242,7 @@ async def repeat_last(request: Request, CallSid: str = Form(...)):
         print("\n" + "=" * 50)
         print(summary)
         print("=" * 50 + "\n")
-        
+
         # Log call end to monitor
         if MONITOR_ENABLED and monitor:
             monitor.log_call_end(CallSid, "too_many_retries")

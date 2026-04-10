@@ -7,6 +7,7 @@ Includes:
 - Email verification
 - Password reset
 """
+
 import secrets
 import hashlib
 import importlib
@@ -46,8 +47,10 @@ _redis_client: Optional[Any] = None
 # Request/Response Models
 # ============================================================================
 
+
 class SignupRequest(BaseModel):
     """Sign up request payload."""
+
     email: EmailStr
     password: str
     full_name: str
@@ -56,12 +59,14 @@ class SignupRequest(BaseModel):
 
 class LoginRequest(BaseModel):
     """Login request payload."""
+
     email: EmailStr
     password: str
 
 
 class TokenResponse(BaseModel):
     """Authentication token response."""
+
     access_token: str
     token_type: str = "bearer"
     user: dict[str, Any]
@@ -69,28 +74,33 @@ class TokenResponse(BaseModel):
 
 class RefreshResponse(BaseModel):
     """Token refresh response."""
+
     access_token: str
     token_type: str = "bearer"
 
 
 class VerifyEmailRequest(BaseModel):
     """Email verification request."""
+
     token: str
 
 
 class ForgotPasswordRequest(BaseModel):
     """Forgot password request."""
+
     email: EmailStr
 
 
 class ResetPasswordRequest(BaseModel):
     """Password reset request."""
+
     token: str
     new_password: str
 
 
 class MessageResponse(BaseModel):
     """Generic message response."""
+
     message: str
 
 
@@ -313,6 +323,7 @@ def get_current_user(
 ) -> TokenData:
     return _get_current_user_token(request, authorization)
 
+
 def generate_token() -> str:
     """Generate a secure URL-safe token."""
     return secrets.token_urlsafe(32)
@@ -323,79 +334,72 @@ def hash_token(token: str) -> str:
     return hashlib.sha256(token.encode()).hexdigest()
 
 
-def create_email_token(
-    db: Session,
-    user_id: int,
-    token_type: str
-) -> str:
+def create_email_token(db: Session, user_id: int, token_type: str) -> str:
     """
     Create and store an email token.
-    
+
     Args:
         db: Database session
         user_id: User ID
         token_type: 'verify_email' or 'reset_password'
-        
+
     Returns:
         The plaintext token (for sending via email)
     """
     # Generate plaintext token
     plaintext_token = generate_token()
     token_hash = hash_token(plaintext_token)
-    
+
     # Invalidate any existing tokens of the same type for this user
     db.query(EmailToken).filter(
         EmailToken.user_id == user_id,
         EmailToken.token_type == token_type,
-        EmailToken.used_at.is_(None)
+        EmailToken.used_at.is_(None),
     ).update({"used_at": datetime.now(timezone.utc)})
-    
+
     # Create new token
     email_token = EmailToken(
         user_id=user_id,
         token_type=token_type,
         token_hash=token_hash,
-        expires_at=datetime.now(timezone.utc) + timedelta(minutes=EMAIL_TOKEN_EXPIRY_MINUTES)
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=EMAIL_TOKEN_EXPIRY_MINUTES),
     )
     db.add(email_token)
     db.commit()
-    
+
     return plaintext_token
 
 
-def verify_email_token(
-    db: Session,
-    plaintext_token: str,
-    token_type: str
-) -> Optional[EmailToken]:
+def verify_email_token(db: Session, plaintext_token: str, token_type: str) -> Optional[EmailToken]:
     """
     Verify an email token and mark it as used.
-    
+
     Args:
         db: Database session
         plaintext_token: The plaintext token from the URL
         token_type: Expected token type
-        
+
     Returns:
         The EmailToken if valid, None otherwise
     """
     token_hash = hash_token(plaintext_token)
-    
-    email_token = db.query(EmailToken).filter(
-        EmailToken.token_hash == token_hash,
-        EmailToken.token_type == token_type
-    ).first()
-    
+
+    email_token = (
+        db.query(EmailToken)
+        .filter(EmailToken.token_hash == token_hash, EmailToken.token_type == token_type)
+        .first()
+    )
+
     if not email_token:
         return None
-    
+
     if not email_token.is_valid:
         return None
-    
+
     # Mark as used
     email_token.used_at = datetime.now(timezone.utc)
     db.commit()
-    
+
     return email_token
 
 
@@ -403,11 +407,14 @@ def verify_email_token(
 # Authentication Endpoints
 # ============================================================================
 
+
 @router.post("/signup", response_model=TokenResponse)
-async def signup(payload: SignupRequest, response: Response, request: Request, db: Session = Depends(get_db)):
+async def signup(
+    payload: SignupRequest, response: Response, request: Request, db: Session = Depends(get_db)
+):
     """
     Create a new user account and business.
-    
+
     This endpoint:
     1. Creates a user account
     2. Creates a business linked to the user
@@ -418,33 +425,30 @@ async def signup(payload: SignupRequest, response: Response, request: Request, d
     existing_user = db.query(User).filter(User.email == payload.email).first()
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
+
     # Hash password
-    password_hash = bcrypt.hashpw(
-        payload.password.encode('utf-8'),
-        bcrypt.gensalt()
-    ).decode('utf-8')
-    
+    password_hash = bcrypt.hashpw(payload.password.encode("utf-8"), bcrypt.gensalt()).decode(
+        "utf-8"
+    )
+
     # Create user
     user = User(
         username=payload.email,
         email=payload.email,
         password_hash=password_hash,
         full_name=payload.full_name,
-        is_verified=False
+        is_verified=False,
     )
     db.add(user)
     db.flush()
-    
+
     # Create business
     business = Business(
-        owner_email=user.email,
-        name=payload.business_name,
-        subscription_status='trial'
+        owner_email=user.email, name=payload.business_name, subscription_status="trial"
     )
     db.add(business)
     db.commit()
-    
+
     # Create verification token and send email
     try:
         plaintext_token = create_email_token(db, user.id, "verify_email")
@@ -452,12 +456,12 @@ async def signup(payload: SignupRequest, response: Response, request: Request, d
     except Exception as e:
         logger.error(f"Failed to create verification token: {e}")
         # Don't fail signup if email fails
-    
+
     # Create JWT token
     token = _make_access_token(user.id, user.email, str(business.id))
     _set_auth_cookie(response, token, request)
     emit_auth_event("signup_success", email=user.email, user_id=user.id)
-    
+
     return TokenResponse(
         access_token=token,
         user={
@@ -465,13 +469,15 @@ async def signup(payload: SignupRequest, response: Response, request: Request, d
             "email": user.email,
             "full_name": user.full_name,
             "business_id": str(business.id),
-            "is_verified": user.is_verified
-        }
+            "is_verified": user.is_verified,
+        },
     )
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(payload: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db)):
+async def login(
+    payload: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db)
+):
     """
     Login with email and password.
     """
@@ -489,35 +495,35 @@ async def login(payload: LoginRequest, response: Response, request: Request, db:
             emit_auth_event("login_locked", email=payload.email)
             raise HTTPException(status_code=429, detail="too many failed login attempts")
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     # Verify password
-    if not bcrypt.checkpw(payload.password.encode('utf-8'), user.password_hash.encode('utf-8')):
+    if not bcrypt.checkpw(payload.password.encode("utf-8"), user.password_hash.encode("utf-8")):
         attempts = _record_failed_login(payload.email)
         emit_auth_event("login_failure", email=payload.email, detail="wrong password")
         if attempts >= LOGIN_FAIL_LIMIT:
             emit_auth_event("login_locked", email=payload.email)
             raise HTTPException(status_code=429, detail="too many failed login attempts")
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    
+
     # Check if user is active
     if not user.is_active:
         raise HTTPException(status_code=403, detail="Account is disabled")
-    
+
     # Get user's business
     business = db.query(Business).filter(Business.owner_email == user.email).first()
     business_id = str(business.id) if business else None
 
     _clear_failed_logins(payload.email)
-    
+
     # Update last login
     user.last_login_at = datetime.now(timezone.utc)
     db.commit()
-    
+
     # Create token
     token = _make_access_token(user.id, user.email, business_id)
     _set_auth_cookie(response, token, request)
     emit_auth_event("login_success", email=user.email, user_id=user.id)
-    
+
     return TokenResponse(
         access_token=token,
         user={
@@ -525,8 +531,8 @@ async def login(payload: LoginRequest, response: Response, request: Request, db:
             "email": user.email,
             "full_name": user.full_name,
             "business_id": business_id,
-            "is_verified": user.is_verified
-        }
+            "is_verified": user.is_verified,
+        },
     )
 
 
@@ -547,18 +553,20 @@ async def get_current_user_info(
     db_user = db.query(User).filter(User.id == user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     return {
         "user_id": user_id,
         "email": db_user.email,
         "full_name": db_user.full_name,
         "business_id": business_id,
-        "is_verified": db_user.is_verified
+        "is_verified": db_user.is_verified,
     }
 
 
 @router.post("/logout")
-async def logout(response: Response, request: Request, authorization: Optional[str] = Header(default=None)):
+async def logout(
+    response: Response, request: Request, authorization: Optional[str] = Header(default=None)
+):
     """
     Logout (client-side token removal).
     """
@@ -597,27 +605,27 @@ async def refresh_token(
 # Email Verification Endpoints
 # ============================================================================
 
+
 @router.post("/request-verify-email", response_model=MessageResponse)
 async def request_verify_email(
-    user: TokenData = Depends(get_current_user),
-    db: Session = Depends(get_db)
+    user: TokenData = Depends(get_current_user), db: Session = Depends(get_db)
 ):
     """
     Request a new email verification link.
-    
+
     Requires authentication. Sends a verification email to the user's email address.
     """
     db_user = db.query(User).filter(User.id == user.user_id).first()
     if not db_user:
         raise HTTPException(status_code=404, detail="User not found")
-    
+
     if db_user.is_verified:
         return MessageResponse(message="Email is already verified")
-    
+
     # Create token (email delivery not wired in this deployment branch)
     plaintext_token = create_email_token(db, db_user.id, "verify_email")
     logger.info(f"Verification token created for {db_user.email}: {plaintext_token[:8]}...")
-    
+
     # Always return success to prevent email enumeration
     return MessageResponse(message="If the email exists, a verification link has been sent")
 
@@ -628,13 +636,10 @@ async def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db
     Verify a user's email address using the token from the email link.
     """
     email_token = verify_email_token(db, request.token, "verify_email")
-    
+
     if not email_token:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired verification link"
-        )
-    
+        raise HTTPException(status_code=400, detail="Invalid or expired verification link")
+
     # Mark user as verified
     user = db.query(User).filter(User.id == email_token.user_id).first()
     if user:
@@ -642,7 +647,7 @@ async def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db
         user.email_verified_at = datetime.now(timezone.utc)
         db.commit()
         logger.info(f"User {user.email} verified their email")
-    
+
     return MessageResponse(message="Email verified successfully")
 
 
@@ -650,15 +655,16 @@ async def verify_email(request: VerifyEmailRequest, db: Session = Depends(get_db
 # Password Reset Endpoints
 # ============================================================================
 
+
 @router.post("/forgot-password", response_model=MessageResponse)
 async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(get_db)):
     """
     Request a password reset link.
-    
+
     ALWAYS returns a generic 200 response to prevent email enumeration.
     """
     user = db.query(User).filter(User.email == request.email).first()
-    
+
     if user and user.is_active:
         # Create token and send email
         try:
@@ -668,7 +674,7 @@ async def forgot_password(request: ForgotPasswordRequest, db: Session = Depends(
             logger.error(f"Failed to create password reset token: {e}")
     else:
         logger.debug(f"Password reset requested for unknown/inactive email: {request.email}")
-    
+
     # ALWAYS return generic success message (security: prevent email enumeration)
     return MessageResponse(
         message="If an account exists with this email, a password reset link has been sent"
@@ -682,34 +688,27 @@ async def reset_password(request: ResetPasswordRequest, db: Session = Depends(ge
     """
     # Validate password
     if len(request.new_password) < 8:
-        raise HTTPException(
-            status_code=400,
-            detail="Password must be at least 8 characters long"
-        )
-    
+        raise HTTPException(status_code=400, detail="Password must be at least 8 characters long")
+
     # Verify token
     email_token = verify_email_token(db, request.token, "reset_password")
-    
+
     if not email_token:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid or expired reset link"
-        )
-    
+        raise HTTPException(status_code=400, detail="Invalid or expired reset link")
+
     # Update password
     user = db.query(User).filter(User.id == email_token.user_id).first()
     if not user:
         raise HTTPException(status_code=400, detail="Invalid reset link")
-    
+
     # Hash new password
-    password_hash = bcrypt.hashpw(
-        request.new_password.encode('utf-8'),
-        bcrypt.gensalt()
-    ).decode('utf-8')
-    
+    password_hash = bcrypt.hashpw(request.new_password.encode("utf-8"), bcrypt.gensalt()).decode(
+        "utf-8"
+    )
+
     user.password_hash = password_hash
     db.commit()
-    
+
     logger.info(f"Password reset completed for user {user.email}")
-    
+
     return MessageResponse(message="Password reset successfully")

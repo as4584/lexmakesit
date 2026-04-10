@@ -89,7 +89,7 @@ jobs:
   # ──────────────────────────────────────────────────────────────────────────
   image:
     name: Image build + smoke test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: github.ref == 'refs/heads/master' && github.event_name == 'push'
     needs: test
     runs-on: ubuntu-latest
 

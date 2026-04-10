@@ -4,7 +4,12 @@ import json
 from typing import Dict
 
 
-from ai_receptionist.services.flags.service import FeatureFlagService, FeatureFlagRepository, RedisLike, CACHE_TTL_SECONDS
+from ai_receptionist.services.flags.service import (
+    FeatureFlagService,
+    FeatureFlagRepository,
+    RedisLike,
+    CACHE_TTL_SECONDS,
+)
 
 
 class FakeRedis(RedisLike):
@@ -26,11 +31,22 @@ class FakeRedis(RedisLike):
 
 
 class FakeRepo(FeatureFlagRepository):
-    def __init__(self, plan_by_tenant: Dict[str, str], plan_flags: Dict[str, Dict[str, bool]], overrides: Dict[str, Dict[str, bool]]):
+    def __init__(
+        self,
+        plan_by_tenant: Dict[str, str],
+        plan_flags: Dict[str, Dict[str, bool]],
+        overrides: Dict[str, Dict[str, bool]],
+    ):
         self.plan_by_tenant = plan_by_tenant
         self.plan_flags = plan_flags
         self.overrides = overrides
-        self.calls: Dict[str, int] = {"get_plan": 0, "get_flags": 0, "get_overrides": 0, "set_flag": 0, "set_plan": 0}
+        self.calls: Dict[str, int] = {
+            "get_plan": 0,
+            "get_flags": 0,
+            "get_overrides": 0,
+            "set_flag": 0,
+            "set_plan": 0,
+        }
 
     def get_tenant_plan(self, tenant_id: str) -> str:
         self.calls["get_plan"] += 1
@@ -44,7 +60,9 @@ class FakeRepo(FeatureFlagRepository):
         self.calls["get_overrides"] += 1
         return self.overrides.get(tenant_id, {})
 
-    def set_tenant_flag(self, tenant_id: str, flag_name: str, enabled: bool, admin_user: str) -> None:
+    def set_tenant_flag(
+        self, tenant_id: str, flag_name: str, enabled: bool, admin_user: str
+    ) -> None:
         self.calls["set_flag"] += 1
         self.overrides.setdefault(tenant_id, {})[flag_name] = bool(enabled)
 
@@ -55,8 +73,12 @@ class FakeRepo(FeatureFlagRepository):
 
 def test_get_effective_flags_uses_cache_when_present():
     redis = FakeRedis()
-    repo = FakeRepo({"t1": "core"}, {"core": {"allow_ai_booking": True}}, {"t1": {"allow_rag": True}})
-    svc = FeatureFlagService(repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False})
+    repo = FakeRepo(
+        {"t1": "core"}, {"core": {"allow_ai_booking": True}}, {"t1": {"allow_rag": True}}
+    )
+    svc = FeatureFlagService(
+        repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False}
+    )
 
     # Prime cache
     cached = {"allow_rag": True, "allow_ai_booking": True}
@@ -72,8 +94,12 @@ def test_get_effective_flags_uses_cache_when_present():
 
 def test_get_effective_flags_builds_and_caches():
     redis = FakeRedis()
-    repo = FakeRepo({"t2": "core"}, {"core": {"allow_ai_booking": True}}, {"t2": {"allow_rag": True}})
-    svc = FeatureFlagService(repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False})
+    repo = FakeRepo(
+        {"t2": "core"}, {"core": {"allow_ai_booking": True}}, {"t2": {"allow_rag": True}}
+    )
+    svc = FeatureFlagService(
+        repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False}
+    )
 
     flags = svc.get_effective_flags("t2")
     assert flags == {"allow_rag": True, "allow_ai_booking": True}
@@ -91,7 +117,9 @@ def test_set_tenant_flag_updates_and_invalidates():
     redis.store["tenant:flags:t3"] = json.dumps({"allow_rag": False})
 
     repo = FakeRepo({"t3": "starter"}, {"starter": {"allow_ai_booking": False}}, {"t3": {}})
-    svc = FeatureFlagService(repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False})
+    svc = FeatureFlagService(
+        repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False}
+    )
 
     flags = svc.set_tenant_flag("t3", "allow_rag", True, admin_user="lex")
     assert repo.calls["set_flag"] == 1
@@ -102,8 +130,14 @@ def test_set_tenant_flag_updates_and_invalidates():
 
 def test_set_tenant_plan_updates_and_invalidates():
     redis = FakeRedis()
-    repo = FakeRepo({"t4": "starter"}, {"starter": {"allow_ai_booking": False}, "core": {"allow_ai_booking": True}}, {"t4": {}})
-    svc = FeatureFlagService(repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False})
+    repo = FakeRepo(
+        {"t4": "starter"},
+        {"starter": {"allow_ai_booking": False}, "core": {"allow_ai_booking": True}},
+        {"t4": {}},
+    )
+    svc = FeatureFlagService(
+        repo=repo, redis=redis, default_flags={"allow_rag": False, "allow_ai_booking": False}
+    )
 
     flags = svc.set_tenant_plan("t4", "core", admin_user="lex")
     assert repo.calls["set_plan"] == 1

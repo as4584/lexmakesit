@@ -13,10 +13,15 @@ from ai_receptionist.app.api.admin import router as admin_router
 from ai_receptionist.app.api.oauth import router as oauth_router
 from ai_receptionist.app.api.auth import router as auth_router
 from ai_receptionist.app.api.voice_settings import router as voice_settings_router
+
 # from ai_receptionist.api.twilio_voice import router as twilio_voice_router # Removed
 from ai_receptionist.api.realtime import router as realtime_router
 from ai_receptionist.services.voice.endpoints import router as voice_router
-from ai_receptionist.app.middleware import configure_logging, request_context_middleware, emit_auth_event
+from ai_receptionist.app.middleware import (
+    configure_logging,
+    request_context_middleware,
+    emit_auth_event,
+)
 from ai_receptionist.utils.encryption import LEGACY_ENCRYPTION_SALT_B64
 from ai_receptionist.core.database import check_db_health
 
@@ -44,8 +49,12 @@ if settings.encryption_salt == LEGACY_ENCRYPTION_SALT_B64:
 _start_time = time.time()
 
 # Startup validation — fail loudly if JWT key is absent at boot
-if not (os.getenv("JWT_SECRET_KEY") or settings.jwt_secret_key or
-        os.getenv("ADMIN_PRIVATE_KEY") or settings.admin_private_key):
+if not (
+    os.getenv("JWT_SECRET_KEY")
+    or settings.jwt_secret_key
+    or os.getenv("ADMIN_PRIVATE_KEY")
+    or settings.admin_private_key
+):
     logger.critical(
         "JWT signing key not configured. Set JWT_SECRET_KEY before starting. "
         "Auth endpoints will fail at runtime."
@@ -85,6 +94,7 @@ def readiness():
     # Redis check (optional dependency — degraded is warned, not fatal)
     try:
         import importlib
+
         redis_module = importlib.import_module("redis")
         _settings = get_settings()
         rc = redis_module.Redis.from_url(
@@ -117,14 +127,17 @@ def root():
         return FileResponse(str(html_path))
     return JSONResponse({"name": "ai-receptionist", "version": "0.1.0"})
 
+
 # Debug routes
 @app.post("/test-ping")
 def test_ping():
     return {"msg": "pong"}
 
+
 @app.post("/twilio/test-voice")
 def test_voice(CallSid: str = Form(...)):
     return {"sid": CallSid}
+
 
 # Mount routers
 # Prioritize voice_router to ensure /twilio/voice is registered correctly

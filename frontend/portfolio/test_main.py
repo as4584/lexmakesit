@@ -11,6 +11,7 @@ import pytest
 # Set test environment before importing the app
 os.environ["PRODUCTION"] = "false"
 os.environ["TRUSTED_HOSTS"] = "localhost,127.0.0.1,testserver"
+os.environ["RATE_LIMIT_STORAGE"] = "memory://"
 
 from main import app
 

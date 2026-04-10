@@ -49,10 +49,10 @@ def _derive_key_from_secret(secret: str, salt: bytes) -> bytes:
 def _get_encryption_key() -> bytes:
     """
     Get or generate encryption key for token storage.
-    
+
     Uses ENCRYPTION_KEY env var if set, otherwise generates from ADMIN_PRIVATE_KEY.
     For production, set a dedicated ENCRYPTION_KEY environment variable.
-    
+
     Returns:
         32-byte encryption key suitable for Fernet
     """
@@ -65,13 +65,11 @@ def _get_encryption_key() -> bytes:
             return key
         except Exception as e:
             raise RuntimeError("ENCRYPTION_KEY is invalid for Fernet") from e
-    
+
     # Fallback: derive from ADMIN_PRIVATE_KEY and ENCRYPTION_SALT
     secret = os.environ.get("ADMIN_PRIVATE_KEY")
     if not secret:
-        raise RuntimeError(
-            "ENCRYPTION_KEY or ADMIN_PRIVATE_KEY must be set for token encryption"
-        )
+        raise RuntimeError("ENCRYPTION_KEY or ADMIN_PRIVATE_KEY must be set for token encryption")
 
     return _derive_key_from_secret(secret, _get_encryption_salt())
 
@@ -87,10 +85,10 @@ def _get_key_with_explicit_salt(salt_b64: str) -> bytes:
 def encrypt_token(token: str) -> str:
     """
     Encrypt a token for secure storage.
-    
+
     Args:
         token: Plain text token to encrypt
-        
+
     Returns:
         Base64-encoded encrypted token
     """
@@ -107,10 +105,10 @@ def encrypt_token(token: str) -> str:
 def decrypt_token(encrypted_token: str) -> str:
     """
     Decrypt a stored token.
-    
+
     Args:
         encrypted_token: Base64-encoded encrypted token
-        
+
     Returns:
         Decrypted plain text token
     """
@@ -155,9 +153,9 @@ def decrypt_token_with_salt(encrypted_token: str, salt_b64: str) -> str:
 def generate_encryption_key() -> str:
     """
     Generate a new Fernet encryption key.
-    
+
     Use this to generate an ENCRYPTION_KEY for your .env file.
-    
+
     Returns:
         Base64-encoded 32-byte key
     """

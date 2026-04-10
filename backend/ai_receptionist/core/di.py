@@ -4,7 +4,11 @@ import logging
 from ai_receptionist.config.settings import Settings, get_settings
 from ai_receptionist.services.telephony.telephony import TelephonyService
 from ai_receptionist.services.telephony.twilio_service import TwilioTelephonyService
-from ai_receptionist.services.flags.service import FeatureFlagService, FeatureFlagRepository, RedisLike
+from ai_receptionist.services.flags.service import (
+    FeatureFlagService,
+    FeatureFlagRepository,
+    RedisLike,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +34,11 @@ def get_tenant_mapping() -> Dict[str, str]:
         from ai_receptionist.models.phone_number import PhoneNumber
 
         with get_db_session() as db:
-            rows = db.query(PhoneNumber.phone_number, PhoneNumber.tenant_id).filter(
-                PhoneNumber.is_active.is_(True)
-            ).all()
+            rows = (
+                db.query(PhoneNumber.phone_number, PhoneNumber.tenant_id)
+                .filter(PhoneNumber.is_active.is_(True))
+                .all()
+            )
             return {r.phone_number: r.tenant_id for r in rows}
     except Exception:
         logger.debug("tenant mapping unavailable – returning empty dict", exc_info=True)
@@ -40,6 +46,7 @@ def get_tenant_mapping() -> Dict[str, str]:
 
 
 # --- Feature flags wiring ---
+
 
 class _InMemoryFlagsRepo(FeatureFlagRepository):
     def __init__(self):
@@ -62,7 +69,9 @@ class _InMemoryFlagsRepo(FeatureFlagRepository):
     def get_tenant_overrides(self, tenant_id: str) -> Dict[str, bool]:
         return self._overrides.get(tenant_id, {})
 
-    def set_tenant_flag(self, tenant_id: str, flag_name: str, enabled: bool, admin_user: str) -> None:
+    def set_tenant_flag(
+        self, tenant_id: str, flag_name: str, enabled: bool, admin_user: str
+    ) -> None:
         self._overrides.setdefault(tenant_id, {})[flag_name] = bool(enabled)
 
     def set_tenant_plan(self, tenant_id: str, plan_slug: str, admin_user: str) -> None:

@@ -5,7 +5,6 @@ Provides SQLAlchemy engine and session for database operations.
 """
 
 import logging
-import os
 from contextlib import contextmanager
 from typing import Generator, Tuple
 
@@ -27,10 +26,10 @@ def get_engine():
     if _engine is None:
         settings = get_settings()
         database_url = settings.get_database_url()
-        
+
         if not database_url:
             raise RuntimeError("DATABASE_URL not configured")
-        
+
         _engine = create_engine(
             database_url,
             pool_pre_ping=True,
@@ -38,7 +37,7 @@ def get_engine():
             max_overflow=10,
         )
         logger.info("Database engine created")
-    
+
     return _engine
 
 
@@ -57,7 +56,7 @@ def get_session_local():
 def get_db() -> Generator[Session, None, None]:
     """
     FastAPI dependency that provides a database session.
-    
+
     Usage:
         @app.get("/endpoint")
         def endpoint(db: Session = Depends(get_db)):
@@ -75,7 +74,7 @@ def get_db() -> Generator[Session, None, None]:
 def get_db_session() -> Generator[Session, None, None]:
     """
     Context manager for database sessions.
-    
+
     Usage:
         with get_db_session() as db:
             db.query(...)

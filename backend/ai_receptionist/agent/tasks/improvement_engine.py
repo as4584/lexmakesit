@@ -1,8 +1,8 @@
-import json
 import os
-from typing import List, Dict, Any
+from typing import Dict, Any
 from openai import OpenAI
 from ai_receptionist.config.settings import get_settings
+
 
 class ImprovementEngine:
     def __init__(self):
@@ -14,16 +14,16 @@ class ImprovementEngine:
         for action in actions:
             file_path = action.get("file")
             change_desc = action.get("change")
-            
+
             if not os.path.exists(file_path):
                 print(f"File not found: {file_path}")
                 continue
-                
+
             print(f"Applying fix to {file_path}: {change_desc}")
-            
+
             with open(file_path, "r", encoding="utf-8") as f:
                 code = f.read()
-                
+
             prompt = f"""
             You are an expert python developer.
             Apply the following change to the code:
@@ -34,11 +34,10 @@ class ImprovementEngine:
             
             Return ONLY the full modified code. Do not include markdown formatting.
             """
-            
+
             try:
                 response = self.client.chat.completions.create(
-                    model="gpt-4o",
-                    messages=[{"role": "user", "content": prompt}]
+                    model="gpt-4o", messages=[{"role": "user", "content": prompt}]
                 )
                 new_code = response.choices[0].message.content.strip()
                 # Remove markdown code blocks if present
@@ -50,10 +49,10 @@ class ImprovementEngine:
                     if lines[-1].startswith("```"):
                         lines = lines[:-1]
                     new_code = "\n".join(lines)
-                    
+
                 with open(file_path, "w", encoding="utf-8") as f:
                     f.write(new_code)
-                    
+
                 print(f"Applied fix to {file_path}")
             except Exception as e:
                 print(f"Error applying fix: {e}")

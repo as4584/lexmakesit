@@ -1,8 +1,8 @@
 import json
-import os
 from typing import List, Dict, Any
 from openai import OpenAI
 from ai_receptionist.config.settings import get_settings
+
 
 class ScenarioGenerator:
     def __init__(self):
@@ -34,17 +34,20 @@ class ScenarioGenerator:
         Ensure variety in customer persona, emotion, and phrasing.
         Do not include "Customer:" or "AI:" prefixes in the script strings.
         """
-        
+
         try:
             response = self.client.chat.completions.create(
                 model="gpt-4o",
                 messages=[
-                    {"role": "system", "content": "You are a scenario generator for AI testing. Output valid JSON only."},
-                    {"role": "user", "content": prompt}
+                    {
+                        "role": "system",
+                        "content": "You are a scenario generator for AI testing. Output valid JSON only.",
+                    },
+                    {"role": "user", "content": prompt},
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
             )
-            
+
             content = response.choices[0].message.content
             data = json.loads(content)
             return data.get("scenarios", [])
@@ -53,6 +56,7 @@ class ScenarioGenerator:
             # Fallback or empty list, but spec says "The agent must always generate 3 scenarios"
             # In a real implementation, we might retry or have a fallback.
             return []
+
 
 if __name__ == "__main__":
     generator = ScenarioGenerator()

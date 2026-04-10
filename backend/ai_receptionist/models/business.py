@@ -22,7 +22,9 @@ class Business(Base):
     phone_number_sid: Mapped[str | None] = mapped_column(String(50), nullable=True)
     phone_number_status: Mapped[str] = mapped_column(String(50), default="pending")
     subscription_status: Mapped[str] = mapped_column(String(50), default="active")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
