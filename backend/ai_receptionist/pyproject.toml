@@ -25,6 +25,7 @@ alembic = "^1.13"
 psycopg2-binary = "^2.9"
 # Auth
 PyJWT = "^2.10"
+cryptography = "^42.0"
 passlib = { version = "^1.7", extras = ["bcrypt"] }
 bcrypt = "^4.0"
 # Cache

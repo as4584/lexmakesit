@@ -11,17 +11,18 @@ client = TestClient(app)
 
 
 def test_voice_entry_endpoint():
-    """Test /twilio/voice endpoint returns valid TwiML."""
+    """Test /twilio/voice endpoint returns valid TwiML with WebSocket stream."""
     response = client.post("/twilio/voice", data={"CallSid": "CA_test_123"})
 
     assert response.status_code == 200
     assert "application/xml" in response.headers["content-type"]
 
-    # Check TwiML structure
+    # Check TwiML structure — endpoint uses Connect/Stream for Realtime API
     xml_content = response.text
     assert "<Response>" in xml_content
-    assert "<Gather" in xml_content
-    assert "Hello" in xml_content or "Hola" in xml_content
+    assert "<Connect>" in xml_content
+    assert "<Stream" in xml_content
+    assert "wss://" in xml_content
     assert "</Response>" in xml_content
 
 
