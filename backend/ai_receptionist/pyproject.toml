@@ -48,6 +48,7 @@ types-requests = "^2.32.0"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = [".."]
 pythonpath = ["."]
 addopts = "-q"
 
