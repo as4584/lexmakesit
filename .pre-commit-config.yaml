@@ -1,0 +1,59 @@
+# .pre-commit-config.yaml
+#
+# LOCAL enforcement — catches the same problems that have broken CI repeatedly,
+# but BEFORE you push instead of after.
+#
+# Quick start:
+#   pip install pre-commit
+#   pre-commit install          # installs the git hook; runs automatically on commit
+#   pre-commit run --all-files  # run manually against every file right now
+#
+# Problems this prevents:
+#   1. black formatting violations  — caused multiple "Format check (black)" CI failures
+#   2. ruff lint errors             — would surface as CI lint step failures
+#   3. poetry.lock drift            — caused CI to fail at "poetry install" with
+#                                     "pyproject.toml changed significantly since
+#                                      poetry.lock was last generated"
+#
+# Rule: if pre-commit passes locally, CI formatting/lint/lock steps will pass too.
+
+repos:
+  # ── Python formatting (black) ────────────────────────────────────────────
+  # Black auto-formats files on commit so you never need to remember to run it.
+  # Uses the project's own pyproject.toml config (line-length=100, py310 target).
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        name: black — auto-format Python (backend)
+        args: ["--config=backend/ai_receptionist/pyproject.toml"]
+        files: ^backend/
+        language_version: python3.11
+
+  # ── Python linting (ruff) ────────────────────────────────────────────────
+  # Ruff catches import errors, unused variables, etc. before they reach CI.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        name: ruff — lint Python (backend)
+        args: ["--config=backend/ai_receptionist/pyproject.toml", "--fix"]
+        files: ^backend/
+
+  # ── Poetry lock consistency ──────────────────────────────────────────────
+  # Runs ONLY when pyproject.toml changes.  If the lock is stale, commit is
+  # blocked with instructions to run `poetry lock` first.
+  #
+  # Why this matters: Poetry 2.x embeds a content-hash of pyproject.toml in
+  # poetry.lock.  If pyproject.toml is edited without re-running `poetry lock`,
+  # CI fails immediately at `poetry install` — before any tests run.
+  #
+  # The fix is always: cd backend/ai_receptionist && poetry lock
+  - repo: https://github.com/python-poetry/poetry
+    rev: 2.0.0
+    hooks:
+      - id: poetry-check
+        name: poetry check — lock file consistent with pyproject.toml
+        args: ["-C", "backend/ai_receptionist"]
+        files: ^backend/ai_receptionist/(pyproject\.toml|poetry\.lock)$
+        pass_filenames: false
