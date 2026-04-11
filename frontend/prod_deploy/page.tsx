@@ -355,6 +355,8 @@ export default function SettingsPage() {
                                 </p>
                                 <VoiceBrowser
                                     currentVoiceId={voiceSettings?.elevenlabs_voice_id}
+                                    currentOpenAIVoice={voiceSettings?.openai_voice}
+                                    currentProvider={voiceSettings?.tts_provider}
                                     onVoiceSelected={handleVoiceSelected}
                                 />
                             </div>

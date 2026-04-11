@@ -84,6 +84,10 @@ jobs:
       - name: Test suite
         run: poetry run pytest -q --tb=short
 
+      # Explicitly run the call-health guard (loud failure on missing websockets dep)
+      - name: Call health guard
+        run: poetry run pytest -q --tb=short tests/test_call_health.py -v
+
   # ──────────────────────────────────────────────────────────────────────────
   # Docker image build + smoke test (main branch only)
   # ──────────────────────────────────────────────────────────────────────────
@@ -145,6 +149,56 @@ jobs:
           [[ "$HTTP" == "200" || "$HTTP" == "503" ]] || exit 1
 
           docker stop smoke
+
+      # ── Critical: verify websockets is importable in the built image ─────────
+      # Uvicorn silently rejects ALL WebSocket upgrades when this package is
+      # missing — that was the exact production outage.  A non-zero exit here
+      # blocks the push before anything reaches production.
+      - name: Smoke test — websockets library present in image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          docker run --rm "$IMAGE" \
+            python -c "import websockets; print('websockets OK:', websockets.__version__)"
+
+      - name: Smoke test — aiohttp library present in image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          docker run --rm "$IMAGE" \
+            python -c "import aiohttp; print('aiohttp OK:', aiohttp.__version__)"
+
+      # ── Twilio webhook TwiML check ────────────────────────────────────────
+      # Starts the container (no DB) and verifies /twilio/voice returns XML.
+      # A 404 or 500 here means the call pipeline is broken.
+      - name: Smoke test — Twilio webhook returns TwiML
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          docker run -d --name twilio_smoke \
+            -e JWT_SECRET_KEY=smoke-test-key \
+            -e ENVIRONMENT=ci \
+            -p 8003:8002 \
+            "$IMAGE"
+
+          for i in $(seq 1 15); do
+            HTTP=$(curl -so /dev/null -w "%{http_code}" http://localhost:8003/health 2>/dev/null || echo "")
+            [ "$HTTP" = "200" ] && break
+            [ "$i" -eq 15 ] && (docker logs twilio_smoke; exit 1)
+            sleep 2
+          done
+
+          RESPONSE=$(curl -s -o /tmp/twiml.xml -w "%{http_code}" \
+            -X POST http://localhost:8003/twilio/voice \
+            -d "CallSid=CI_smoke_001&From=%2B15550001111&To=%2B12298215986")
+
+          echo "HTTP status: $RESPONSE"
+          [ "$RESPONSE" = "200" ] || (cat /tmp/twiml.xml; docker logs twilio_smoke; exit 1)
+
+          # Must contain <Connect> and <Stream — key TwiML elements
+          grep -q "<Connect>" /tmp/twiml.xml || (echo "TwiML missing <Connect>"; cat /tmp/twiml.xml; exit 1)
+          grep -q "<Stream"    /tmp/twiml.xml || (echo "TwiML missing <Stream>";  cat /tmp/twiml.xml; exit 1)
+          grep -q "to="        /tmp/twiml.xml || (echo "Stream URL missing ?to= param"; cat /tmp/twiml.xml; exit 1)
+
+          echo "✓ TwiML structure OK"
+          docker stop twilio_smoke
 
       - name: Push image
         if: success()

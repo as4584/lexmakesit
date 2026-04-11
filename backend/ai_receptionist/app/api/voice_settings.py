@@ -16,6 +16,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 import io
 
+from ai_receptionist.config.settings import get_settings
 from ai_receptionist.core.database import get_db
 from ai_receptionist.app.api.auth import TokenData, get_current_user
 from ai_receptionist.models.tenant import Tenant
@@ -23,6 +24,14 @@ from ai_receptionist.services.elevenlabs.voice_service import (
     ElevenLabsVoiceService,
     get_elevenlabs_service,
 )
+
+
+def _get_elevenlabs_optional() -> Optional[ElevenLabsVoiceService]:
+    """DI helper: returns None (instead of raising) when the EL key is absent."""
+    try:
+        return get_elevenlabs_service()
+    except RuntimeError:
+        return None
 
 logger = logging.getLogger(__name__)
 
@@ -89,13 +98,17 @@ def _get_tenant(db: Session, user: TokenData) -> Tenant:
 async def browse_voices(
     category: Optional[str] = None,
     user: TokenData = Depends(get_current_user),
-    el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
+    el: Optional[ElevenLabsVoiceService] = Depends(_get_elevenlabs_optional),
 ):
     """Browse the ElevenLabs voice library.
 
     Optional query param `category` to filter (e.g. 'premade', 'professional').
     Returns list of voices with preview URLs (playable client-side, zero cost).
+    Returns an empty list when ElevenLabs is not configured (no API key).
     """
+    if el is None:
+        return []
+
     voices = await el.list_voices()
 
     if category:
@@ -112,9 +125,11 @@ async def browse_voices(
 async def get_voice_detail(
     voice_id: str,
     user: TokenData = Depends(get_current_user),
-    el: ElevenLabsVoiceService = Depends(get_elevenlabs_service),
+    el: Optional[ElevenLabsVoiceService] = Depends(_get_elevenlabs_optional),
 ):
     """Get details for a single voice."""
+    if el is None:
+        raise HTTPException(status_code=503, detail="ElevenLabs not configured")
     try:
         voice = await el.get_voice(voice_id)
         return voice.to_dict()
@@ -390,3 +405,54 @@ def select_openai_voice(
     db.commit()
     logger.info(f"Tenant {tenant.id} set openai_voice: {body.voice}")
     return {"ok": True, "openai_voice": body.voice}
+
+
+# ---------------------------------------------------------------------------
+# OpenAI Voice Preview (TTS stream)
+# ---------------------------------------------------------------------------
+
+_PREVIEW_TEXT = "Hello! I'm your AI receptionist. How can I assist you today?"
+
+_VALID_OPENAI_VOICES = OPENAI_VOICES
+
+
+@router.get("/openai-preview/{voice}")
+async def openai_voice_preview(
+    voice: str,
+    user: TokenData = Depends(get_current_user),
+):
+    """Stream a short TTS preview clip for any OpenAI built-in voice.
+
+    Returns audio/mpeg — play it directly in the browser with <audio>.
+    Uses ~60 TTS characters from your OpenAI quota.
+    """
+    if voice not in _VALID_OPENAI_VOICES:
+        raise HTTPException(
+            status_code=422,
+            detail=f"Unknown OpenAI voice: {voice}. Choose from: {', '.join(sorted(_VALID_OPENAI_VOICES))}",
+        )
+
+    settings = get_settings()
+    if not settings.openai_api_key:
+        raise HTTPException(status_code=503, detail="OpenAI API key not configured")
+
+    try:
+        import openai as _openai  # imported here to avoid hard boot-time failure
+
+        client = _openai.AsyncOpenAI(api_key=settings.openai_api_key)
+        response = await client.audio.speech.create(
+            model="tts-1",
+            voice=voice,  # type: ignore[arg-type]
+            input=_PREVIEW_TEXT,
+            response_format="mp3",
+        )
+        audio_bytes: bytes = response.content
+    except Exception as exc:
+        logger.error(f"OpenAI TTS preview failed for voice={voice}: {exc}", exc_info=True)
+        raise HTTPException(status_code=502, detail=f"OpenAI TTS preview failed: {exc}")
+
+    return StreamingResponse(
+        io.BytesIO(audio_bytes),
+        media_type="audio/mpeg",
+        headers={"Content-Disposition": f"inline; filename={voice}-preview.mp3"},
+    )

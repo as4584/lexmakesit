@@ -23,6 +23,7 @@ export interface VoiceInfo {
 
 export interface VoiceSettings {
     tts_provider: string;
+    openai_voice: string | null;
     elevenlabs_voice_id: string | null;
     elevenlabs_voice_name: string | null;
     elevenlabs_voice_preview_url: string | null;
@@ -143,4 +144,39 @@ export function getClonePreviewUrl(): string {
  */
 export async function getVoiceUsage(): Promise<VoiceUsage> {
     return safeFetch<VoiceUsage>('/api/voice/usage');
+}
+
+// ============================================================================
+// OpenAI Voice Selection + Preview
+// ============================================================================
+
+export const OPENAI_VOICES = [
+    { id: 'alloy',   label: 'Alloy',   description: 'Neutral & balanced' },
+    { id: 'ash',     label: 'Ash',     description: 'Warm & conversational' },
+    { id: 'coral',   label: 'Coral',   description: 'Expressive & bright' },
+    { id: 'echo',    label: 'Echo',    description: 'Smooth & clear' },
+    { id: 'onyx',    label: 'Onyx',    description: 'Deep & authoritative' },
+    { id: 'sage',    label: 'Sage',    description: 'Calm & thoughtful' },
+    { id: 'shimmer', label: 'Shimmer', description: 'Clear & professional' },
+    { id: 'verse',   label: 'Verse',   description: 'Dynamic & versatile' },
+] as const;
+
+export type OpenAIVoiceId = (typeof OPENAI_VOICES)[number]['id'];
+
+/**
+ * Set the active voice to an OpenAI built-in and switch provider to 'openai'.
+ */
+export async function selectOpenAIVoice(voice: OpenAIVoiceId): Promise<{ ok: boolean; openai_voice: string }> {
+    return safeFetch<{ ok: boolean; openai_voice: string }>('/api/voice/openai-voice', {
+        method: 'PUT',
+        body: JSON.stringify({ voice }),
+    });
+}
+
+/**
+ * Returns a URL that streams a short TTS preview clip for an OpenAI voice.
+ * Pipe it directly into an <audio src="..."> or new Audio(url).
+ */
+export function openAIVoicePreviewUrl(voice: OpenAIVoiceId): string {
+    return `${API_BASE_URL}/api/voice/openai-preview/${voice}`;
 }
