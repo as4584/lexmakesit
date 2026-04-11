@@ -180,6 +180,19 @@ def test_websockets_library_is_importable():
     assert hasattr(ws, "__version__"), "websockets imported but has no __version__"
 
 
+def test_cryptography_library_is_importable():
+    """cryptography must be installed — its absence prevents backend startup.
+
+    encryption.py imports PBKDF2HMAC from cryptography.hazmat.  If the package
+    is missing the process fails to start and EVERY endpoint returns
+    'Failed to fetch' (including the auth login page).
+    """
+    import importlib
+
+    cr = importlib.import_module("cryptography")
+    assert hasattr(cr, "__version__"), "cryptography imported but has no __version__"
+
+
 def test_aiohttp_library_is_importable():
     """aiohttp is required by realtime.py (OpenAI WebSocket client)."""
     import importlib
@@ -269,9 +282,9 @@ def test_twilio_voice_twiml_stream_url_includes_to_param(client: TestClient):
     )
     root = ET.fromstring(resp.text)
     stream_url = root.find("Connect/Stream").get("url", "")
-    assert "to=" in stream_url, (
-        f"Stream URL missing '?to=' param — tenant lookup will fail. URL: {stream_url}"
-    )
+    assert (
+        "to=" in stream_url
+    ), f"Stream URL missing '?to=' param — tenant lookup will fail. URL: {stream_url}"
 
 
 # ===========================================================================
@@ -321,17 +334,13 @@ def test_voice_browse_without_elevenlabs_key_returns_empty_list(
         "/api/voice/browse",
         headers={"Authorization": f"Bearer {token}"},
     )
-    assert resp.status_code == 200, (
-        f"Expected 200 (empty list) when ElevenLabs key is absent, got {resp.status_code}: {resp.text}"
-    )
-    assert resp.json() == [], (
-        f"Expected [] when ElevenLabs key is absent, got: {resp.json()}"
-    )
+    assert (
+        resp.status_code == 200
+    ), f"Expected 200 (empty list) when ElevenLabs key is absent, got {resp.status_code}: {resp.text}"
+    assert resp.json() == [], f"Expected [] when ElevenLabs key is absent, got: {resp.json()}"
 
 
-def test_voice_current_returns_200_for_authenticated_user(
-    client: TestClient, _session_factory
-):
+def test_voice_current_returns_200_for_authenticated_user(client: TestClient, _session_factory):
     """GET /api/voice/current must return the tenant's current voice settings."""
     token = _signup_and_login(client, "current-health@example.com", _session_factory)
     resp = client.get(

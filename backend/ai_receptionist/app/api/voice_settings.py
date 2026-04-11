@@ -33,6 +33,7 @@ def _get_elevenlabs_optional() -> Optional[ElevenLabsVoiceService]:
     except RuntimeError:
         return None
 
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/voice", tags=["voice"])

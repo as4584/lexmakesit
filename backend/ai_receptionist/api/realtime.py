@@ -132,7 +132,12 @@ async def websocket_endpoint(
         logger.info(f"OpenAI WSS URL: {url}")
 
         try:
-            async with session.ws_connect(url, headers=headers) as openai_ws:
+            async with session.ws_connect(
+                url,
+                headers=headers,
+                timeout=aiohttp.ClientTimeout(total=None, connect=15),
+                max_msg_size=10_000_000,
+            ) as openai_ws:
                 logger.info(f"Connected to OpenAI Realtime API ({OPENAI_MODEL})")
 
                 # Phase 1.2: Force Audio Output First
@@ -168,9 +173,12 @@ async def websocket_endpoint(
                         from ai_receptionist.services.elevenlabs.voice_service import (
                             ElevenLabsVoiceService,
                         )
+
                         el_service = ElevenLabsVoiceService()
                     except Exception as exc:
-                        logger.warning(f"ElevenLabs service init failed ({exc}); falling back to OpenAI TTS")
+                        logger.warning(
+                            f"ElevenLabs service init failed ({exc}); falling back to OpenAI TTS"
+                        )
                         use_elevenlabs = False
                         # Re-issue session.update to re-enable OpenAI audio
                         session_update["session"]["modalities"] = ["audio", "text"]
@@ -205,7 +213,9 @@ async def websocket_endpoint(
                                     logger.info(
                                         "Triggering initial greeting (after stream start)..."
                                     )
-                                    greeting_modalities = ["text"] if use_elevenlabs else ["audio", "text"]
+                                    greeting_modalities = (
+                                        ["text"] if use_elevenlabs else ["audio", "text"]
+                                    )
                                     await openai_ws.send_json(
                                         {
                                             "type": "response.create",
@@ -218,8 +228,7 @@ async def websocket_endpoint(
                                     greeting_sent = True
                             elif event_type == "stop":
                                 logger.info("Stream stopped from Twilio side")
-                                # Close OpenAI connection?
-                                # await openai_ws.close()
+                                await openai_ws.close()
                                 break
                     except WebSocketDisconnect:
                         logger.info("Twilio WebSocket disconnected")
@@ -229,6 +238,7 @@ async def websocket_endpoint(
                 async def receive_from_openai():
                     nonlocal stream_sid
                     import base64
+
                     accumulated_text: list[str] = []
                     try:
                         async for msg in openai_ws:
@@ -309,8 +319,16 @@ async def websocket_endpoint(
                     except Exception as e:
                         logger.error(f"Error in OpenAI receive loop: {e}")
 
-                # Run both loops
-                await asyncio.gather(receive_from_twilio(), receive_from_openai())
+                # Run both loops concurrently; return_exceptions prevents one
+                # task failure from silently killing the other.
+                results = await asyncio.gather(
+                    receive_from_twilio(),
+                    receive_from_openai(),
+                    return_exceptions=True,
+                )
+                for exc in results:
+                    if isinstance(exc, Exception):
+                        logger.error(f"Realtime bridge task raised: {exc}")
 
         except Exception as e:
             logger.error(f"Failed to connect to OpenAI or runtime error: {e}")

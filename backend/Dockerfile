@@ -14,7 +14,8 @@ COPY ai_receptionist/pyproject.toml ai_receptionist/
 
 # Install production dependencies only (no dev extras, no root package)
 RUN cd ai_receptionist \
-    && poetry install --no-root --only main --no-interaction
+    && poetry install --no-root --only main --no-interaction \
+    && pip install --no-cache-dir "websockets>=13.0" "cryptography>=42.0"
 
 COPY . .
 

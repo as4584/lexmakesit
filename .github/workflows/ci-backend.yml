@@ -78,15 +78,16 @@ jobs:
         run: poetry run ruff check .
 
       - name: Format check (black)
-        run: poetry run black --check .
+        # --check --diff: show exact diff of what black would change so the fix is obvious
+        run: poetry run black --check --diff .
 
       # Run the full test suite including the new auth lifecycle tests
       - name: Test suite
         run: poetry run pytest -q --tb=short
 
-      # Explicitly run the call-health guard (loud failure on missing websockets dep)
+      # Explicitly run call-health + auth lifecycle guards (loud failure)
       - name: Call health guard
-        run: poetry run pytest -q --tb=short tests/test_call_health.py -v
+        run: poetry run pytest -q --tb=short tests/test_call_health.py tests/test_auth_lifecycle.py -v
 
   # ──────────────────────────────────────────────────────────────────────────
   # Docker image build + smoke test (main branch only)
@@ -166,6 +167,15 @@ jobs:
           docker run --rm "$IMAGE" \
             python -c "import aiohttp; print('aiohttp OK:', aiohttp.__version__)"
 
+      # ── cryptography must be importable — its absence causes backend startup ──
+      # failure (encryption.py imports from it) and every endpoint returns     ──
+      # "Failed to fetch" because the process can't listen on port 8002.       ──
+      - name: Smoke test — cryptography library present in image
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          docker run --rm "$IMAGE" \
+            python -c "import cryptography; print('cryptography OK:', cryptography.__version__)"
+
       # ── Twilio webhook TwiML check ────────────────────────────────────────
       # Starts the container (no DB) and verifies /twilio/voice returns XML.
       # A 404 or 500 here means the call pipeline is broken.
@@ -199,6 +209,60 @@ jobs:
 
           echo "✓ TwiML structure OK"
           docker stop twilio_smoke
+
+      # ── Auth endpoint smoke test ──────────────────────────────────────────
+      # Signs up a test user then logs in.  If this fails it means the backend
+      # can't serve auth requests — the exact cause of "Failed to fetch" on the
+      # sign-in page.  A missing dependency (e.g. cryptography) or a broken DB
+      # migration would surface here before reaching production.
+      - name: Smoke test — auth signup + login returns JWT
+        run: |
+          IMAGE=ghcr.io/${{ github.repository }}:ci-${{ github.run_id }}
+          docker run -d --name auth_smoke \
+            -e JWT_SECRET_KEY=smoke-auth-key-1234 \
+            -e ENCRYPTION_SALT=dGVzdC1zYWx0LWZvci1jaS10ZXN0aW5n \
+            -e ENCRYPTION_KEY=dGVzdC1rZXktZm9yLWNpLXRlc3Rpbmc= \
+            -e ENVIRONMENT=ci \
+            -e DATABASE_URL=sqlite:////tmp/smoke_auth.db \
+            -p 8004:8002 \
+            "$IMAGE"
+
+          # Wait for the container to be healthy
+          for i in $(seq 1 20); do
+            HTTP=$(curl -so /dev/null -w "%{http_code}" http://localhost:8004/health 2>/dev/null || echo "")
+            [ "$HTTP" = "200" ] && break
+            [ "$i" -eq 20 ] && (docker logs auth_smoke; exit 1)
+            sleep 2
+          done
+          echo "✓ Backend is healthy"
+
+          # Run Alembic migrations so the auth tables exist
+          docker exec auth_smoke sh -c "cd /app && python -m alembic -c ai_receptionist/alembic.ini upgrade head" 2>&1 || true
+
+          # Signup
+          SIGNUP=$(curl -s -o /tmp/signup.json -w "%{http_code}" \
+            -X POST http://localhost:8004/api/auth/signup \
+            -H "Content-Type: application/json" \
+            -d '{"email":"smoke@ci.test","password":"Smoke1234!","full_name":"CI Smoke","business_name":"Smoke Co"}')
+
+          echo "Signup HTTP: $SIGNUP"
+          cat /tmp/signup.json
+          [ "$SIGNUP" = "200" ] || (docker logs auth_smoke; exit 1)
+          grep -q "access_token" /tmp/signup.json || (echo "No access_token in signup response"; exit 1)
+
+          # Login
+          LOGIN=$(curl -s -o /tmp/login.json -w "%{http_code}" \
+            -X POST http://localhost:8004/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"smoke@ci.test","password":"Smoke1234!"}')
+
+          echo "Login HTTP: $LOGIN"
+          cat /tmp/login.json
+          [ "$LOGIN" = "200" ] || (echo "Login returned $LOGIN — auth is broken"; docker logs auth_smoke; exit 1)
+          grep -q "access_token" /tmp/login.json || (echo "No access_token in login response"; exit 1)
+
+          echo "✓ Auth signup + login OK"
+          docker stop auth_smoke
 
       - name: Push image
         if: success()

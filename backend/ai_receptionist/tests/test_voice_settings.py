@@ -191,7 +191,9 @@ def test_select_elevenlabs_voice_activates_provider(client: TestClient, session_
 
 def test_select_openai_voice_switches_provider_back(client: TestClient, session_factory):
     """PUT /api/voice/openai-voice must set tts_provider='openai'."""
-    token = _register_and_login(client, "openai-select@example.com", session_factory=session_factory)
+    token = _register_and_login(
+        client, "openai-select@example.com", session_factory=session_factory
+    )
 
     # First set ElevenLabs so the switch is meaningful
     client.put(
