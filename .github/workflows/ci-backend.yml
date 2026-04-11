@@ -266,14 +266,19 @@ jobs:
           done
           echo "✓ Backend is healthy"
 
-          # Run Alembic migrations so the auth tables exist
-          docker exec auth_smoke sh -c "cd /app && python -m alembic -c ai_receptionist/alembic.ini upgrade head" 2>&1 || true
+          # Run Alembic migrations so the auth tables exist.
+          # WORKDIR in the image is /app — alembic.ini and alembic/ live there directly
+          # (copied from backend/ by the Dockerfile COPY . .). The ini's script_location
+          # is "alembic", which resolves relative to /app — so no -c flag override needed.
+          docker exec auth_smoke sh -c "cd /app && python -m alembic upgrade head" 2>&1 || true
 
-          # Signup
+          # Signup — use example.com (RFC 2606 reserved for docs/testing, always valid)
+          # Do NOT use .test, .local, .invalid, .localhost — pydantic email-validator
+          # rejects them as special-use TLDs (RFC 6761).
           SIGNUP=$(curl -s -o /tmp/signup.json -w "%{http_code}" \
             -X POST http://localhost:8004/api/auth/signup \
             -H "Content-Type: application/json" \
-            -d '{"email":"smoke@ci.test","password":"Smoke1234!","full_name":"CI Smoke","business_name":"Smoke Co"}')
+            -d '{"email":"smoke@example.com","password":"Smoke1234!","full_name":"CI Smoke","business_name":"Smoke Co"}')
 
           echo "Signup HTTP: $SIGNUP"
           cat /tmp/signup.json
@@ -284,7 +289,7 @@ jobs:
           LOGIN=$(curl -s -o /tmp/login.json -w "%{http_code}" \
             -X POST http://localhost:8004/api/auth/login \
             -H "Content-Type: application/json" \
-            -d '{"email":"smoke@ci.test","password":"Smoke1234!"}')
+            -d '{"email":"smoke@example.com","password":"Smoke1234!"}')
 
           echo "Login HTTP: $LOGIN"
           cat /tmp/login.json
