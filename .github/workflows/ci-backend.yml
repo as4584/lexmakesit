@@ -71,6 +71,32 @@ jobs:
       - name: Install Poetry
         run: pip install poetry
 
+      # ── Lock file consistency check ──────────────────────────────────────
+      # This MUST run before `poetry install`.  If pyproject.toml is edited
+      # without running `poetry lock` locally, Poetry 2.x refuses to install
+      # with a cryptic error.  This step surfaces the real problem clearly.
+      #
+      # Long-term prevention: install the pre-commit hook in .pre-commit-config.yaml
+      # so this is caught LOCALLY before the code ever reaches CI:
+      #   pip install pre-commit && pre-commit install
+      - name: Verify lock file is consistent with pyproject.toml
+        run: |
+          poetry check || {
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "  LOCK FILE DRIFT DETECTED"
+            echo "  pyproject.toml was edited without regenerating poetry.lock."
+            echo ""
+            echo "  Fix (run locally, then commit):"
+            echo "    cd backend/ai_receptionist"
+            echo "    poetry lock"
+            echo "    git add poetry.lock && git commit --amend --no-edit"
+            echo ""
+            echo "  Prevent forever: pre-commit install  (see .pre-commit-config.yaml)"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            exit 1
+          }
+
       - name: Install dependencies
         run: poetry install
 
@@ -81,13 +107,17 @@ jobs:
         # --check --diff: show exact diff of what black would change so the fix is obvious
         run: poetry run black --check --diff .
 
-      # Run the full test suite including the new auth lifecycle tests
-      - name: Test suite
-        run: poetry run pytest -q --tb=short
+      # ── Critical guards run first, verbosely ────────────────────────────
+      # test_call_health: guards the call pipeline (WebSocket, TwiML, deps)
+      # test_auth_lifecycle: guards auth signup/login/token flow
+      # These run BEFORE the full suite so a critical breakage is obvious
+      # immediately rather than buried in hundreds of test lines.
+      - name: Critical guards (call health + auth lifecycle)
+        run: poetry run pytest -v --tb=long tests/test_call_health.py tests/test_auth_lifecycle.py
 
-      # Explicitly run call-health + auth lifecycle guards (loud failure)
-      - name: Call health guard
-        run: poetry run pytest -q --tb=short tests/test_call_health.py tests/test_auth_lifecycle.py -v
+      # ── Full test suite (everything else) ───────────────────────────────
+      - name: Test suite
+        run: poetry run pytest -q --tb=short --ignore=tests/test_call_health.py --ignore=tests/test_auth_lifecycle.py
 
   # ──────────────────────────────────────────────────────────────────────────
   # Docker image build + smoke test (main branch only)

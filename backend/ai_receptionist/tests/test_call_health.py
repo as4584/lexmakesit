@@ -292,19 +292,28 @@ def test_twilio_voice_twiml_stream_url_includes_to_param(client: TestClient):
 # ===========================================================================
 
 
-def test_websocket_stream_route_is_registered(client: TestClient):
-    """GET /twilio/stream without WebSocket upgrade must return 400 or 403.
+def test_websocket_stream_route_is_registered():
+    """The /twilio/stream WebSocket route must be registered in the app.
 
-    A 404 would mean the route isn't registered at all — that's the bug
-    that killed production (wrong prefix or missing router include).
+    Uses direct route-table introspection instead of an HTTP probe.
+
+    WHY NOT AN HTTP REQUEST:
+      In Starlette 0.48+, WebSocketRoute.matches() returns Match.NONE for
+      non-WebSocket scopes, so a plain GET to any WebSocket path always yields
+      404 — even when the route IS correctly registered.  An HTTP-based check
+      is therefore a false negative: it would report failure regardless of the
+      actual registration state.
+
+    This is the production-critical route.  404 here = every call drops
+    instantly because Twilio can't upgrade to WebSocket.
     """
-    resp = client.get("/twilio/stream?to=%2B12298215986")
-    # 400 = FastAPI's rejection of a non-WS request to a WS route  (correct)
-    # 403 = auth wall before WS upgrade                             (acceptable)
-    # 404 = route not registered                                    (FAIL — bug!)
-    assert resp.status_code != 404, (
-        "/twilio/stream returned 404 — the route is not registered. "
-        "Check that realtime_router is included in main.py with the correct prefix."
+    from starlette.routing import WebSocketRoute as _WSRoute
+
+    registered_ws_paths = {route.path for route in app.routes if isinstance(route, _WSRoute)}
+    assert "/twilio/stream" in registered_ws_paths, (
+        "/twilio/stream is NOT registered as a WebSocket route. "
+        f"Registered WebSocket paths: {registered_ws_paths or '{none}'}. "
+        "Ensure realtime_router is included in main.py with prefix='/twilio'."
     )
 
 
