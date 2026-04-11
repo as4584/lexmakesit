@@ -21,114 +21,23 @@ from __future__ import annotations
 
 import xml.etree.ElementTree as ET
 
-import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import Session
 
-from ai_receptionist.app.api import auth as auth_api
 from ai_receptionist.app.main import app
-from ai_receptionist.core.database import get_db
-from ai_receptionist.models.base import Base
-from ai_receptionist.models.business import Business
-from ai_receptionist.models.email_token import EmailToken
 from ai_receptionist.models.tenant import Tenant
 from ai_receptionist.models.user import User
 
-
-# ---------------------------------------------------------------------------
-# Fixtures (minimal in-memory DB, no external services needed)
-# ---------------------------------------------------------------------------
+# client + _session_factory fixtures injected from conftest.py
 
 
-class _FakeRedis:
-    def __init__(self) -> None:
-        self._store: dict = {}
+def _signup_and_login(client: TestClient, email: str) -> str:
+    """Register a user via the API and return the JWT access token.
 
-    def ping(self) -> bool:
-        return True
-
-    def exists(self, key: str) -> int:
-        return 1 if key in self._store else 0
-
-    def setex(self, key: str, ttl: int, value: str) -> bool:
-        self._store[key] = value
-        return True
-
-    def get(self, key: str):
-        return self._store.get(key)
-
-    def incr(self, key: str) -> int:
-        v = int(self._store.get(key, "0")) + 1
-        self._store[key] = str(v)
-        return v
-
-    def expire(self, key: str, ttl: int) -> bool:
-        return True
-
-    def delete(self, key: str) -> int:
-        return 1 if self._store.pop(key, None) is not None else 0
-
-
-@pytest.fixture()
-def _engine(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv("JWT_SECRET_KEY", "ci-health-secret")
-    monkeypatch.setenv("ADMIN_PRIVATE_KEY", "ci-admin-secret")
-
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    Base.metadata.create_all(
-        bind=engine,
-        tables=[
-            User.__table__,
-            Business.__table__,
-            Tenant.__table__,
-            EmailToken.__table__,
-        ],
-    )
-    yield engine
-    Base.metadata.drop_all(
-        bind=engine,
-        tables=[
-            User.__table__,
-            Business.__table__,
-            Tenant.__table__,
-            EmailToken.__table__,
-        ],
-    )
-
-
-@pytest.fixture()
-def _session_factory(_engine):
-    return sessionmaker(autocommit=False, autoflush=False, bind=_engine)
-
-
-@pytest.fixture()
-def client(monkeypatch: pytest.MonkeyPatch, _session_factory):
-    def _override_db():
-        db = _session_factory()
-        try:
-            yield db
-        finally:
-            db.close()
-
-    fake_redis = _FakeRedis()
-    app.dependency_overrides[get_db] = _override_db
-    monkeypatch.setattr(auth_api, "_get_redis_client", lambda: fake_redis)
-    auth_api._redis_client = None
-
-    with TestClient(app) as c:
-        yield c
-
-    app.dependency_overrides.clear()
-
-
-def _signup_and_login(client: TestClient, email: str, sf) -> str:
-    """Register a user and return its JWT access token."""
+    Fully API-driven — no direct DB manipulation.
+    /api/voice/browse only requires a valid JWT (get_current_user),
+    so no Tenant row needs to be seeded separately.
+    """
     resp = client.post(
         "/api/auth/signup",
         json={
@@ -139,27 +48,35 @@ def _signup_and_login(client: TestClient, email: str, sf) -> str:
         },
     )
     assert resp.status_code == 200, resp.text
-    token = resp.json()["access_token"]
+    return resp.json()["access_token"]
 
-    # Seed a Tenant row so voice endpoints succeed
-    db = sf()
+
+def _seed_tenant(email: str, session_factory) -> None:
+    """Seed a Tenant row for the user identified by *email*.
+
+    Called explicitly by tests that exercise endpoints which call
+    _get_tenant(db, user) — e.g. /api/voice/current and /api/voice/openai-voice.
+    Kept separate from _signup_and_login so the helper chain is transparent:
+      1. _signup_and_login → creates User + Business via API
+      2. _seed_tenant     → inserts the Tenant row via direct DB access
+    """
+    db: Session = session_factory()
     try:
         user = db.query(User).filter(User.email == email).first()
-        assert user
+        assert user, f"User {email!r} not found — call _signup_and_login first"
         slug = email.split("@")[0].replace(".", "-")
-        tenant = Tenant(
-            id=slug,
-            name="Health Tenant",
-            owner_user_id=user.id,
-            tts_provider="openai",
-            openai_voice="shimmer",
+        db.add(
+            Tenant(
+                id=slug,
+                name="Health Tenant",
+                owner_user_id=user.id,
+                tts_provider="openai",
+                openai_voice="shimmer",
+            )
         )
-        db.add(tenant)
         db.commit()
     finally:
         db.close()
-
-    return token
 
 
 # ===========================================================================
@@ -329,7 +246,7 @@ def test_voice_browse_without_auth_returns_401(client: TestClient):
 
 
 def test_voice_browse_without_elevenlabs_key_returns_empty_list(
-    client: TestClient, _session_factory
+    client: TestClient,
 ):
     """GET /api/voice/browse must return [] (not 500) when ElevenLabs is unconfigured.
 
@@ -337,7 +254,7 @@ def test_voice_browse_without_elevenlabs_key_returns_empty_list(
     The fix: _get_elevenlabs_optional() catches RuntimeError and returns None,
     and browse_voices() returns [] when el is None.
     """
-    token = _signup_and_login(client, "browse-health@example.com", _session_factory)
+    token = _signup_and_login(client, "browse-health@example.com")
     # ELEVENLABS_API_KEY is not set in the CI env — service raises RuntimeError
     resp = client.get(
         "/api/voice/browse",
@@ -351,7 +268,9 @@ def test_voice_browse_without_elevenlabs_key_returns_empty_list(
 
 def test_voice_current_returns_200_for_authenticated_user(client: TestClient, _session_factory):
     """GET /api/voice/current must return the tenant's current voice settings."""
-    token = _signup_and_login(client, "current-health@example.com", _session_factory)
+    email = "current-health@example.com"
+    token = _signup_and_login(client, email)
+    _seed_tenant(email, _session_factory)
     resp = client.get(
         "/api/voice/current",
         headers={"Authorization": f"Bearer {token}"},
@@ -364,7 +283,9 @@ def test_voice_current_returns_200_for_authenticated_user(client: TestClient, _s
 
 def test_openai_voice_select_saves_provider(client: TestClient, _session_factory):
     """PUT /api/voice/openai-voice must persist tts_provider='openai'."""
-    token = _signup_and_login(client, "oai-health@example.com", _session_factory)
+    email = "oai-health@example.com"
+    token = _signup_and_login(client, email)
+    _seed_tenant(email, _session_factory)
     headers = {"Authorization": f"Bearer {token}"}
 
     resp = client.put(
@@ -380,9 +301,9 @@ def test_openai_voice_select_saves_provider(client: TestClient, _session_factory
     assert current["openai_voice"] == "alloy"
 
 
-def test_openai_voice_preview_invalid_voice_returns_422(client: TestClient, _session_factory):
+def test_openai_voice_preview_invalid_voice_returns_422(client: TestClient):
     """GET /api/voice/openai-preview/<bad_voice> must return 422."""
-    token = _signup_and_login(client, "preview-health@example.com", _session_factory)
+    token = _signup_and_login(client, "preview-health@example.com")
     resp = client.get(
         "/api/voice/openai-preview/not_a_real_voice",
         headers={"Authorization": f"Bearer {token}"},

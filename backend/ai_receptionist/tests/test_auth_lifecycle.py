@@ -17,74 +17,7 @@ from ai_receptionist.models.business import Business
 from ai_receptionist.models.email_token import EmailToken
 from ai_receptionist.models.user import User
 
-
-class FakeRedis:
-    def __init__(self) -> None:
-        self.store: dict[str, str] = {}
-
-    def ping(self) -> bool:
-        return True
-
-    def exists(self, key: str) -> int:
-        return 1 if key in self.store else 0
-
-    def setex(self, key: str, ttl_seconds: int, value: str) -> bool:
-        self.store[key] = value
-        return True
-
-    def get(self, key: str) -> str | None:
-        return self.store.get(key)
-
-    def incr(self, key: str) -> int:
-        value = int(self.store.get(key, "0")) + 1
-        self.store[key] = str(value)
-        return value
-
-    def expire(self, key: str, ttl_seconds: int) -> bool:
-        return True
-
-    def delete(self, key: str) -> int:
-        return 1 if self.store.pop(key, None) is not None else 0
-
-
-@pytest.fixture()
-def client(monkeypatch: pytest.MonkeyPatch):
-    monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret")
-    monkeypatch.setenv("ADMIN_PRIVATE_KEY", "test-admin-secret")
-
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-    Base.metadata.create_all(
-        bind=engine,
-        tables=[User.__table__, Business.__table__, EmailToken.__table__],
-    )
-
-    def override_get_db():
-        db = TestingSessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
-
-    fake_redis = FakeRedis()
-
-    app.dependency_overrides[get_db] = override_get_db
-    monkeypatch.setattr(auth_api, "_get_redis_client", lambda: fake_redis)
-    auth_api._redis_client = None
-
-    with TestClient(app) as test_client:
-        yield test_client
-
-    app.dependency_overrides.clear()
-    Base.metadata.drop_all(
-        bind=engine,
-        tables=[User.__table__, Business.__table__, EmailToken.__table__],
-    )
+# client + client_no_redis fixtures provided by conftest.py
 
 
 def _signup(client: TestClient, email: str, password: str = "pass1234") -> dict:
@@ -206,44 +139,7 @@ def test_cors_header_present_on_login_response(client: TestClient):
 # Redis-unavailable degradation
 # ============================================================================
 
-
-@pytest.fixture()
-def client_no_redis(monkeypatch: pytest.MonkeyPatch):
-    """Client where Redis is unavailable — auth must still succeed."""
-    monkeypatch.setenv("JWT_SECRET_KEY", "test-jwt-secret")
-    monkeypatch.setenv("ADMIN_PRIVATE_KEY", "test-admin-secret")
-
-    engine = create_engine(
-        "sqlite://",
-        connect_args={"check_same_thread": False},
-        poolclass=StaticPool,
-    )
-    TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    Base.metadata.create_all(
-        bind=engine,
-        tables=[User.__table__, Business.__table__, EmailToken.__table__],
-    )
-
-    def override_get_db():
-        db = TestingSessionLocal()
-        try:
-            yield db
-        finally:
-            db.close()
-
-    app.dependency_overrides[get_db] = override_get_db
-    # Redis returns None — simulates connection failure
-    monkeypatch.setattr(auth_api, "_get_redis_client", lambda: None)
-    auth_api._redis_client = None
-
-    with TestClient(app) as test_client:
-        yield test_client
-
-    app.dependency_overrides.clear()
-    Base.metadata.drop_all(
-        bind=engine,
-        tables=[User.__table__, Business.__table__, EmailToken.__table__],
-    )
+# client_no_redis fixture provided by conftest.py
 
 
 def test_login_succeeds_when_redis_unavailable(client_no_redis: TestClient):
