@@ -350,28 +350,24 @@ jobs:
 
             docker pull "$IMAGE"
 
-            # Determine inactive slot
-            ACTIVE=$(docker ps --filter "name=ai_receptionist_blue" --format "{{.Names}}" | head -1)
-            if [ -n "$ACTIVE" ]; then
-              NEW_SLOT=green; OLD_SLOT=blue
-            else
-              NEW_SLOT=blue; OLD_SLOT=green
-            fi
-
-            # Write secrets to a scoped temp file, remove after container start
+            # ── Phase 1: Staging health check on port 8003 ──────────────────
+            # Verify the new image is healthy BEFORE touching production traffic.
+            # Caddy proxies to 127.0.0.1:8002 — port 8003 is only used for this
+            # pre-flight check and carries zero real traffic.
             SECRETS_FILE=$(mktemp)
             chmod 600 "$SECRETS_FILE"
             doppler secrets download --format env --no-file > "$SECRETS_FILE"
 
+            docker rm -f ai_receptionist_staging 2>/dev/null || true
             docker run -d \
-              --name "ai_receptionist_${NEW_SLOT}" \
+              --name ai_receptionist_staging \
               --env-file "$SECRETS_FILE" \
               -p 8003:8002 \
               "$IMAGE"
 
             rm -f "$SECRETS_FILE"
 
-            # Wait for readiness (3 consecutive 200 responses)
+            # 3 consecutive 200s on /readiness before promoting
             PASS=0
             for _ in $(seq 1 30); do
               HTTP=$(curl -so /dev/null -w "%{http_code}" http://localhost:8003/readiness || echo "000")
@@ -385,11 +381,53 @@ jobs:
             done
 
             if [ "$PASS" -lt 3 ]; then
-              echo "New slot failed readiness check — aborting and removing"
-              docker rm -f "ai_receptionist_${NEW_SLOT}" || true
+              echo "Staging health check failed — aborting deploy"
+              docker logs ai_receptionist_staging
+              docker rm -f ai_receptionist_staging || true
               exit 1
             fi
 
-            # Promote new slot and retire old
-            docker rm -f "ai_receptionist_${OLD_SLOT}" 2>/dev/null || true
-            docker rename "ai_receptionist_${NEW_SLOT}" ai_receptionist_active 2>/dev/null || true
+            docker rm -f ai_receptionist_staging
+
+            # ── Phase 2: Atomic swap on port 8002 ───────────────────────────
+            # Caddy routes to 127.0.0.1:8002.  The swap window is the time for
+            # docker run to bind port 8002 (typically < 1 s).  The new container
+            # joins lex_net so it can reach postgres/redis by hostname.
+            SECRETS_FILE=$(mktemp)
+            chmod 600 "$SECRETS_FILE"
+            doppler secrets download --format env --no-file > "$SECRETS_FILE"
+
+            # Stop every current application container (docker-compose OR previous CI deploy)
+            docker rm -f ai-receptionist-app-1 ai_receptionist_active \
+                         ai_receptionist_blue ai_receptionist_green 2>/dev/null || true
+
+            docker run -d \
+              --name ai_receptionist_active \
+              --network lex_net \
+              --restart unless-stopped \
+              --env-file "$SECRETS_FILE" \
+              -p 8002:8002 \
+              "$IMAGE"
+
+            rm -f "$SECRETS_FILE"
+
+            # ── Phase 3: Post-swap verification on :8002 ────────────────────
+            PASS=0
+            for _ in $(seq 1 15); do
+              HTTP=$(curl -so /dev/null -w "%{http_code}" http://localhost:8002/readiness || echo "000")
+              if [ "$HTTP" = "200" ]; then
+                PASS=$((PASS+1))
+                [ "$PASS" -ge 3 ] && break
+              else
+                PASS=0
+              fi
+              sleep 2
+            done
+
+            if [ "$PASS" -lt 3 ]; then
+              echo "Post-swap health check failed on :8002 — deploy may need manual rollback"
+              docker logs ai_receptionist_active
+              exit 1
+            fi
+
+            echo "Deploy complete — ai_receptionist_active is serving on :8002"
