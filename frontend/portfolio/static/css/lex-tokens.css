@@ -1,0 +1,98 @@
+/* ============================================================
+   LEXMAKESIT — DESIGN TOKENS
+   Handmade digital collage / punk editorial / photocopy grunge.
+   The system exists to make *controlled imperfection repeatable*,
+   not to sand it flat.
+   ============================================================ */
+
+:root {
+  /* ---- Ground ------------------------------------------------ */
+  --ink-900: #050505;   /* deepest black, page ground            */
+  --ink-800: #0c0c0c;   /* charcoal panel                        */
+  --ink-700: #141414;   /* raised charcoal                       */
+  --ink-600: #1e1e1e;   /* hairline / divider on black           */
+
+  /* ---- Paper ------------------------------------------------- */
+  --paper-100: #f7f4ed; /* brightest torn paper                  */
+  --paper-200: #efeade; /* standard card stock                   */
+  --paper-300: #ded7c6; /* paper in shadow                       */
+  --paper-ink: #16150f; /* text printed on paper                 */
+
+  /* ---- Signal ------------------------------------------------ */
+  --red-500: #f21f14;   /* primary red — headline, torn note     */
+  --red-600: #c9160d;   /* red in shadow                         */
+  --acid-400: #d4f83f;  /* acid yellow — CTA, callouts           */
+  --acid-500: #c2ea22;  /* acid yellow pressed                   */
+  --sticky-300: #f5ef9b;/* sticky-note yellow (softer than acid) */
+  --cyan-400: #4dd9ff;  /* rare accent, ~3 uses per page         */
+
+  /* ---- Type -------------------------------------------------- */
+  --font-display: 'Archivo Black', 'Archivo', system-ui, sans-serif;
+  --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+  --font-hand: 'Architects Daughter', 'Comic Sans MS', cursive;
+  --font-script: 'Caveat', 'Segoe Script', cursive;
+
+  /* Display scale — compressed editorial, NOT airy.
+     Line-height is deliberately below 1 so rows nearly touch. */
+  --display-lh: 0.88;
+  --display-tracking: -0.035em;
+
+  /* ---- Structure --------------------------------------------- */
+  --shell-max: 1480px;
+  --shell-pad: clamp(16px, 4vw, 56px);
+
+  /* ---- Paper physics ----------------------------------------- */
+  /* Two-part shadow: a tight contact shadow plus a soft cast.
+     This is what separates "paper on a table" from "div". */
+  --lift-1: 0 1px 2px rgba(0,0,0,.55), 0 6px 18px rgba(0,0,0,.45);
+  --lift-2: 0 2px 4px rgba(0,0,0,.6),  0 14px 34px rgba(0,0,0,.55);
+  --lift-3: 0 3px 6px rgba(0,0,0,.65), 0 26px 60px rgba(0,0,0,.6);
+
+  /* Torn sheets are clipped, so their shadow has to be a drop-shadow
+     (it follows the clip silhouette) rather than a box-shadow. */
+  /* ONE drop-shadow per sheet, not two. Stacking a contact shadow
+     and a cast shadow looked marginally better and measured 52fps
+     while scrolling; a single shadow holds 60fps with zero long
+     frames. The tightness is recovered with a darker, shorter blur. */
+  --paper-shadow: drop-shadow(0 9px 16px rgba(0,0,0,.62));
+  --paper-shadow-sm: drop-shadow(0 4px 9px rgba(0,0,0,.5));
+  --paper-shadow-lg: drop-shadow(0 16px 30px rgba(0,0,0,.66));
+
+  /* ---- Texture opacity --------------------------------------- */
+  --grain-page: .17;    /* film grain over the whole ground      */
+  --grain-paper: .5;    /* photocopy fibre inside paper          */
+  --smudge: .07;        /* toner smudge / vignette               */
+
+  /* ---- Controlled chaos -------------------------------------- */
+  /* Named rotations so imperfection is a token, not a magic number. */
+  --tilt-xs: .4deg;
+  --tilt-sm: .9deg;
+  --tilt-md: 1.6deg;
+  --tilt-lg: 2.6deg;
+
+  /* ---- Motion ------------------------------------------------ */
+  --ease-paper: cubic-bezier(.16,1,.3,1);      /* settle, no bounce  */
+  --ease-snap:  cubic-bezier(.7,0,.2,1);        /* tape/strip snap    */
+  --ease-out:   cubic-bezier(.33,1,.68,1);
+  --dur-fast: .18s;
+  --dur-med: .34s;
+  --dur-slow: .72s;
+}
+
+/* The collage never inverts — it is a black page by design.
+   We only declare the light-scheme hook so form controls
+   and scrollbars render correctly against it. */
+:root { color-scheme: dark; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root { --dur-fast: .01ms; --dur-med: .01ms; --dur-slow: .01ms; }
+}
+
+/* ---- Procedural texture -------------------------------------
+   Grain and paper fibre are generated with SVG feTurbulence and
+   inlined as data URIs. No image request, no AI asset, and the
+   noise is resolution-independent.                              */
+:root {
+  --grain-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
+  --fibre-url: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.045 .9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3CfeComponentTransfer%3E%3CfeFuncA type='linear' slope='.55'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+}

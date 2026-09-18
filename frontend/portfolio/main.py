@@ -20,7 +20,12 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
-from fastapi.responses import FileResponse, HTMLResponse, JSONResponse
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    RedirectResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import jwt
@@ -229,9 +234,36 @@ async def lifespan(app: FastAPI):
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def client_ip_key(request: Request) -> str:
+    """Per-client key for rate limiting.
+
+    The only route into this app is the Cloudflare Tunnel, so every request
+    reaches the container from the cloudflared sidecar and
+    get_remote_address() returns the SAME address for the entire internet.
+    Keying on that made every limit global instead of per-client: one client
+    could exhaust the shared budget and deny everyone else, and /api/contact's
+    5/hour applied to all visitors combined.
+
+    Cloudflare sets CF-Connecting-IP to the true client address. It is only
+    safe to trust a client-supplied header when the request cannot arrive by
+    any other path - which holds here: the container publishes nothing except
+    127.0.0.1 diagnostics, and the tunnel is outbound-only. Fall back to the
+    first X-Forwarded-For hop, then the socket peer (loopback diagnostics).
+    """
+    cf_ip = request.headers.get("cf-connecting-ip")
+    if cf_ip:
+        return cf_ip.strip()
+
+    forwarded = request.headers.get("x-forwarded-for")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+
+    return get_remote_address(request)
+
+
 # Rate limiting with configurable thresholds for security
 limiter = Limiter(
-    key_func=get_remote_address,
+    key_func=client_ip_key,
     default_limits=[f"{RATE_LIMIT_PER_MINUTE}/minute"],
     storage_uri=RATE_LIMIT_STORAGE,
 )
@@ -865,30 +897,28 @@ async def about(request: Request):
     )
 
 
-@app.get("/portfolio", response_class=HTMLResponse)
+# These three rendered templates that do not exist in the image, so each
+# returned a live 500. The work they pointed at now lives on the homepage,
+# so they redirect there instead of erroring.
+
+@app.get("/portfolio")
 async def portfolio(request: Request):
-    """Portfolio page - Social Proof"""
-    return templates.TemplateResponse(
-        request=request,
-        name="portfolio.html",
-        context={"request": request, "projects": PROJECTS},
-    )
+    """The portfolio is the Featured Projects section of the homepage."""
+    return RedirectResponse(url="/#work", status_code=308)
+
+
+@app.get("/contact")
+async def contact_page(request: Request):
+    """Contact lives at the foot of the homepage."""
+    return RedirectResponse(url="/#contact", status_code=308)
 
 
 @app.get("/blog", response_class=HTMLResponse)
 async def blog(request: Request):
-    """Blog page - Reciprocity (free valuable content)"""
-    return templates.TemplateResponse(
-        request=request, name="blog.html", context={"request": request}
-    )
-
-
-@app.get("/contact", response_class=HTMLResponse)
-async def contact_page(request: Request):
-    """Contact page"""
-    return templates.TemplateResponse(
-        request=request, name="contact.html", context={"request": request}
-    )
+    """Blog index. Nothing is published yet, so this serves an honest
+    placeholder in the site's own design rather than a 500 or a redirect
+    that would silently drop a nav link."""
+    return FileResponse("static/projects/blog.html")
 
 
 @app.get("/projects/ai-receptionist", response_class=HTMLResponse)
@@ -897,6 +927,36 @@ async def ai_receptionist_project(request: Request):
     return templates.TemplateResponse(
         request=request, name="ai-receptionist.html", context={"request": request}
     )
+
+
+# --- Project case studies -------------------------------------------
+# Served as static documents the same way "/" is. The existing
+# /projects/ai-receptionist route above is left untouched: it renders a
+# live product page with Stripe checkout, not a case study.
+
+_CASE_STUDIES = {
+    "bakerypos": "static/projects/bakerypos.html",
+    "agentop": "static/projects/agentop.html",
+    "reseller": "static/projects/reseller.html",
+}
+
+
+@app.get("/projects/bakerypos", response_class=HTMLResponse)
+async def project_bakerypos(request: Request):
+    """BakeryPOS case study."""
+    return FileResponse(_CASE_STUDIES["bakerypos"])
+
+
+@app.get("/projects/agentop", response_class=HTMLResponse)
+async def project_agentop(request: Request):
+    """Agentop case study."""
+    return FileResponse(_CASE_STUDIES["agentop"])
+
+
+@app.get("/projects/reseller", response_class=HTMLResponse)
+async def project_reseller(request: Request):
+    """Reseller App (Vendora) case study."""
+    return FileResponse(_CASE_STUDIES["reseller"])
 
 
 @app.get("/api/health")

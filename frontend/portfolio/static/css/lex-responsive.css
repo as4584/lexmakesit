@@ -1,0 +1,296 @@
+/* ============================================================
+   LEXMAKESIT - RESPONSIVE COMPOSITION
+   The mobile reference is its own composition, not a squeezed
+   desktop. Three regimes:
+     >= 1100px  full three-column editorial collage
+     700-1099   tablet: statue and papers reflow under the hero
+     <= 699     phone: statue overlaps the headline, cards
+                become horizontal filmstrips
+   ============================================================ */
+
+/* ============================================================
+   MOTION PREP
+   Elements that the entrance timeline animates start hidden,
+   but ONLY when JS is running and motion is allowed. Without
+   JS (or with reduced motion) the page renders complete.
+   ============================================================ */
+html.js-motion .anim-row > span,
+html.js-motion .anim-fade,
+html.js-motion .anim-rise { will-change: transform, opacity; }
+
+html.js-motion .anim-row > span { transform: translateY(105%); }
+html.js-motion .anim-fade { opacity: 0; }
+html.js-motion .anim-rise { opacity: 0; transform: translateY(24px); }
+html.js-motion .anim-strip { transform: translateX(-14%) rotate(-4.6deg); opacity: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.js-motion .anim-row > span,
+  html.js-motion .anim-fade,
+  html.js-motion .anim-rise,
+  html.js-motion .anim-strip {
+    opacity: 1 !important; transform: none !important; will-change: auto;
+  }
+  html.js-motion .anim-strip { transform: rotate(-4.6deg) !important; }
+  * { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+
+/* ============================================================
+   DESKTOP ANNOTATION PLACEMENT
+   Absolute positions are expressed in % of the hero so the
+   collage holds together as the viewport scales.
+   ============================================================ */
+@media (min-width: 1100px) {
+  .annot--good-ideas .annot__arrow { margin-left: 4px !important; }
+
+  /* The statue column is the positioning context for the marks
+     that belong to the sculpture. */
+  .hero__col--statue { position: relative; }
+  .annot--same-ideas {
+    top: -26px; left: 30%;
+    display: flex; align-items: flex-start; gap: 4px;
+    width: max-content;
+  }
+  .annot--crown-statue { top: 22px; left: auto; right: -7%; }
+  .annot--curious {
+    top: 58%; right: -4%; left: auto;
+    width: max-content; text-align: left;
+  }
+
+  /* The sculpture starts below the annotation that labels it, so
+     "same ideas / different results" never lands on the hair. */
+  .hero__col--statue .statue { margin-top: 14px; }
+  .statue__img { height: clamp(320px, 33vw, 462px); }
+
+  /* The red note and the acid callout belong to the HERO on desktop.
+     Their duplicates in the outro are phone-only, so they are hidden
+     here - otherwise the same scrap of paper appears twice. */
+  .outro__red-note { display: none; }
+  .outro__marks > .hand--acid { display: none !important; }
+
+  .hero__col--papers {
+    padding-top: clamp(4px, .8vw, 12px);
+    display: grid; gap: clamp(14px, 1.8vw, 26px);
+    justify-items: stretch;
+  }
+  .checklist { max-width: 300px; margin-left: auto; }
+  .red-note { max-width: 320px; margin-left: auto; }
+}
+
+/* ============================================================
+   TABLET
+   ============================================================ */
+@media (max-width: 1099px) and (min-width: 700px) {
+  .hero__grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, .72fr);
+    gap: clamp(20px, 3vw, 36px);
+  }
+  .hero__col--papers {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: clamp(16px, 2.4vw, 30px);
+    align-items: start;
+    margin-top: clamp(20px, 3vw, 36px);
+  }
+  .annot--curious, .annot--same-ideas, .annot--crown-statue { display: none; }
+
+  /* Paper is a scrap, not a banner - cap it so it keeps the
+     proportions it has on desktop. */
+  .checklist { max-width: 330px; }
+  .red-note { max-width: 400px; }
+  .hero__red-note-desktop { display: grid; gap: 18px; justify-items: start; }
+  .statue__img { height: clamp(300px, 34vw, 400px); }
+
+  .projects__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .outro { grid-template-columns: 1fr; gap: clamp(22px, 4vw, 34px); }
+  .outro__marks { justify-content: flex-start; }
+}
+
+/* ============================================================
+   PHONE  -  follows the mobile reference
+   ============================================================ */
+@media (max-width: 699px) {
+  :root {
+    --display-lh: .93;
+    --shell-pad: 16px;
+  }
+
+  /* ---- Nav ------------------------------------------------- */
+  .nav { gap: 8px; padding-block: 10px; }
+  .nav__links { display: none; }
+  .wordmark { font-size: 27px; }
+  .nav .btn--acid { padding: 8px 12px; font-size: 12.5px; margin-left: auto; }
+  .burger span { width: 26px; height: 3px; }
+
+  /* ---- Hero ------------------------------------------------ */
+  .hero { padding-block: 2px 14px; }
+  .hero__grid { display: block; position: relative; }
+
+  /* Two annotations bracket the top of the composition, as in
+     the reference: one over the headline, one over the statue. */
+  .annot--good-ideas { gap: 4px; margin: 0 0 6px; font-size: 10px; }
+  .annot--good-ideas .annot__arrow { width: 18px; margin-left: 2px !important; }
+  /* Lifted clear of the sculpture so it reads as a note ABOUT the
+     statue rather than graffiti on its hair. */
+  .annot--same-ideas {
+    display: block; top: -44px; right: 16px; left: auto;
+    font-size: 9px; text-align: left; z-index: 5;
+  }
+  .annot--same-ideas .annot__arrow { width: 16px; display: block; margin: 2px 0 0 !important; }
+  .annot--crown-statue { display: block; top: -16px; right: 14px; left: auto; width: 30px; z-index: 6; }
+
+  /* The sculpture sits on the right, overlapping the headline
+     block - but the headline is narrowed so the two never fight
+     for the same pixels. */
+  .hero__col--statue {
+    position: absolute;
+    top: 44px; right: -14px;
+    width: 45%;
+    z-index: 2;
+    pointer-events: none;
+  }
+  .hero__col--statue .statue { margin-top: 0; }
+  /* Fixed height gives the sculpture a KNOWN band, which is what
+     lets the lede below it be positioned deterministically. */
+  .statue__img {
+    height: 190px; width: 100%;
+    object-fit: cover; object-position: center top;
+    mask-image:
+      radial-gradient(78% 86% at 52% 40%, #000 56%, transparent 97%),
+      linear-gradient(to bottom, #000 58%, transparent 99%);
+    -webkit-mask-image:
+      radial-gradient(78% 86% at 52% 40%, #000 56%, transparent 97%),
+      linear-gradient(to bottom, #000 58%, transparent 99%);
+    mask-composite: intersect;
+    -webkit-mask-composite: source-in;
+  }
+
+  /* Strip spans the sculpture only, so BUILD COOL STUFF stays
+     legible instead of colliding with the headline. */
+  .strip {
+    left: -14%; right: -8%; top: 23%;
+    padding: 7px 10px;
+  }
+  .strip__text { font-size: 12.5px; line-height: 1.2; }
+
+  .annot--curious {
+    position: absolute; top: 78px; right: 10px; left: auto;
+    z-index: 5; font-size: 8.6px; text-align: left;
+  }
+  .annot--curious .annot__arrow { width: 12px; margin-top: 2px; }
+  .annot--curious .smiley { width: 22px; margin-top: 3px; }
+
+  /* Headline is capped so it clears the sculpture. */
+  .hero__col--copy { position: relative; z-index: 3; }
+  .headline {
+    /* Sized so the longest row ("Make it yours.") fits inside the
+       measure the sculpture leaves it, with nowrap still on. */
+    font-size: clamp(24px, 7.2vw, 31px);
+    max-width: 64%;
+    white-space: nowrap;
+  }
+  .hero__lede {
+    font-size: 14.5px; max-width: none;
+    /* Clears the 190px sculpture band that overlaps the headline. */
+    margin: clamp(110px, 28vw, 132px) 0 16px;
+    position: relative; z-index: 3;
+  }
+
+  .hero__actions { display: grid; gap: 9px; }
+  .hero__actions .btn { width: 100%; padding: 12px 18px; font-size: 14px; }
+
+  /* ---- Papers ---------------------------------------------- */
+  .hero__col--papers { position: relative; z-index: 3; margin-top: 12px; display: block; }
+  .checklist { width: 62%; margin-left: auto; transform: rotate(1.4deg); padding: 10px 12px; }
+  .checklist li { font-size: 11.5px; }
+  .hero__red-note-desktop { display: none; }
+
+  /* ---- Projects: filmstrip rows ---------------------------- */
+  .projects { padding-block: 14px 20px; }
+  .projects__head { margin-bottom: 12px; }
+  .projects__title { font-size: 14px; }
+  .projects__tagline { display: none; }
+  .projects__grid { grid-template-columns: 1fr; gap: 12px; }
+
+  .card {
+    display: grid;
+    grid-template-columns: 34% minmax(0, 1fr);
+    align-items: stretch;
+    gap: 0; padding: 5px;
+    --card-tilt: 0deg;
+  }
+  .projects__grid > :nth-child(1) .card { --card-tilt: -.35deg; }
+  .projects__grid > :nth-child(2) .card { --card-tilt:  .3deg; }
+  .projects__grid > :nth-child(3) .card { --card-tilt: -.3deg; }
+  .projects__grid > :nth-child(4) .card { --card-tilt:  .35deg; }
+
+  .card__media { aspect-ratio: auto; height: 100%; min-height: 112px; margin: 0; }
+
+  /* The body reserves a lane on the right for the sticky note
+     and the arrow, so the description keeps a real measure
+     instead of collapsing to one word per line. */
+  .card__body {
+    display: flex; flex-direction: column; justify-content: center;
+    padding: 8px 46px 8px 11px;
+    position: relative;
+  }
+  .card__num { top: 5px; left: 5px; font-size: 13px; }
+  .card__head { padding-right: 34px; margin-bottom: 2px; }
+  .card__logo { width: 17px; }
+  .card__title { font-size: 16.5px; line-height: 1.05; }
+  .card__tba { font-size: .52em; }
+  .card__desc {
+    font-size: 10.5px; line-height: 1.34;
+    padding-right: 62px;
+    margin: 0;
+    hyphens: none; overflow-wrap: normal;
+  }
+
+  .sticky {
+    right: 40px; top: auto; bottom: 7px;
+    transform: rotate(var(--sticky-tilt));
+    padding: 5px 6px; max-width: 58px;
+  }
+  .sticky li { font-size: 7.6px; line-height: 1.34; }
+
+  .card__cta { display: none; }
+  .card__foot {
+    position: absolute; right: 4px; top: 50%;
+    transform: translateY(-50%); margin: 0;
+  }
+  .btn-circle { width: 38px; }
+
+  /* ---- Outro ----------------------------------------------- */
+  .outro {
+    grid-template-columns: auto 1fr;
+    gap: 14px 12px; align-items: center;
+    padding-block: 16px 26px;
+  }
+  .outro__quote { display: none; }
+  .outro__red-note { grid-column: 1; }
+  .outro__scroll { grid-column: 2; justify-self: center; }
+  .outro__marks { grid-column: 1 / -1; justify-content: space-between; }
+  .outro__marks .est-badge { display: none; }
+  .red-note { padding: 10px 12px; }
+  .red-note .hand { font-size: 10px; }
+  .red-note__globe { width: 32px; }
+  .outro__scroll .hand { font-size: 9.5px; }
+  .scroll-ring { width: 40px; }
+}
+
+/* Very narrow phones - protect the card row from collapsing. */
+@media (max-width: 380px) {
+  .card { grid-template-columns: 34% minmax(0, 1fr); }
+  .card__title { font-size: 18px; }
+  .sticky { display: none; }
+  .card__desc { padding-right: 8px; }
+}
+
+/* ============================================================
+   PRINT - the collage flattens to a legible sheet
+   ============================================================ */
+@media print {
+  .grain, .menu, .burger { display: none !important; }
+  body { background: #fff; color: #000; }
+  .card, .paper { box-shadow: none; filter: none; transform: none; }
+}

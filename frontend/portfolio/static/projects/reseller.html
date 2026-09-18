@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Reseller App — Inventory, profit and invoicing on a phone | Lexmakesit</title>
+<meta name="description" content="A reseller operating system built with React Native and FastAPI: inventory, real-time profit, invoices and payments." />
+<meta name="theme-color" content="#050505" />
+<link rel="canonical" href="https://lexmakesit.com/projects/reseller" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lexmakesit.com/projects/reseller" />
+<meta property="og:title" content="Reseller App — Inventory, profit and invoicing on a phone | Lexmakesit" />
+<meta property="og:description" content="A reseller operating system built with React Native and FastAPI: inventory, real-time profit, invoices and payments." />
+<meta property="og:image" content="https://lexmakesit.com/static/images/projects/vendora-dashboard.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Reseller App — Inventory, profit and invoicing on a phone | Lexmakesit" />
+<meta name="twitter:description" content="A reseller operating system built with React Native and FastAPI: inventory, real-time profit, invoices and payments." />
+<meta name="twitter:image" content="https://lexmakesit.com/static/images/projects/vendora-dashboard.png" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Architects+Daughter&family=Caveat:wght@700&family=Space+Grotesk:wght@400;500;700&display=swap" />
+<link rel="stylesheet" href="/static/css/lex-tokens.css" />
+<link rel="stylesheet" href="/static/css/lex-collage.css" />
+<link rel="stylesheet" href="/static/css/lex-torn.css" />
+<link rel="stylesheet" href="/static/css/lex-responsive.css" />
+<link rel="stylesheet" href="/static/css/lex-case.css" />
+<style>:root { --case-accent: var(--acid-400); }</style>
+<script>
+  (function () {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      document.documentElement.classList.add('js-motion');
+  })();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <symbol id="i-crown" viewBox="0 0 100 74"><path d="M8 66 L4 12 L28 40 L50 6 L72 40 L96 12 L92 66 Z" /></symbol>
+    <symbol id="i-smiley" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" /><path d="M33 40 v6 M67 40 v6 M31 62 q19 18 38 0" /></symbol>
+    <symbol id="i-arrow-curve" viewBox="0 0 100 100"><path d="M8 12 q46 4 56 60" /><path d="M48 62 l16 12 l6 -19" /></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 100 100"><path d="M10 50 H84 M60 26 L86 50 L60 74" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+  </defs>
+</svg>
+<div class="grain" aria-hidden="true"></div>
+<header class="shell">
+  <nav class="nav" aria-label="Primary">
+    <a class="wordmark" href="/" aria-label="Lexmakesit — home">
+      Lexmakesit
+      <svg class="wordmark__crown" viewBox="0 0 100 74" aria-hidden="true"><use href="#i-crown" /></svg>
+    </a>
+    <ul class="nav__links">
+      <li><a class="nav__link" href="/#work" aria-current="page">Work</a></li>
+      <li><a class="nav__link" href="/pricing">Services</a></li>
+      <li><a class="nav__link" href="/about">About</a></li>
+      <li><a class="nav__link" href="/blog">Blog</a></li>
+      <li><a class="nav__link" href="/#contact">Contact</a></li>
+    </ul>
+    <a class="btn btn--acid" href="/#contact">
+      <span class="btn__label">Start a project</span>
+      <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+    </a>
+    <button class="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+</header>
+
+<div class="menu" id="menu" data-open="false" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+  <button class="menu__close" type="button" aria-label="Close menu">&times;</button>
+  <ul>
+    <li><a href="/#work">Work</a></li>
+    <li><a href="/pricing">Services</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/#contact">Contact</a></li>
+  </ul>
+</div>
+
+<main id="main" class="case">
+<div class="shell"><a class="case-back" href="/#work"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-arrow-right" /></svg>All projects</a></div>
+  <section class="shell case-hero">
+    <p class="case-hero__kicker anim-rise"><span class="case-hero__num">04</span> Mobile app &middot; Commerce</p>
+    <h1 class="case-hero__title anim-rise">Buy. Sell. Manage.<br /><em>All in one place.</em></h1>
+    <p class="case-hero__standfirst anim-rise">
+      A reseller operating system, built under the working name Vendora: inventory,
+      profit, invoices and payments for people who sell sneakers, electronics and
+      clothing — run entirely from a phone.
+    </p>
+    <ul class="facts anim-rise">
+      <li><b>Platform</b> iOS &amp; Android</li>
+      <li><b>Built with</b> React Native &middot; Expo 56</li>
+      <li><b>Backend</b> FastAPI &middot; PostgreSQL</li>
+      <li><b>Status</b> Pre-release</li>
+    </ul>
+  </section>
+
+  <section class="shell case-section">
+    <div class="shot-row anim-rise">
+      <figure>
+        <picture><source srcset="/static/images/projects/vendora-dashboard.webp" type="image/webp" />
+        <img src="/static/images/projects/vendora-dashboard.png" width="430" height="932" loading="lazy" decoding="async"
+             alt="Vendora dashboard screen showing quick actions, stock health and revenue." /></picture>
+      </figure>
+      <figure>
+        <picture><source srcset="/static/images/projects/vendora-inventory.webp" type="image/webp" />
+        <img src="/static/images/projects/vendora-inventory.png" width="430" height="932" loading="lazy" decoding="async"
+             alt="Vendora inventory list with per-item stock, cost and asking price." /></picture>
+      </figure>
+      <figure>
+        <picture><source srcset="/static/images/projects/vendora-quicksale.webp" type="image/webp" />
+        <img src="/static/images/projects/vendora-quicksale.png" width="430" height="932" loading="lazy" decoding="async"
+             alt="Vendora quick sale flow: select item, confirm details, take payment." /></picture>
+      </figure>
+      <figure>
+        <picture><source srcset="/static/images/projects/vendora-invoices.webp" type="image/webp" />
+        <img src="/static/images/projects/vendora-invoices.png" width="430" height="932" loading="lazy" decoding="async"
+             alt="Vendora invoice builder drawing line items from inventory." /></picture>
+      </figure>
+    </div>
+    <p class="hand" style="margin:0;opacity:.62;font-size:12px">
+      Real screenshots from the application. Catalogue and figures shown are test data.
+    </p>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">The problem</p>
+      <h2 class="case-h2">Most resellers run on a spreadsheet and a good memory.</h2>
+      <p class="case-p">
+        Stock lives in one place, sales in another, and profit is worked out at the
+        end of the month — if at all. Every platform has its own export, and none of
+        them agree. The work happens standing up, at a market or a counter, on a
+        phone.
+      </p>
+    </div>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">The approach</p>
+      <h2 class="case-h2">One item record, everything hangs off it.</h2>
+      <p class="case-p">
+        An item carries its photos, condition, buy price, asking price and platform.
+        From that single record the app derives profit and loss per item and across
+        the portfolio, builds invoices, and reconciles against a connected point of
+        sale — so the numbers are a consequence of the inventory rather than a
+        second thing to maintain.
+      </p>
+    </div>
+    <ul class="feature-list feature-list--2 anim-rise" style="margin-top:clamp(16px,2vw,28px)">
+      <li class="feature"><h3>Inventory</h3><p>Photos, barcode scanning, condition, buy and sell price, platform.</p></li>
+      <li class="feature"><h3>Profit engine</h3><p>Real-time P&amp;L per item and across the portfolio.</p></li>
+      <li class="feature"><h3>Invoices</h3><p>Build a PDF invoice from inventory and send it to the buyer.</p></li>
+      <li class="feature"><h3>Payments</h3><p>Stripe-powered checkout and subscription billing.</p></li>
+      <li class="feature"><h3>Lightspeed sync</h3><p>Pull sales and stock, publish catalogue changes, disconnect safely.</p></li>
+      <li class="feature"><h3>Market pricing</h3><p>Compare UPC retail offers against the seller's own sales history.</p></li>
+    </ul>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">Stack</p>
+      <table class="stack">
+        <caption>Verified from the project's own README and source tree.</caption>
+        <tbody>
+          <tr><th scope="row">Mobile</th><td>React Native — Expo 56, Expo Router</td></tr>
+          <tr><th scope="row">Backend</th><td>FastAPI (Python 3.12)</td></tr>
+          <tr><th scope="row">Database</th><td>PostgreSQL with Alembic migrations</td></tr>
+          <tr><th scope="row">Auth</th><td>JWT access tokens</td></tr>
+          <tr><th scope="row">Payments</th><td>Stripe Connect with webhooks</td></tr>
+          <tr><th scope="row">POS</th><td>Lightspeed R-Series OAuth</td></tr>
+          <tr><th scope="row">Delivery</th><td>EAS Update, GitHub Actions CI</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">Where it stands</p>
+      <div class="status anim-rise">
+        <span class="status__dot" aria-hidden="true"></span>
+        <div>
+          <p class="case-p">
+            <strong>Pre-release, in readiness review.</strong> The core flows —
+            inventory, quick sale, invoicing and sync — are built and exercised, with
+            continuous integration running over the backend and the mobile app. The
+            public name is not final, which is why it appears on the homepage as
+            “Reseller App”.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="shell case-cta">
+    <p class="case-cta__text">Building something people will run a business on?</p>
+    <a class="btn btn--acid" href="/#contact">
+      <span class="btn__label">Start a project</span>
+      <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+    </a>
+    <a class="btn btn--outline" href="/#work"><span class="btn__label">See other work</span></a>
+  </section>
+
+  <nav class="shell pager" aria-label="Other projects">
+    <a href="/projects/bakerypos">Next: BakeryPOS &rarr;</a><a href="/projects/agentop">Agentop</a><a href="/projects/ai-receptionist">AI Receptionist</a>
+  </nav>
+</main>
+
+<footer class="shell" style="padding-block:20px 34px;border-top:1px solid var(--ink-600)">
+  <p class="hand" style="margin:0;opacity:.6;font-size:11px">
+    &copy; <span id="year">2026</span> Lexmakesit — Lex Santiago.
+    <a href="/privacy-policy" style="text-decoration:underline">Privacy</a> ·
+    <a href="/terms" style="text-decoration:underline">Terms</a>
+  </p>
+</footer>
+
+<script src="/static/js/vendor/gsap.min.js" defer></script>
+<script src="/static/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/static/js/lex-motion.js" defer></script>
+</body>
+</html>

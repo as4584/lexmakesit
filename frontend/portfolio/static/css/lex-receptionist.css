@@ -1,0 +1,469 @@
+/* ============================================================
+   LEXMAKESIT — AI RECEPTIONIST SKIN
+   This page is a live product page with Stripe checkout and an ROI
+   calculator. Nothing here changes its markup, its ids, or its
+   JavaScript — this file only re-dresses the existing components in
+   the Lexmakesit collage language.
+
+   The page's own inline styles reference five legacy custom
+   properties, so re-pointing those five re-themes most of the page
+   for free. The rest is component styling for the aero/glass classes
+   the markup already uses.
+
+   Load order matters: this sheet must come AFTER the page's inline
+   <style> block, or its page-specific rules win.
+   ============================================================ */
+
+:root {
+  /* --- the five legacy variables, re-pointed ----------------- */
+  --color-ocean-mid: var(--red-500);      /* prices, rules, emphasis */
+  --color-ocean-light: var(--acid-400);
+  --color-aqua: var(--cyan-400);
+  /* This variable is used by the page's INLINE styles, which no
+     stylesheet rule can outrank. Rather than fight specificity, the
+     variable itself is scoped: light on the dark section panels,
+     ink inside the paper cards (custom properties inherit). */
+  --color-navy-text: var(--paper-100);
+  --color-white: var(--paper-100);
+  --gradient-ocean: linear-gradient(135deg, var(--red-500) 0%, var(--red-600) 100%);
+  --gradient-glass: none;
+  --font-display: 'Archivo Black', 'Archivo', system-ui, sans-serif;
+  --font-body: 'Space Grotesk', system-ui, sans-serif;
+  --container-width: 1080px;
+}
+
+/* ============================================================
+   GROUND
+   ============================================================ */
+/* Paper surfaces re-scope the inherited text variable to ink, so
+   inline color:var(--color-navy-text) resolves correctly in both
+   contexts without a single !important. */
+.glass-card, .trust-block, .case-study, .addon-item, .pricing-how,
+.tier-minutes, .comparison-table .highlight-row {
+  --color-navy-text: var(--paper-ink);
+}
+
+body {
+  background: var(--ink-900) !important;
+  color: var(--paper-100) !important;
+  font-family: var(--font-body) !important;
+}
+
+/* The aero theme's floating bubbles and glass gloss are the exact
+   "random orbs / glassmorphism" this brand is not. */
+.aero-bubbles,
+.bubble,
+.gloss-overlay { display: none !important; }
+
+.aero-section {
+  position: relative;
+  z-index: 10;
+  background: transparent !important;
+  padding-block: clamp(30px, 4vw, 64px) !important;
+}
+/* .container layout comes from the page's own global.css - we only
+   widen it slightly to suit the new type scale. */
+.container { max-width: var(--container-width) !important; }
+
+/* Kill the aero glass treatment wherever it survives. */
+.glass-panel, .glass-card, .aero-section, .navbar, .trust-block,
+.case-study, .addon-item, .pricing-how {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  background-image: none !important;
+}
+body::before, body::after { display: none !important; }
+
+/* ============================================================
+   TYPE
+   ============================================================ */
+h1, h2, h3, h4 {
+  font-family: var(--font-display) !important;
+  letter-spacing: -.025em;
+  line-height: 1.04;
+  color: var(--paper-100);
+}
+h1 { font-size: clamp(34px, 5vw, 74px) !important; }
+h2 { font-size: clamp(24px, 2.6vw, 42px) !important; }
+h3 { font-size: clamp(17px, 1.5vw, 24px) !important; }
+
+p, li, label, td, th { font-family: var(--font-body); }
+
+/* Inside paper panels the type flips to ink. */
+/* Everything sitting DIRECTLY on the dark section panel reads light
+   (the ROI calculator lives here, not in a paper card). */
+.glass-panel, .glass-panel p, .glass-panel h2, .glass-panel h3,
+.glass-panel h4, .glass-panel label, .glass-panel span,
+.glass-panel div, .glass-panel strong, .glass-panel li,
+.glass-panel small, .glass-panel em { color: var(--paper-100); }
+
+/* Paper cards nested inside it re-assert ink. Two class selectors so
+   these win over the panel rules above without !important. */
+.glass-panel .glass-card, .glass-panel .glass-card p, .glass-panel .glass-card h3,
+.glass-panel .glass-card h4, .glass-panel .glass-card span, .glass-panel .glass-card div,
+.glass-panel .glass-card li, .glass-panel .glass-card strong, .glass-panel .glass-card em,
+.glass-panel .trust-block, .glass-panel .trust-block p, .glass-panel .trust-block h3,
+.glass-panel .trust-block div, .glass-panel .trust-block span, .glass-panel .trust-block strong,
+.glass-panel .case-study, .glass-panel .case-study p, .glass-panel .case-study h3,
+.glass-panel .case-study div, .glass-panel .case-study span,
+.glass-panel .addon-item, .glass-panel .addon-item span, .glass-panel .addon-item div,
+.glass-panel .pricing-how, .glass-panel .pricing-how p, .glass-panel .pricing-how div {
+  color: var(--paper-ink);
+}
+
+.glass-card, .pricing-how, .case-study, .trust-block, .addon-item {
+  color: var(--paper-ink) !important;
+}
+.glass-card h1, .glass-card h2, .glass-card h3,
+.glass-card h4, .glass-card p, .glass-card li, .glass-card em,
+.case-study h3, .case-study p, .trust-block h3, .trust-block p,
+.pricing-how p, .addon-item { color: var(--paper-ink) !important; }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero {
+  padding-block: clamp(26px, 4vw, 60px) clamp(22px, 3vw, 44px) !important;
+  text-align: left !important;
+}
+.hero h1 { text-wrap: balance; }
+.hero p { font-size: clamp(15px, 1.2vw, 19px); color: rgba(247,244,237,.84); max-width: 46ch; }
+
+/* ============================================================
+   PAPER PANELS — the glass cards become torn sheets
+   ============================================================ */
+.glass-panel {
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+  color: var(--paper-100) !important;
+  padding-inline: 0 !important;
+}
+.glass-panel > h1, .glass-panel > h2, .glass-panel > h3,
+.glass-panel > p { color: var(--paper-100) !important; }
+
+.glass-card,
+.case-study,
+.trust-block,
+.addon-item,
+.pricing-how {
+  background: var(--paper-200) !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  filter: var(--paper-shadow);
+  clip-path: polygon(0.6% 1.1%, 99.2% 0, 100% 98.6%, 0 100%);
+}
+.glass-card { padding: clamp(18px, 2vw, 30px) !important; }
+
+/* Alternating tilt so a row of cards reads as pinned paper. */
+.glass-card:nth-child(odd)  { transform: rotate(-.45deg) !important; }
+.glass-card:nth-child(even) { transform: rotate(.4deg) !important; }
+
+/* The recommended tier keeps its emphasis, in the new palette. */
+.glass-card[style*="scale"] {
+  outline: 3px solid var(--red-500);
+  outline-offset: -3px;
+}
+
+/* ============================================================
+   BUTTONS — the checkout CTA becomes the acid button
+   ============================================================ */
+.aero-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .55em;
+  background: var(--acid-400) !important;
+  background-image: none !important;
+  color: #000 !important;
+  font-family: var(--font-body) !important;
+  font-weight: 700 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: var(--lift-1) !important;
+  padding: clamp(11px, 1.1vw, 16px) clamp(18px, 1.8vw, 28px) !important;
+  clip-path: polygon(0 4%, 99.2% 0, 100% 95%, .6% 100%);
+  text-decoration: none;
+  transition: transform var(--dur-fast) var(--ease-snap),
+              box-shadow var(--dur-med) var(--ease-out);
+}
+.aero-btn:hover { box-shadow: var(--lift-2) !important; }
+.aero-btn:active { transform: translateY(2px) scale(.985); }
+
+/* ============================================================
+   NAV
+   ============================================================ */
+.navbar {
+  background: rgba(5,5,5,.88) !important;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--ink-600) !important;
+  box-shadow: none !important;
+}
+.nav-container { max-width: var(--container-width); }
+.logo-text {
+  font-family: var(--font-script) !important;
+  font-size: clamp(24px, 2.4vw, 34px) !important;
+  color: var(--paper-100) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--paper-100) !important;
+  transform: rotate(-1.1deg);
+}
+.nav-link {
+  font-family: var(--font-hand) !important;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  font-size: 13px !important;
+  color: var(--paper-100) !important;
+  position: relative;
+}
+.nav-link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -3px;
+  height: 2px; background: var(--acid-400);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+.nav-link:hover::after { transform: scaleX(1); }
+.hamburger span, .hamburger div { background: var(--paper-100) !important; }
+
+/* ============================================================
+   ROI CALCULATOR
+   ============================================================ */
+.slider-container label { color: var(--paper-100); font-weight: 600; }
+.slider-container input[type="range"] {
+  background: rgba(247,244,237,.22) !important;
+  border-radius: 0 !important;
+  height: 6px !important;
+}
+.slider-container input[type="range"]::-webkit-slider-thumb {
+  background: var(--red-500) !important;
+  border-radius: 0 !important;
+  width: 18px !important; height: 18px !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,.4) !important;
+}
+.slider-container input[type="range"]::-moz-range-thumb {
+  background: var(--red-500); border: 0; border-radius: 0;
+  width: 18px; height: 18px;
+}
+
+.toggle-btn {
+  font-family: var(--font-hand) !important;
+  text-transform: uppercase; letter-spacing: .07em;
+  background: transparent !important;
+  color: var(--paper-100) !important;
+  border: 1.5px solid rgba(247,244,237,.35) !important;
+  border-radius: 0 !important;
+  padding: .5em .9em !important;
+}
+.toggle-btn.active {
+  background: var(--red-500) !important;
+  border-color: var(--red-500) !important;
+  color: var(--paper-100) !important;
+}
+
+.metric { color: var(--paper-100); }
+.metric strong, .metric b { font-family: var(--font-display); }
+
+/* ============================================================
+   PRICING / COMPARISON
+   ============================================================ */
+.comparison-table { width: 100%; border-collapse: collapse; }
+.comparison-table th,
+.comparison-table td {
+  border-bottom: 1px solid var(--ink-600) !important;
+  padding: .7em .9em !important;
+  color: rgba(247,244,237,.88) !important;
+  background: transparent !important;
+}
+.comparison-table th {
+  font-family: var(--font-hand); text-transform: uppercase;
+  letter-spacing: .07em; font-weight: 400;
+  color: rgba(247,244,237,.6) !important;
+}
+.highlight-row, .highlight-row td {
+  background: rgba(242,31,20,.14) !important;
+  color: var(--paper-100) !important;
+}
+.competitor-price { color: rgba(247,244,237,.5) !important; }
+
+.competitor-price { color: rgba(22,21,15,.6) !important; text-decoration: line-through; }
+.our-price {
+  color: var(--red-500) !important;
+  font-family: var(--font-display);
+}
+.tier-minutes {
+  font-family: var(--font-hand);
+  text-transform: uppercase; letter-spacing: .04em;
+  background: var(--sticky-300) !important;
+  color: #000 !important;
+  border-radius: 0 !important;
+  padding: .6em .8em !important;
+  display: block;
+}
+.addon-price { color: var(--red-500) !important; font-weight: 700; }
+
+/* ============================================================
+   FOOTER
+   ============================================================ */
+.footer-top, footer {
+  background: transparent !important;
+  border-top: 1px solid var(--ink-600);
+  color: rgba(247,244,237,.7);
+}
+
+/* ============================================================
+   Focus + reduced motion inherit the site-wide rules in
+   lex-collage.css; nothing page-specific is needed.
+   ============================================================ */
+@media (max-width: 699px) {
+  .glass-card:nth-child(odd), .glass-card:nth-child(even) { transform: none !important; }
+  .hero { text-align: left !important; }
+}
+
+/* ============================================================
+   CONTRAST OVERRIDE
+   The page's own inline <style> carries a blanket
+       h1,h2,h3,h4,p,li,td,th { color:#000 !important }
+   plus !important rules on the slider labels and the comparison
+   table. Those were written for the old light glass panels; with
+   the panels now dark they render black on black.
+
+   Inline !important cannot be outranked by ordinary rules, so these
+   are deliberately !important AND more specific (two classes vs the
+   bare element selectors they are correcting).
+   ============================================================ */
+
+/* --- text sitting on the dark section panel --- */
+.aero-section .glass-panel > h1,
+.aero-section .glass-panel > h2,
+.aero-section .glass-panel > h3,
+.aero-section .glass-panel > h4,
+.aero-section .glass-panel > p,
+.aero-section .glass-panel > div > h3,
+.aero-section .glass-panel > div > p,
+.aero-section .glass-panel > div > div > h3,
+.aero-section .glass-panel > div > div > p {
+  color: var(--paper-100) !important;
+}
+
+.aero-section .slider-container label,
+.aero-section .slider-container label span:first-child {
+  color: var(--paper-100) !important;
+}
+
+.aero-section .comparison-table th,
+.aero-section .comparison-table td {
+  color: rgba(247, 244, 237, .88) !important;
+  border-bottom-color: var(--ink-600) !important;
+  background: transparent !important;
+}
+.aero-section .comparison-table th { color: rgba(247, 244, 237, .6) !important; }
+.aero-section .comparison-table .highlight-row td { color: var(--paper-100) !important; }
+
+/* --- paper cards re-assert ink, above the rules just set --- */
+.aero-section .glass-panel .glass-card h1, .aero-section .glass-panel .glass-card h2,
+.aero-section .glass-panel .glass-card h3, .aero-section .glass-panel .glass-card h4,
+.aero-section .glass-panel .glass-card p,  .aero-section .glass-panel .glass-card li,
+.aero-section .glass-panel .trust-block h3, .aero-section .glass-panel .trust-block p,
+.aero-section .glass-panel .trust-block li, .aero-section .glass-panel .trust-block div,
+.aero-section .glass-panel .case-study h3, .aero-section .glass-panel .case-study p,
+.aero-section .glass-panel .pricing-how p, .aero-section .glass-panel .pricing-how h3,
+.aero-section .glass-panel .addon-item, .aero-section .glass-panel .addon-item span {
+  color: var(--paper-ink) !important;
+}
+
+/* Values the page colours through --color-ocean-mid stay red; the
+   sticky-note tier block stays black on yellow. */
+.aero-section .glass-panel .tier-minutes,
+.aero-section .glass-panel .tier-minutes strong,
+.aero-section .glass-panel .tier-minutes span { color: #000 !important; }
+
+/* The live value in each slider label keeps its accent; the page's
+   `.slider-container label span { color:#000 !important }` outranks
+   the inline colour it was given. */
+.aero-section .slider-container label span:last-child {
+  color: var(--red-500) !important;
+  font-weight: 700;
+}
+
+
+/* ============================================================
+   RED THAT WORKS ON BOTH GROUNDS
+   Brand red on near-black measures 3.5:1 - fine for a display
+   headline, short of AA for the small labels this page uses it on.
+   The accent variable is therefore scoped: a lighter red on the dark
+   panels, the true brand red on paper where it has the contrast.
+   ============================================================ */
+.glass-panel { --color-ocean-mid: #ff5a4f; }
+.glass-panel .glass-card,
+.glass-panel .trust-block,
+.glass-panel .case-study,
+.glass-panel .addon-item,
+.glass-panel .pricing-how,
+.glass-panel .tier-minutes { --color-ocean-mid: var(--red-500); }
+
+.aero-section .slider-container label span:last-child { color: #ff5a4f !important; }
+.aero-section .glass-panel .comparison-table .highlight-row td { color: var(--paper-100) !important; }
+
+/* The two ROI cost boxes are inline-styled translucent-white tiles
+   from the glass theme. On the dark panel they read as mid-grey with
+   near-white text. Turned into proper paper, so the variables inside
+   them resolve to ink and brand red. */
+.glass-panel div[style*="rgba(255,255,255,0.5)"] {
+  background: var(--paper-200) !important;
+  border-radius: 0 !important;
+  --color-navy-text: var(--paper-ink);
+  --color-ocean-mid: var(--red-500);
+  filter: var(--paper-shadow-sm);
+}
+.glass-panel div[style*="rgba(255,255,255,0.5)"] > div { color: var(--paper-ink) !important; }
+.glass-panel div[style*="rgba(255,255,255,0.5)"] > div[id] { color: var(--red-500) !important; }
+
+/* Footer copy sits on the black ground; the blanket p{color:#000}
+   rule would otherwise leave it invisible. */
+.footer-top p, .footer-top li, .footer-top a,
+footer p, footer li, footer a { color: rgba(247,244,237,.78) !important; }
+.footer-top a:hover, footer a:hover { color: var(--acid-400) !important; }
+
+/* On paper, brand red #f21f14 measures ~3.4:1 - fine for the large
+   price figures, short of AA for the small uppercase labels beside
+   them. One step darker clears 4.5:1 on paper and stays on-brand. */
+.glass-panel .glass-card,
+.glass-panel .trust-block,
+.glass-panel .case-study,
+.glass-panel .addon-item,
+.glass-panel .pricing-how,
+.glass-panel div[style*="rgba(255,255,255,0.5)"] { --color-ocean-mid: var(--red-600); }
+
+/* Cover every descendant of the cost tiles, not just direct children. */
+.glass-panel div[style*="rgba(255,255,255,0.5)"] * { color: var(--paper-ink) !important; }
+.glass-panel div[style*="rgba(255,255,255,0.5)"] [id] { color: var(--red-600) !important; }
+
+/* Inline emphasis inside paper blocks. Only strong/b/em are forced -
+   spans are left alone so the inline-coloured price figures keep
+   their accent. */
+.glass-panel .glass-card strong, .glass-panel .glass-card b, .glass-panel .glass-card em,
+.glass-panel .pricing-how strong, .glass-panel .pricing-how b, .glass-panel .pricing-how em,
+.glass-panel .trust-block strong, .glass-panel .trust-block b, .glass-panel .trust-block em,
+.glass-panel .case-study strong, .glass-panel .case-study b, .glass-panel .case-study em {
+  color: var(--paper-ink) !important;
+}
+
+/* On a phone the four-column comparison table squeezes every cell to
+   a couple of characters. Let it scroll sideways in its own lane
+   instead - the only element on the page allowed to do that. */
+@media (max-width: 699px) {
+  .aero-section .comparison-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .aero-section .comparison-table tbody,
+  .aero-section .comparison-table thead { display: table; width: max-content; min-width: 100%; }
+  .aero-section .comparison-table th,
+  .aero-section .comparison-table td { padding: .6em .7em !important; }
+}

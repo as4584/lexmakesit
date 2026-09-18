@@ -1,0 +1,320 @@
+/* ============================================================
+   LEXMAKESIT - CASE STUDY SYSTEM
+   Same materials as the homepage: black ground, torn paper,
+   hand lettering, red / acid / cyan. Different job.
+
+   The homepage is a poster and can be read in any order. A case
+   study is a document, so this layer trades some chaos for a
+   single reading column, a calmer type scale, and generous
+   leading. The collage stays in the margins and the furniture,
+   never underneath the prose.
+   ============================================================ */
+
+/* ---- Reading measure ---------------------------------------
+   A case study gets ONE column at a real measure. Body copy is
+   never set across the full 1480px shell.                     */
+.case { position: relative; z-index: 10; }
+
+.case__measure {
+  max-width: 68ch;      /* ~66-72 characters, the readable band */
+  margin-inline: 0;     /* LEFT aligned, like the hero - centring the
+                           prose under a left-aligned headline broke
+                           the editorial axis the whole site sits on */
+}
+.case__wide { max-width: 1060px; margin-inline: 0; }
+
+/* ============================================================
+   CASE HERO
+   Each project overrides the accent and the composition; the
+   skeleton is shared.
+   ============================================================ */
+.case-hero {
+  position: relative;
+  padding-block: clamp(20px, 3vw, 44px) clamp(34px, 4.4vw, 68px);
+}
+
+.case-hero__kicker {
+  display: flex; align-items: center; gap: .7em;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .9vw, 14px);
+  letter-spacing: .12em;
+  margin: 0 0 clamp(10px, 1.2vw, 18px);
+  color: var(--case-accent, var(--acid-400));
+}
+.case-hero__num {
+  font-family: var(--font-display);
+  font-size: 1.5em; line-height: 1;
+  color: var(--paper-100);
+}
+
+.case-hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 5.4vw, 86px);
+  line-height: .92;
+  letter-spacing: -.035em;
+  margin: 0 0 clamp(14px, 1.6vw, 24px);
+  text-wrap: balance;
+}
+.case-hero__title em {
+  font-style: normal;
+  color: var(--case-accent, var(--red-500));
+}
+
+.case-hero__standfirst {
+  font-size: clamp(16px, 1.35vw, 21px);
+  line-height: 1.55;
+  color: rgba(247,244,237,.86);
+  max-width: 46ch;
+  text-wrap: pretty;
+  margin: 0 0 clamp(20px, 2.4vw, 32px);
+}
+
+/* Fact strip - only ever holds things we can verify. */
+.facts {
+  display: flex; flex-wrap: wrap;
+  gap: clamp(10px, 1.2vw, 18px);
+  list-style: none; padding: 0; margin: 0;
+}
+.facts li {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 13px);
+  letter-spacing: .07em;
+  padding: .5em .8em;
+  border: 1.5px solid rgba(247,244,237,.28);
+  color: rgba(247,244,237,.9);
+}
+.facts li b {
+  display: block; font-weight: 400;
+  color: var(--case-accent, var(--acid-400));
+}
+
+/* ============================================================
+   SECTIONS
+   ============================================================ */
+.case-section { padding-block: clamp(26px, 3.4vw, 54px); }
+
+.case-section__label {
+  display: flex; align-items: baseline; gap: .8em;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(12px, 1vw, 15px);
+  letter-spacing: .14em;
+  color: rgba(247,244,237,.62);
+  margin: 0 0 clamp(12px, 1.4vw, 20px);
+}
+.case-section__label::before {
+  content: ""; width: clamp(20px, 2.4vw, 44px); height: 2px;
+  background: var(--case-accent, var(--acid-400));
+  flex: none;
+}
+
+.case-h2 {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 2.5vw, 40px);
+  line-height: 1.04;
+  letter-spacing: -.025em;
+  margin: 0 0 clamp(12px, 1.4vw, 20px);
+  text-wrap: balance;
+}
+
+.case-p {
+  font-size: clamp(15px, 1.15vw, 18px);
+  line-height: 1.66;
+  color: rgba(247,244,237,.84);
+  margin: 0 0 1.05em;
+  text-wrap: pretty;
+}
+.case-p strong { color: var(--paper-100); font-weight: 700; }
+.case-p a { color: var(--cyan-400); text-decoration: underline; text-underline-offset: 3px; }
+
+/* ---- Feature list on paper ---------------------------------- */
+.feature-list { display: grid; gap: clamp(10px, 1.1vw, 16px); list-style: none; padding: 0; margin: 0; }
+.feature-list--2 {
+  /* Capped, or auto-fit spreads six features across five columns at
+     desktop width and leaves an orphan on the second row. */
+  max-width: 1060px;
+  grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+}
+@media (min-width: 1000px) {
+  .feature-list--2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.feature {
+  position: relative;
+  padding: clamp(14px, 1.5vw, 22px) clamp(16px, 1.7vw, 26px);
+  background: var(--paper-200);
+  color: var(--paper-ink);
+  filter: var(--paper-shadow);
+}
+.feature:nth-child(odd)  { transform: rotate(-.35deg); }
+.feature:nth-child(even) { transform: rotate(.3deg); }
+.feature h3 {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.2vw, 19px);
+  letter-spacing: -.015em;
+  margin: 0 0 .35em;
+}
+.feature p {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .92vw, 14px);
+  line-height: 1.45; letter-spacing: .03em;
+  margin: 0;
+}
+
+/* ---- Stack table -------------------------------------------- */
+.stack {
+  width: 100%; border-collapse: collapse;
+  font-size: clamp(13px, 1.05vw, 16px);
+}
+.stack caption {
+  font-family: var(--font-hand);
+  text-transform: uppercase; letter-spacing: .1em;
+  font-size: clamp(10px, .82vw, 13px);
+  color: rgba(247,244,237,.55);
+  text-align: left; padding-bottom: .7em;
+}
+.stack th, .stack td {
+  text-align: left; padding: .62em .9em;
+  border-bottom: 1px solid var(--ink-600);
+  vertical-align: top;
+}
+.stack th {
+  font-family: var(--font-hand);
+  text-transform: uppercase; letter-spacing: .07em;
+  font-weight: 400; color: rgba(247,244,237,.6);
+  white-space: nowrap; width: 1%;
+}
+.stack td { color: var(--paper-100); }
+
+/* ---- Figures ------------------------------------------------- */
+.shot { margin: 0 0 clamp(16px, 2vw, 28px); }
+.shot img {
+  width: 100%; height: auto;
+  background: var(--ink-700);
+}
+.shot--paper {
+  padding: clamp(8px, .8vw, 13px);
+  background: var(--paper-200);
+  filter: var(--paper-shadow);
+}
+.shot figcaption {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .85vw, 13px);
+  letter-spacing: .05em;
+  line-height: 1.45;
+  color: rgba(247,244,237,.62);
+  margin-top: .7em;
+}
+.shot--paper figcaption { color: rgba(22,21,15,.72); padding: 0 4px 2px; }
+
+/* An honest label for artwork that is NOT a product screenshot. */
+.shot figcaption .illus {
+  color: var(--red-500);
+  border: 1.5px solid currentColor;
+  padding: .1em .45em;
+  margin-right: .5em;
+  white-space: nowrap;
+}
+
+/* Phone screenshots sit in a row, like prints laid on a desk. */
+.shot-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: clamp(12px, 1.6vw, 26px);
+  margin: 0 0 clamp(16px, 2vw, 28px);
+}
+.shot-row figure { margin: 0; }
+.shot-row img {
+  width: 100%; height: auto;
+  border: 1px solid rgba(247,244,237,.14);
+}
+.shot-row figure:nth-child(2n) { transform: rotate(.7deg); }
+.shot-row figure:nth-child(3n) { transform: rotate(-.6deg); }
+
+/* ---- Status block ------------------------------------------- */
+.status {
+  display: flex; align-items: flex-start; gap: clamp(12px, 1.4vw, 20px);
+  padding: clamp(16px, 1.8vw, 26px) clamp(18px, 2vw, 30px);
+  background: var(--ink-800);
+  border-left: 4px solid var(--case-accent, var(--acid-400));
+}
+.status__dot {
+  width: 11px; height: 11px; border-radius: 50%; flex: none;
+  background: var(--case-accent, var(--acid-400));
+  margin-top: .45em;
+}
+.status p { margin: 0; }
+.status .case-p { margin: 0; }
+
+/* ---- Next / CTA --------------------------------------------- */
+.case-cta {
+  display: flex; flex-wrap: wrap; align-items: center;
+  gap: clamp(12px, 1.6vw, 24px);
+  padding-block: clamp(26px, 3.4vw, 52px) clamp(34px, 4vw, 64px);
+}
+.case-cta__text {
+  font-family: var(--font-display);
+  font-size: clamp(22px, 2.4vw, 38px);
+  line-height: 1.02; letter-spacing: -.025em;
+  margin: 0; max-width: 16ch;
+}
+
+/* ---- Back link ----------------------------------------------- */
+.case-back {
+  display: inline-flex; align-items: center; gap: .5em;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .9vw, 14px);
+  letter-spacing: .1em;
+  padding-block: clamp(10px, 1.2vw, 18px);
+}
+.case-back svg {
+  width: 18px; flex: none;
+  fill: none; stroke: currentColor; stroke-width: 9;
+  stroke-linecap: round; stroke-linejoin: round;
+  transform: scaleX(-1);
+  transition: transform var(--dur-med) var(--ease-snap);
+}
+.case-back:hover svg { transform: scaleX(-1) translateX(4px); }
+
+/* ---- Project pager ------------------------------------------ */
+.pager {
+  display: flex; flex-wrap: wrap; gap: clamp(10px, 1.2vw, 18px);
+  padding-block: clamp(20px, 2.4vw, 36px);
+  border-top: 1px solid var(--ink-600);
+}
+.pager a {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .9vw, 14px);
+  letter-spacing: .06em;
+  padding: .6em .9em;
+  border: 1.5px solid rgba(247,244,237,.25);
+  transition: border-color var(--dur-med) var(--ease-out),
+              color var(--dur-med) var(--ease-out);
+}
+.pager a:hover { border-color: var(--case-accent, var(--acid-400)); color: var(--case-accent, var(--acid-400)); }
+
+/* ============================================================
+   MARGIN MARKS - the collage lives out here, not under the text
+   ============================================================ */
+.case-mark { position: absolute; z-index: 6; pointer-events: none; }
+@media (max-width: 1199px) { .case-mark { display: none; } }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 699px) {
+  .case-hero { padding-block: 10px 24px; }
+  .case-hero__title { font-size: clamp(30px, 9.4vw, 42px); }
+  .case-section { padding-block: 20px; }
+  .facts li { font-size: 10px; }
+  .shot-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .case__measure, .case__wide { max-width: none; }
+  .case-cta__text { max-width: none; }
+  .status { padding: 14px 16px; }
+}

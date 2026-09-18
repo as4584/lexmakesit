@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>BakeryPOS — Point-of-sale for a working bakery | Lexmakesit</title>
+<meta name="description" content="A Windows point-of-sale application built in .NET 8 and WPF for La Jarochita, a working Mexican bakery." />
+<meta name="theme-color" content="#050505" />
+<link rel="canonical" href="https://lexmakesit.com/projects/bakerypos" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://lexmakesit.com/projects/bakerypos" />
+<meta property="og:title" content="BakeryPOS — Point-of-sale for a working bakery | Lexmakesit" />
+<meta property="og:description" content="A Windows point-of-sale application built in .NET 8 and WPF for La Jarochita, a working Mexican bakery." />
+<meta property="og:image" content="https://lexmakesit.com/static/images/collage/project-bakerypos.jpg" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="BakeryPOS — Point-of-sale for a working bakery | Lexmakesit" />
+<meta name="twitter:description" content="A Windows point-of-sale application built in .NET 8 and WPF for La Jarochita, a working Mexican bakery." />
+<meta name="twitter:image" content="https://lexmakesit.com/static/images/collage/project-bakerypos.jpg" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Architects+Daughter&family=Caveat:wght@700&family=Space+Grotesk:wght@400;500;700&display=swap" />
+<link rel="stylesheet" href="/static/css/lex-tokens.css" />
+<link rel="stylesheet" href="/static/css/lex-collage.css" />
+<link rel="stylesheet" href="/static/css/lex-torn.css" />
+<link rel="stylesheet" href="/static/css/lex-responsive.css" />
+<link rel="stylesheet" href="/static/css/lex-case.css" />
+<style>:root { --case-accent: var(--red-500); }</style>
+<script>
+  (function () {
+    if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+      document.documentElement.classList.add('js-motion');
+  })();
+</script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute">
+  <defs>
+    <symbol id="i-crown" viewBox="0 0 100 74"><path d="M8 66 L4 12 L28 40 L50 6 L72 40 L96 12 L92 66 Z" /></symbol>
+    <symbol id="i-smiley" viewBox="0 0 100 100"><circle cx="50" cy="50" r="44" /><path d="M33 40 v6 M67 40 v6 M31 62 q19 18 38 0" /></symbol>
+    <symbol id="i-arrow-curve" viewBox="0 0 100 100"><path d="M8 12 q46 4 56 60" /><path d="M48 62 l16 12 l6 -19" /></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 100 100"><path d="M10 50 H84 M60 26 L86 50 L60 74" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" /></symbol>
+  </defs>
+</svg>
+<div class="grain" aria-hidden="true"></div>
+<header class="shell">
+  <nav class="nav" aria-label="Primary">
+    <a class="wordmark" href="/" aria-label="Lexmakesit — home">
+      Lexmakesit
+      <svg class="wordmark__crown" viewBox="0 0 100 74" aria-hidden="true"><use href="#i-crown" /></svg>
+    </a>
+    <ul class="nav__links">
+      <li><a class="nav__link" href="/#work" aria-current="page">Work</a></li>
+      <li><a class="nav__link" href="/pricing">Services</a></li>
+      <li><a class="nav__link" href="/about">About</a></li>
+      <li><a class="nav__link" href="/blog">Blog</a></li>
+      <li><a class="nav__link" href="/#contact">Contact</a></li>
+    </ul>
+    <a class="btn btn--acid" href="/#contact">
+      <span class="btn__label">Start a project</span>
+      <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+    </a>
+    <button class="burger" type="button" aria-expanded="false" aria-controls="menu" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+</header>
+
+<div class="menu" id="menu" data-open="false" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+  <button class="menu__close" type="button" aria-label="Close menu">&times;</button>
+  <ul>
+    <li><a href="/#work">Work</a></li>
+    <li><a href="/pricing">Services</a></li>
+    <li><a href="/about">About</a></li>
+    <li><a href="/blog">Blog</a></li>
+    <li><a href="/#contact">Contact</a></li>
+  </ul>
+</div>
+
+<main id="main" class="case">
+<div class="shell"><a class="case-back" href="/#work"><svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-arrow-right" /></svg>All projects</a></div>
+  <section class="shell case-hero">
+    <p class="case-hero__kicker anim-rise"><span class="case-hero__num">01</span> Point of sale &middot; Desktop</p>
+    <h1 class="case-hero__title anim-rise">Real world software<br />for a <em>real bakery</em>.</h1>
+    <p class="case-hero__standfirst anim-rise">
+      BakeryPOS is a Windows point-of-sale application built for La&nbsp;Jarochita,
+      a working Mexican bakery — not a demo, and not a template. It runs on the
+      counter hardware the shop already owns.
+    </p>
+    <ul class="facts anim-rise">
+      <li><b>Platform</b> Windows desktop</li>
+      <li><b>Built with</b> .NET&nbsp;8 &middot; WPF</li>
+      <li><b>Pattern</b> MVVM</li>
+      <li><b>Status</b> Built &amp; iterating</li>
+    </ul>
+  </section>
+
+  <figure class="shell shot anim-rise">
+    <picture>
+      <source srcset="/static/images/collage/project-bakerypos.webp" type="image/webp" />
+      <img src="/static/images/collage/project-bakerypos.jpg" width="800" height="600"
+           loading="lazy" decoding="async"
+           alt="Hands holding a traditional Mexican bakery box in a bakery." />
+    </picture>
+    <figcaption>
+      <span class="illus">Illustration</span>
+      Commissioned artwork for this case study — not a screenshot of the application.
+    </figcaption>
+  </figure>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">The problem</p>
+      <h2 class="case-h2">A counter does not pause for software.</h2>
+      <p class="case-p">
+        A bakery sells a lot of small things quickly, prints receipts and labels
+        all day, and counts stock that changes by the hour. Generic retail
+        software assumes a barcode on every item and a stable catalogue. A panadería
+        has neither.
+      </p>
+      <p class="case-p">
+        The shop also has its own print templates and its own counter hardware.
+        Anything that ignores those becomes something staff work around instead of
+        work with.
+      </p>
+    </div>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">The approach</p>
+      <h2 class="case-h2">Split it along the seams that actually move.</h2>
+      <p class="case-p">
+        BakeryPOS is one solution divided into parts that change at different
+        rates. The till UI changes often; printing and data access rarely. Keeping
+        them apart means a printer fix never risks the sales screen.
+      </p>
+    </div>
+    <ul class="feature-list feature-list--2 anim-rise" style="margin-top:clamp(16px,2vw,28px)">
+      <li class="feature"><h3>BakeryPos.App</h3><p>The WPF till interface — views, view-models and styles.</p></li>
+      <li class="feature"><h3>BakeryPos.Core</h3><p>Domain rules, kept free of any screen or database.</p></li>
+      <li class="feature"><h3>BakeryPos.Data</h3><p>Local database access, backups and exports.</p></li>
+      <li class="feature"><h3>BakeryPos.Import</h3><p>Brings the shop's existing product data in.</p></li>
+      <li class="feature"><h3>BakeryPos.Printing</h3><p>Receipts and labels against the shop's own templates.</p></li>
+      <li class="feature"><h3>BakeryPos.Tests</h3><p>Automated tests over the rules that handle money.</p></li>
+    </ul>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">Stack</p>
+      <table class="stack">
+        <caption>Verified from the project's build output and solution layout.</caption>
+        <tbody>
+          <tr><th scope="row">Runtime</th><td>.NET 8 (<code>net8.0-windows</code>)</td></tr>
+          <tr><th scope="row">UI</th><td>WPF, MVVM (views / view-models / styles)</td></tr>
+          <tr><th scope="row">Data</th><td>Local database with scheduled backups and exports</td></tr>
+          <tr><th scope="row">Printing</th><td>Receipt and label output using the shop's print templates</td></tr>
+          <tr><th scope="row">Testing</th><td>Dedicated test project in the solution</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="shell case-section">
+    <div class="case__measure">
+      <p class="case-section__label">Where it stands</p>
+      <div class="status anim-rise">
+        <span class="status__dot" aria-hidden="true"></span>
+        <div>
+          <p class="case-p">
+            <strong>Built, deployed to the shop's hardware, and still being
+            revised.</strong> The project carries a release build alongside a
+            separate printer hotfix kit and the bakery's own machine and printer
+            configuration — the ordinary evidence of software that is in use and
+            getting fixed, rather than finished.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="shell case-cta">
+    <p class="case-cta__text">Need software that fits how you already work?</p>
+    <a class="btn btn--acid" href="/#contact">
+      <span class="btn__label">Start a project</span>
+      <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+    </a>
+    <a class="btn btn--outline" href="/#work"><span class="btn__label">See other work</span></a>
+  </section>
+
+  <nav class="shell pager" aria-label="Other projects">
+    <a href="/projects/agentop">Next: Agentop &rarr;</a><a href="/projects/ai-receptionist">AI Receptionist</a><a href="/projects/reseller">Reseller App</a>
+  </nav>
+</main>
+
+<footer class="shell" style="padding-block:20px 34px;border-top:1px solid var(--ink-600)">
+  <p class="hand" style="margin:0;opacity:.6;font-size:11px">
+    &copy; <span id="year">2026</span> Lexmakesit — Lex Santiago.
+    <a href="/privacy-policy" style="text-decoration:underline">Privacy</a> ·
+    <a href="/terms" style="text-decoration:underline">Terms</a>
+  </p>
+</footer>
+
+<script src="/static/js/vendor/gsap.min.js" defer></script>
+<script src="/static/js/vendor/ScrollTrigger.min.js" defer></script>
+<script src="/static/js/lex-motion.js" defer></script>
+</body>
+</html>

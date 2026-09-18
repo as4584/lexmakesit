@@ -1,0 +1,656 @@
+/* ============================================================
+   LEXMAKESIT - COLLAGE SYSTEM
+   Everything here is real layout. Nothing is a screenshot.
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* The grain layer and the bleed annotations sit outside the
+     viewport on purpose; clip rather than scroll. */
+  overflow-x: clip;
+}
+
+body {
+  margin: 0;
+  /* Full-bleed on phones (viewport-fit=cover), so the collage has to
+     respect the notch and the home indicator. */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  background: var(--ink-900);
+  color: var(--paper-100);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-x: hidden;
+  /* Charcoal is not flat black - there is a slow, uneven
+     toner wash across the sheet. */
+  background-image:
+    radial-gradient(120% 80% at 18% 8%,  rgba(255,255,255,.055), transparent 60%),
+    radial-gradient(90% 70% at 88% 26%, rgba(255,255,255,.035), transparent 62%),
+    radial-gradient(140% 90% at 50% 100%, rgba(0,0,0,.85), transparent 55%);
+}
+
+img { max-width: 100%; display: block; }
+[hidden] { display: none !important; }
+
+a { color: inherit; text-decoration: none; }
+
+/* No 300ms tap delay, and a tap flash we chose rather than the
+   platform's translucent blue. */
+a, button, .btn, .btn-circle, .card {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(212, 248, 63, .22);
+}
+
+/* In-page targets clear the top of the viewport when jumped to. */
+:where([id]) { scroll-margin-top: clamp(16px, 4vw, 48px); }
+html { scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* Focus is visible and on-brand - acid, not the UA blue. */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 3px solid var(--acid-400);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+.shell {
+  width: 100%;
+  max-width: var(--shell-max);
+  margin-inline: auto;
+  padding-inline: max(var(--shell-pad), env(safe-area-inset-left, 0px));
+  padding-inline-end: max(var(--shell-pad), env(safe-area-inset-right, 0px));
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap; border: 0;
+}
+
+.skip-link {
+  position: fixed; top: 8px; left: 8px; z-index: 999;
+  transform: translateY(-160%);
+  background: var(--acid-400); color: #000;
+  padding: 10px 16px; font-weight: 700; font-size: 14px;
+}
+.skip-link:focus { transform: translateY(0); }
+
+/* ============================================================
+   FILM GRAIN - page-wide photocopy noise
+   One fixed layer, pointer-events none, composited once.
+   ============================================================ */
+.grain {
+  position: fixed; inset: -50%;
+  pointer-events: none; z-index: 1;
+  opacity: var(--grain-page);
+  background-image: var(--grain-url);
+  background-size: 180px 180px;
+  /* No will-change: this layer is position:fixed and never animates,
+     so promoting it just pins memory for nothing. */
+}
+
+/* ============================================================
+   HAND-LETTERED ANNOTATION
+   ============================================================ */
+.hand {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  line-height: 1.32;
+  font-size: clamp(11px, .82vw, 14px);
+  color: var(--paper-100);
+}
+.hand--acid { color: var(--acid-400); }
+.hand--ink  { color: var(--paper-ink); }
+.hand--lg   { font-size: clamp(13px, 1.05vw, 17px); }
+
+/* ============================================================
+   PAPER - torn-edge sheets
+   The torn edge is an SVG displacement filter applied to a
+   solid block, so the edge is genuinely irregular and the
+   element stays a real, selectable, animatable box.
+   ============================================================ */
+.paper {
+  position: relative;
+  background: var(--paper-200);
+  color: var(--paper-ink);
+  /* box-shadow would be clipped away by the torn clip-path, so the
+     cast shadow is a drop-shadow, which follows the torn silhouette
+     instead of a rectangle. */
+  filter: var(--paper-shadow);
+}
+.paper--red    { background: var(--red-500); color: var(--paper-100); }
+.paper--acid   { background: var(--acid-400); color: #000; }
+.paper--sticky { background: var(--sticky-300); color: #000; filter: var(--paper-shadow-sm); }
+
+/* Paper fibre: the printed-and-photocopied grain that lives
+   inside the sheet, clipped to it. */
+.paper::after {
+  content: ""; position: absolute; inset: 0;
+  pointer-events: none;
+  opacity: var(--grain-paper);
+  mix-blend-mode: multiply;
+  background-image: var(--fibre-url);
+  background-size: 140px 140px;
+}
+
+/* A sheet that has been folded and flattened again. */
+.paper--creased::before {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(103deg,
+    transparent 46%, rgba(0,0,0,.09) 49.4%,
+    rgba(255,255,255,.5) 50.2%, transparent 54%);
+}
+
+/* ---- Tape -------------------------------------------------- */
+.tape {
+  position: absolute; z-index: 3;
+  width: 92px; height: 26px;
+  background:
+    linear-gradient(176deg, rgba(255,255,255,.34), rgba(255,255,255,.1)),
+    rgba(226,222,205,.5);
+  box-shadow: 0 1px 3px rgba(0,0,0,.4);
+  /* Torn tape ends, not a clean rectangle. */
+  clip-path: polygon(3% 0,97% 4%,100% 96%,2% 100%,0 52%);
+}
+.tape::after {
+  content: ""; position: absolute; inset: 0;
+  background: repeating-linear-gradient(90deg,
+    transparent 0 7px, rgba(255,255,255,.14) 7px 8px);
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+.nav {
+  position: relative; z-index: 40;
+  display: flex; align-items: center; gap: clamp(12px, 2vw, 32px);
+  padding-block: clamp(14px, 1.8vw, 26px);
+}
+
+.wordmark {
+  font-family: var(--font-script);
+  font-size: clamp(30px, 3.1vw, 46px);
+  font-weight: 700;
+  letter-spacing: .01em;
+  line-height: 1;
+  white-space: nowrap;
+  /* The wordmark sits slightly off-baseline, like it was
+     signed onto the page rather than typeset. */
+  transform: rotate(-1.1deg);
+  display: inline-flex; align-items: center;
+}
+.wordmark__crown {
+  display: inline-block; width: clamp(26px, 2.4vw, 40px); margin-left: .18em;
+  fill: none; stroke: var(--red-500);
+  stroke-width: 9; stroke-linejoin: round; stroke-linecap: round;
+}
+
+.nav__links {
+  display: flex; gap: clamp(16px, 2.1vw, 40px);
+  margin-inline: auto;
+  list-style: none; padding: 0;
+}
+.nav__link {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: 13px; letter-spacing: .1em;
+  position: relative; padding-block: 4px;
+  color: var(--paper-100);
+}
+/* Underline is a drawn stroke that grows from the left. */
+.nav__link::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+  height: 2px; background: var(--acid-400);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+.nav__link:hover::after,
+.nav__link[aria-current="page"]::after { transform: scaleX(1); }
+
+/* ---- Hamburger --------------------------------------------- */
+.burger {
+  display: grid; gap: 6px; padding: 8px 2px;
+  background: none; border: 0; cursor: pointer;
+}
+.burger span {
+  display: block; width: 34px; height: 3px;
+  background: var(--paper-100);
+  transition: transform var(--dur-med) var(--ease-snap),
+              opacity var(--dur-fast) linear;
+}
+.burger[aria-expanded="true"] span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+.burger[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+.burger[aria-expanded="true"] span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+/* ============================================================
+   BUTTONS - tactile, pressable, hand-cut
+   ============================================================ */
+.btn {
+  position: relative;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: .6em;
+  font-family: var(--font-body);
+  font-weight: 700; font-size: clamp(14px, 1.05vw, 16px);
+  padding: clamp(12px, 1.1vw, 17px) clamp(20px, 1.9vw, 30px);
+  border: 0; cursor: pointer;
+  overflow: hidden;
+  transition: transform var(--dur-fast) var(--ease-snap),
+              box-shadow var(--dur-med) var(--ease-out);
+}
+.btn__label { position: relative; z-index: 2; }
+.btn__arrow {
+  position: relative; z-index: 2;
+  transition: transform var(--dur-med) var(--ease-snap);
+}
+.btn:hover .btn__arrow { transform: translateX(5px); }
+.btn:active { transform: translateY(2px) scale(.985); }
+
+/* Primary - the acid CTA. Cut edge, hard shadow, sweep. */
+.btn--acid {
+  background: var(--acid-400); color: #000;
+  clip-path: polygon(0 4%, 99.2% 0, 100% 95%, .6% 100%);
+  box-shadow: var(--lift-1);
+}
+.btn--acid::before {
+  content: ""; position: absolute; inset: 0; z-index: 1;
+  background: linear-gradient(100deg, transparent 38%,
+              rgba(255,255,255,.72) 50%, transparent 62%);
+  transform: translateX(-120%);
+  transition: transform .55s var(--ease-out);
+}
+.btn--acid:hover::before { transform: translateX(120%); }
+.btn--acid:hover { box-shadow: var(--lift-2); }
+
+/* Secondary - hand-drawn outline. */
+.btn--outline {
+  background: transparent; color: var(--paper-100);
+  border: 2px solid rgba(247,244,237,.85);
+}
+.btn--outline:hover { background: rgba(247,244,237,.08); border-color: var(--paper-100); }
+
+/* Circular arrow used on project cards. */
+.btn-circle {
+  display: grid; place-items: center;
+  width: clamp(44px, 3.4vw, 56px); aspect-ratio: 1;
+  border-radius: 50%; border: 0; cursor: pointer;
+  background: #000; color: #fff;
+  box-shadow: var(--lift-1);
+  transition: transform var(--dur-med) var(--ease-snap);
+  flex: none;
+}
+.btn-circle svg { width: 45%; transition: transform var(--dur-med) var(--ease-snap); }
+.btn-circle:hover svg { transform: translateX(3px); }
+
+/* ============================================================
+   HERO
+   ============================================================ */
+.hero { position: relative; z-index: 10; padding-block: clamp(6px, 1vw, 16px) clamp(12px, 1.4vw, 22px); }
+
+.hero__grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, .8fr) minmax(0, .58fr);
+  gap: clamp(16px, 2.4vw, 48px);
+  align-items: start;
+}
+
+.headline {
+  font-family: var(--font-display);
+  /* Sized so every row fits on ONE line at every desktop width -
+     the reference's four-row stack only reads as a stack when the
+     rows do not wrap. */
+  font-size: clamp(38px, 4.3vw, 70px);
+  line-height: var(--display-lh);
+  white-space: nowrap;
+  letter-spacing: var(--display-tracking);
+  margin: 0;
+}
+.headline__row { display: block; position: relative; }
+.headline__row--red { color: var(--red-500); }
+
+/* Each row is revealed by wiping a mask upward. The inner
+   span is what actually moves - the outer clips it. */
+.reveal-mask { display: block; overflow: hidden; padding-block: .02em; }
+
+.hero__asterisk {
+  display: inline-grid; place-items: center;
+  width: .58em; aspect-ratio: 1; margin-left: .16em;
+  border: .05em solid var(--red-500); border-radius: 50%;
+  color: var(--red-500); font-size: .6em;
+  vertical-align: .2em;
+}
+
+.hero__lede {
+  text-wrap: pretty;
+  font-size: clamp(15px, 1.22vw, 19px);
+  line-height: 1.52;
+  color: rgba(247,244,237,.82);
+  max-width: 34em;
+  margin: clamp(12px, 1.4vw, 20px) 0 clamp(15px, 1.7vw, 24px);
+}
+
+.hero__actions { display: flex; flex-wrap: wrap; gap: clamp(10px, 1.2vw, 18px); }
+
+/* ---- Statue column ----------------------------------------- */
+.statue { position: relative; }
+.statue__img {
+  width: 100%;
+  /* Head and shoulders, not a full-height column. */
+  height: clamp(320px, 34vw, 470px);
+  object-fit: contain;
+  object-position: center top;
+  filter: grayscale(1) contrast(1.24) brightness(.94);
+  /* The sculpture emerges from darkness rather than sitting
+     on a visible rectangle. */
+  mask-image: radial-gradient(78% 84% at 50% 44%, #000 58%, transparent 97%);
+  -webkit-mask-image: radial-gradient(78% 84% at 50% 44%, #000 58%, transparent 97%);
+}
+
+/* The black censor strip across the eyes. */
+.strip {
+  position: absolute;
+  left: -12%; right: -16%; top: 23%;
+  background: #000;
+  padding: clamp(10px, 1.1vw, 18px) clamp(16px, 1.9vw, 30px);
+  transform: rotate(-4.6deg);
+  box-shadow: var(--lift-2);
+  clip-path: polygon(0 6%, 99% 0, 100% 92%, 1% 100%);
+  z-index: 4;
+}
+.strip__text {
+  font-family: var(--font-hand);
+  font-size: clamp(15px, 1.5vw, 24px);
+  line-height: 1.16;
+  letter-spacing: .04em;
+  color: var(--paper-100);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.crown-mark {
+  position: absolute; width: clamp(48px, 5vw, 78px); z-index: 5;
+  fill: none; stroke: var(--paper-100);
+  stroke-width: 7; stroke-linejoin: round; stroke-linecap: round;
+}
+.crown-mark--red { stroke: var(--red-500); }
+
+.smiley {
+  width: clamp(34px, 2.8vw, 46px); flex: none;
+  fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round;
+}
+
+/* Annotations float over the composition on their own layer. */
+.annot { position: absolute; z-index: 6; }
+
+/* This one labels the headline, so it stays in normal flow at EVERY
+   width. Absolutely positioning it left it stacked on the headline
+   at any breakpoint that did not override it. */
+.annot--good-ideas {
+  position: static;
+  display: flex; align-items: flex-start; gap: 6px;
+  margin: 0 0 clamp(6px, .8vw, 14px);
+}
+
+/* Marks inside a vertical annotation stack under the text rather
+   than running inline after the last word. */
+.annot--curious .annot__arrow,
+.annot--curious .smiley { display: block; }
+.annot__arrow {
+  width: clamp(26px, 2.2vw, 40px);
+  fill: none; stroke: currentColor; stroke-width: 6; stroke-linecap: round;
+}
+
+/* ---- Checklist paper --------------------------------------- */
+.checklist { padding: clamp(16px, 1.5vw, 24px) clamp(18px, 1.7vw, 28px); }
+.checklist ul { list-style: none; margin: 0; padding: 0; display: grid; gap: clamp(7px, .7vw, 12px); }
+.checklist li {
+  display: flex; align-items: center; gap: .7em;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(12px, 1vw, 16px);
+  letter-spacing: .05em;
+}
+.checklist li::before {
+  content: ""; width: 1em; height: 1em; flex: none;
+  border: 2px solid var(--paper-ink);
+}
+
+/* ---- Red torn note ----------------------------------------- */
+.red-note {
+  display: flex; align-items: center; gap: clamp(10px, 1vw, 16px);
+  padding: clamp(14px, 1.4vw, 22px) clamp(16px, 1.6vw, 24px);
+}
+.red-note__globe {
+  width: clamp(38px, 3.4vw, 54px); flex: none;
+  fill: none; stroke: #000; stroke-width: 5;
+}
+
+/* ============================================================
+   FEATURED PROJECTS
+   ============================================================ */
+.projects { position: relative; z-index: 10; padding-block: clamp(12px, 1.4vw, 22px) clamp(24px, 2.8vw, 44px); }
+
+.projects__rule {
+  border: 0;
+  height: clamp(6px, .7vw, 10px);
+  background: var(--paper-300);
+  opacity: .42;
+  margin: 0 0 clamp(16px, 1.8vw, 26px);
+}
+
+.projects__head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 24px; flex-wrap: wrap;
+  margin-bottom: clamp(18px, 2.2vw, 34px);
+}
+.projects__title {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(16px, 1.55vw, 24px);
+  letter-spacing: .1em;
+  margin: 0; position: relative;
+}
+/* Hand-drawn underline, drawn on scroll. */
+.projects__title svg { display: block; width: 100%; margin-top: 5px; }
+.projects__title path { fill: none; stroke: var(--paper-100); stroke-width: 3.5; stroke-linecap: round; }
+
+.projects__grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(14px, 1.5vw, 26px);
+  align-items: start;
+}
+
+/* ---- Project card ------------------------------------------ */
+.card {
+  position: relative;
+  display: flex; flex-direction: column;
+  padding: clamp(10px, .85vw, 14px);
+  color: var(--paper-ink);
+  /* Each card is pinned at a slightly different angle. The
+     angle is a CSS variable so motion can straighten it. */
+  --card-tilt: var(--tilt-sm);
+  transform: rotate(var(--card-tilt));
+  transition: transform var(--dur-med) var(--ease-paper),
+              filter var(--dur-med) var(--ease-out);
+}
+.projects__grid > :nth-child(1) .card { --card-tilt: -.8deg; }
+.projects__grid > :nth-child(2) .card { --card-tilt:  .55deg; }
+.projects__grid > :nth-child(3) .card { --card-tilt: -.45deg; }
+.projects__grid > :nth-child(4) .card { --card-tilt:  .9deg; }
+
+.card--dark { background: var(--ink-800); color: var(--paper-100); }
+.card--dark .card__desc { color: rgba(247,244,237,.86); }
+
+/* Hover: the card lifts, straightens, and casts further. */
+@media (hover: hover) and (pointer: fine) {
+  .card:hover, .card:focus-within {
+    transform: rotate(calc(var(--card-tilt) * .3)) translateY(-6px);
+    filter: var(--paper-shadow-lg);
+  }
+  .card:hover .card__media img { transform: scale(1.055); }
+  .card:hover .sticky { transform: rotate(var(--sticky-tilt, 3deg)) translate(-3px, -4px); }
+}
+
+.card__num {
+  position: absolute; z-index: 5;
+  top: clamp(-6px, -.5vw, -4px); left: clamp(6px, .7vw, 12px);
+  background: var(--paper-100); color: var(--paper-ink);
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.25vw, 20px);
+  padding: .22em .5em;
+  transform: rotate(-2.4deg);
+  box-shadow: var(--lift-1);
+  clip-path: polygon(2% 4%, 98% 0, 100% 94%, 0 100%);
+}
+
+.card__media {
+  position: relative; overflow: hidden;
+  aspect-ratio: 16 / 9; background: var(--ink-700);
+  margin-bottom: clamp(12px, 1.1vw, 18px);
+}
+.card__media img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .6s var(--ease-out);
+}
+
+.card__body { position: relative; display: flex; flex-direction: column; flex: 1; }
+.card__head {
+  display: flex; align-items: center; gap: .55em; margin-bottom: .45em;
+  padding-right: clamp(58px, 6.4vw, 96px); /* clears the sticky note */
+}
+.card__logo { width: clamp(22px, 1.9vw, 30px); flex: none; }
+.card__title {
+  /* Deliberately NOT min-width: 0 - in the flex row that would let
+     the title shrink below its content width and split a project
+     name mid-word ("Receptioni / st"). break-word stays as a last
+     resort for a genuinely unbreakable name. */
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+  font-family: var(--font-display);
+  font-size: clamp(19px, 1.65vw, 27px);
+  letter-spacing: -.02em; line-height: 1;
+  margin: 0;
+}
+.card__tba { font-family: var(--font-body); font-size: .5em; opacity: .6; font-weight: 400; letter-spacing: 0; }
+
+.card__desc {
+  min-width: 0;
+  overflow-wrap: break-word;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(12px, 1vw, 15px);
+  line-height: 1.42; letter-spacing: .03em;
+  margin: 0 0 auto;
+  padding-right: clamp(60px, 7vw, 108px); /* room for the sticky note */
+}
+
+.card__foot {
+  display: flex; align-items: center; gap: .8em;
+  margin-top: clamp(14px, 1.3vw, 22px);
+}
+.card__cta {
+  font-family: var(--font-hand);
+  text-transform: uppercase; font-size: clamp(12px, .98vw, 15px);
+  letter-spacing: .05em;
+  position: relative;
+}
+.card__cta::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -4px;
+  height: 2px; background: currentColor;
+  transform: scaleX(.35); transform-origin: left;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+.card:hover .card__cta::after { transform: scaleX(1); }
+
+/* The whole card is clickable, but the link stays semantic. */
+.card__link::after { content: ""; position: absolute; inset: 0; z-index: 6; }
+
+/* ---- Sticky note ------------------------------------------- */
+.sticky {
+  position: absolute; z-index: 5;
+  right: clamp(-6px, -.4vw, 0px);
+  bottom: clamp(38px, 3.4vw, 52px);
+  max-width: clamp(76px, 7.4vw, 112px);
+  --sticky-tilt: 3.4deg;
+  transform: rotate(var(--sticky-tilt));
+  padding: clamp(9px, .85vw, 14px) clamp(10px, .95vw, 16px);
+  transition: transform var(--dur-med) var(--ease-paper);
+}
+.sticky ul { list-style: none; margin: 0; padding: 0; }
+.sticky li {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 13px);
+  line-height: 1.42; letter-spacing: .04em;
+}
+
+/* ============================================================
+   OUTRO STRIP
+   ============================================================ */
+.outro {
+  position: relative; z-index: 10;
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto minmax(0,1fr);
+  align-items: center; gap: clamp(20px, 3vw, 56px);
+  padding-block: clamp(30px, 3.6vw, 60px) clamp(40px, 4.6vw, 76px);
+}
+.outro__quote {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(12px, 1.05vw, 16px);
+  line-height: 1.6; letter-spacing: .04em;
+  margin: 0; max-width: 24em;
+}
+.outro__scroll { display: flex; align-items: center; gap: clamp(12px, 1.2vw, 20px); }
+.scroll-ring {
+  display: grid; place-items: center;
+  width: clamp(44px, 3.6vw, 58px); aspect-ratio: 1;
+  border: 2px solid var(--paper-100); border-radius: 50%;
+  flex: none;
+}
+.scroll-ring svg {
+  width: 40%;
+  fill: none; stroke: var(--paper-100);
+  stroke-width: 6; stroke-linecap: round; stroke-linejoin: round;
+}
+.outro__marks { display: flex; align-items: center; gap: clamp(12px, 1.4vw, 24px); justify-content: flex-end; flex-wrap: wrap; }
+
+.est-badge {
+  padding: clamp(7px, .7vw, 11px) clamp(11px, 1vw, 16px);
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .9vw, 14px);
+  line-height: 1.3; letter-spacing: .06em;
+  transform: rotate(-1.6deg);
+}
+
+/* ============================================================
+   MOBILE MENU
+   ============================================================ */
+.menu {
+  position: fixed; inset: 0; z-index: 60;
+  /* Scrolling the dialog must not chain to the page behind it. */
+  overscroll-behavior: contain;
+  padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
+           env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  background: rgba(5,5,5,.97);
+  display: grid; place-items: center;
+  opacity: 0; visibility: hidden;
+  transition: opacity var(--dur-med) var(--ease-out), visibility var(--dur-med);
+}
+.menu[data-open="true"] { opacity: 1; visibility: visible; }
+.menu ul { list-style: none; padding: 0; margin: 0; display: grid; gap: clamp(14px, 3vw, 26px); text-align: center; }
+.menu a {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 8vw, 54px);
+  letter-spacing: -.02em;
+}
+.menu__close {
+  position: absolute; top: 18px; right: 18px;
+  background: none; border: 0; color: var(--paper-100);
+  font-size: 34px; line-height: 1; cursor: pointer; padding: 10px;
+}
