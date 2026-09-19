@@ -772,6 +772,8 @@ html { scroll-behavior: smooth; }
   position: absolute; z-index: 7;
   top: clamp(6px, .7vw, 12px); right: clamp(6px, .7vw, 12px);
   display: inline-flex; align-items: center; gap: .35em;
+  /* No platform logo here - a small hand-lettered word sits better on
+     torn paper than an octocat, and keeps the card quiet. */
   font-family: var(--font-hand);
   text-transform: uppercase;
   font-size: clamp(9px, .74vw, 11px);

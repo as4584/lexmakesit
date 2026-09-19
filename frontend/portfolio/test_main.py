@@ -62,19 +62,44 @@ def test_get_testimonials(client):
     assert isinstance(data["testimonials"], list)
 
 
-def test_contact_form_valid(client):
-    """Test contact form with valid data"""
-    form_data = {
-        "name": "John Doe",
-        "email": "john@example.com",
-        "subject": "Test Inquiry",
-        "message": "This is a test message that should be long enough to pass validation.",
-    }
-    response = client.post("/api/contact", json=form_data)
-    # Contact might return 201 (created) or 200 (success)
-    assert response.status_code in [200, 201]
+VALID_CONTACT = {
+    "name": "John Doe",
+    "email": "john@example.com",
+    "subject": "Test Inquiry",
+    "message": "This is a test message that should be long enough to pass validation.",
+}
+
+
+def test_contact_form_stored_returns_success(client):
+    """A recorded enquiry is a success even when no notification goes out.
+
+    Notifications are best effort. Once the message is safely in the
+    database it is retrievable, so promising a reply is honest.
+    """
+    with patch("storage.save_contact", return_value=True):
+        response = client.post("/api/contact", json=VALID_CONTACT)
+
+    assert response.status_code == 201
     data = response.json()
-    assert "message" in data or "status" in data
+    assert "message" in data
+    assert "contact_id" in data
+
+
+def test_contact_form_undeliverable_is_reported(client):
+    """With nothing stored and nothing sent, the caller must be told.
+
+    This endpoint used to answer 201 "I'll respond within 24 hours" in
+    exactly this situation, which lost real enquiries silently: the
+    sender waited for a reply to a message nobody could read. The
+    regression guard is that it must NOT claim success.
+    """
+    with patch("storage.save_contact", return_value=False):
+        response = client.post("/api/contact", json=VALID_CONTACT)
+
+    assert response.status_code == 503
+    body = response.json()["message"].lower()
+    # The alternative route has to be in the message, or the sender is stuck.
+    assert "email" in body
 
 
 def test_contact_form_invalid_email(client):
