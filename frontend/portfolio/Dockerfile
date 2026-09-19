@@ -27,6 +27,7 @@ RUN addgroup -S appgroup && adduser -S -G appgroup appuser
 # becoming part of the production attack surface.
 COPY --chown=appuser:appgroup main.py ./main.py
 COPY --chown=appuser:appgroup storage.py ./storage.py
+COPY --chown=appuser:appgroup abuse_guard.py ./abuse_guard.py
 COPY --chown=appuser:appgroup static ./static
 COPY --chown=appuser:appgroup templates ./templates
 COPY --chown=appuser:appgroup docker/entrypoint.sh ./docker/entrypoint.sh

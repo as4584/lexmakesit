@@ -36,6 +36,7 @@ from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
 import storage
+import abuse_guard
 
 # Load environment variables securely
 load_dotenv()
@@ -317,6 +318,38 @@ app.add_middleware(
 # ============================================================================
 # OWASP ASVS LEVEL 1 SECURITY HEADERS MIDDLEWARE
 # ============================================================================
+@app.middleware("http")
+async def abuse_guard_middleware(request: Request, call_next):
+    """Turn away clients that keep tripping the rate limits.
+
+    Only /api/ paths are considered. Pages are always served: a visitor
+    who annoyed the rate limiter should still be able to read the site.
+    """
+    path = request.url.path
+    if path.startswith("/api/"):
+        client = client_ip_key(request)
+        blocked, remaining = abuse_guard.is_blocked(client)
+        if blocked:
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={
+                    "message": (
+                        "Too many requests from this address. Try again in "
+                        f"{max(1, remaining // 60)} minute(s)."
+                    )
+                },
+                headers={"Retry-After": str(remaining)},
+            )
+
+    response = await call_next(request)
+
+    # A 429 from the limiter is a strike; enough strikes earn a timeout.
+    if path.startswith("/api/") and response.status_code == 429:
+        abuse_guard.record_strike(client_ip_key(request))
+
+    return response
+
+
 @app.middleware("http")
 async def static_cache_middleware(request: Request, call_next):
     """Cache policy for /static.
