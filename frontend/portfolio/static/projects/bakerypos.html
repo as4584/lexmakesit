@@ -92,22 +92,39 @@
       <li><b>Platform</b> Windows desktop</li>
       <li><b>Built with</b> .NET&nbsp;8 &middot; WPF</li>
       <li><b>Pattern</b> MVVM</li>
-      <li><b>Status</b> Built &amp; iterating</li>
+      <li><b>Interface</b> English / Espa&ntilde;ol</li>
+      <li><b>Status</b> In daily use</li>
     </ul>
   </section>
 
   <figure class="shell shot anim-rise">
     <picture>
-      <source srcset="/static/images/collage/project-bakerypos.webp" type="image/webp" />
-      <img src="/static/images/collage/project-bakerypos.jpg" width="800" height="600"
+      <source srcset="/static/images/projects/bakerypos-register.webp" type="image/webp" />
+      <img src="/static/images/projects/bakerypos-register.jpg" width="1280" height="669"
            loading="lazy" decoding="async"
-           alt="Hands holding a traditional Mexican bakery box in a bakery." />
+           alt="The BakeryPOS register: pan dulce product tiles with prices, category list, cart and payment buttons." />
     </picture>
     <figcaption>
-      <span class="illus">Illustration</span>
-      Commissioned artwork for this case study — not a screenshot of the application.
+      The register. Screenshot of the running application &mdash; catalogue shown
+      is demo data, not the bakery&rsquo;s own.
     </figcaption>
   </figure>
+
+  <section class="shell case-section">
+    <div class="case__measure" style="display:flex;gap:clamp(14px,1.8vw,26px);align-items:center;max-width:none">
+      <picture>
+        <source srcset="/static/images/projects/jarochita-logo.webp" type="image/webp" />
+        <img src="/static/images/projects/jarochita-logo.jpg" width="160" height="160" loading="lazy" decoding="async"
+             style="width:clamp(84px,9vw,132px);height:auto;flex:none"
+             alt="La Jarochita Bakery seal." />
+      </picture>
+      <p class="case-p" style="margin:0">
+        Built for and with <strong>La Jarochita Bakery</strong> in Passaic, New
+        Jersey &mdash; a working panader&iacute;a, not a hypothetical client. The
+        software follows how they already run the counter.
+      </p>
+    </div>
+  </section>
 
   <section class="shell case-section">
     <div class="case__measure">
@@ -138,13 +155,40 @@
       </p>
     </div>
     <ul class="feature-list feature-list--2 anim-rise" style="margin-top:clamp(16px,2vw,28px)">
-      <li class="feature"><h3>BakeryPos.App</h3><p>The WPF till interface — views, view-models and styles.</p></li>
-      <li class="feature"><h3>BakeryPos.Core</h3><p>Domain rules, kept free of any screen or database.</p></li>
-      <li class="feature"><h3>BakeryPos.Data</h3><p>Local database access, backups and exports.</p></li>
-      <li class="feature"><h3>BakeryPos.Import</h3><p>Brings the shop's existing product data in.</p></li>
-      <li class="feature"><h3>BakeryPos.Printing</h3><p>Receipts and labels against the shop's own templates.</p></li>
-      <li class="feature"><h3>BakeryPos.Tests</h3><p>Automated tests over the rules that handle money.</p></li>
+      <li class="feature"><h3>Register</h3><p>Touch product tiles by category, running cart, cash / card terminal / deposit.</p></li>
+      <li class="feature"><h3>Kitchen hub</h3><p>Today&rsquo;s and tomorrow&rsquo;s orders, low stock, and a printable kitchen list.</p></li>
+      <li class="feature"><h3>Production helper</h3><p>Make more, normal, make less and top sellers &mdash; suggestions, not instructions.</p></li>
+      <li class="feature"><h3>Stock keeping</h3><p>Daily stock check, quick adjustment, production count and movement history.</p></li>
+      <li class="feature"><h3>Owner analytics</h3><p>Best sellers by quantity and revenue, hourly totals, payment labels, date ranges.</p></li>
+      <li class="feature"><h3>Daily closeout</h3><p>End-of-day totals across payments, employees and categories, exportable to CSV.</p></li>
     </ul>
+
+    <div class="shot-row anim-rise" style="margin-top:clamp(18px,2.2vw,30px)">
+      <figure>
+        <picture><source srcset="/static/images/projects/bakerypos-kitchen.webp" type="image/webp" />
+        <img src="/static/images/projects/bakerypos-kitchen.jpg" width="1280" height="669" loading="lazy" decoding="async"
+             alt="Kitchen Hub showing today's orders, tomorrow's orders, low stock and a bilingual kitchen list." /></picture>
+        <figcaption>Kitchen hub &mdash; the printable list is bilingual.</figcaption>
+      </figure>
+      <figure>
+        <picture><source srcset="/static/images/projects/bakerypos-analytics.webp" type="image/webp" />
+        <img src="/static/images/projects/bakerypos-analytics.jpg" width="1280" height="669" loading="lazy" decoding="async"
+             alt="Owner Analytics with date ranges, best sellers by quantity and revenue, and hourly totals." /></picture>
+        <figcaption>Owner analytics.</figcaption>
+      </figure>
+      <figure>
+        <picture><source srcset="/static/images/projects/bakerypos-products.webp" type="image/webp" />
+        <img src="/static/images/projects/bakerypos-products.jpg" width="1280" height="669" loading="lazy" decoding="async"
+             alt="Product management table with price, category and per-product touch, taxable and active flags." /></picture>
+        <figcaption>Product management.</figcaption>
+      </figure>
+      <figure>
+        <picture><source srcset="/static/images/projects/bakerypos-inventory.webp" type="image/webp" />
+        <img src="/static/images/projects/bakerypos-inventory.jpg" width="1280" height="669" loading="lazy" decoding="async"
+             alt="Inventory and stock keeping with today's stock check, quick adjustment and movement history tabs." /></picture>
+        <figcaption>Stock keeping.</figcaption>
+      </figure>
+    </div>
   </section>
 
   <section class="shell case-section">
@@ -170,11 +214,12 @@
         <span class="status__dot" aria-hidden="true"></span>
         <div>
           <p class="case-p">
-            <strong>Built, deployed to the shop's hardware, and still being
-            revised.</strong> The project carries a release build alongside a
-            separate printer hotfix kit and the bakery's own machine and printer
-            configuration — the ordinary evidence of software that is in use and
-            getting fixed, rather than finished.
+            <strong>Released, in use, and still being revised.</strong> The
+            screenshots on this page come from release v1.4.0 running on a clean
+            machine. The project ships tagged releases alongside a separate
+            printer hotfix kit and the bakery's own machine and printer
+            configuration — the ordinary evidence of software that is in service
+            and getting fixed, rather than finished.
           </p>
         </div>
       </div>
