@@ -312,6 +312,33 @@ app.add_middleware(
 # OWASP ASVS LEVEL 1 SECURITY HEADERS MIDDLEWARE
 # ============================================================================
 @app.middleware("http")
+async def static_cache_middleware(request: Request, call_next):
+    """Cache policy for /static.
+
+    Cloudflare was caching stylesheets for four hours (observed
+    cf-cache-status: HIT with Age 5498 against max-age=14400). A deploy
+    therefore shipped new HTML while visitors kept the old CSS for hours —
+    which renders as a subtly broken page rather than an obvious failure.
+
+    Code assets must revalidate on every request: the ETag makes that a
+    cheap 304, so the cost is a round trip rather than a re-download.
+    Media keeps a long TTL because those files are replaced by name, not
+    edited in place.
+    """
+    response = await call_next(request)
+
+    path = request.url.path
+    if path.startswith("/static/"):
+        if path.endswith((".css", ".js")):
+            response.headers["Cache-Control"] = "public, max-age=0, must-revalidate"
+        elif path.endswith((".webp", ".png", ".jpg", ".jpeg", ".gif", ".svg",
+                            ".woff", ".woff2", ".ico")):
+            response.headers["Cache-Control"] = "public, max-age=604800"
+
+    return response
+
+
+@app.middleware("http")
 async def security_headers_middleware(request: Request, call_next):
     """
     Enforce comprehensive security headers per OWASP recommendations:

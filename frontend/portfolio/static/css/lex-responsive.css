@@ -201,8 +201,10 @@ html.js-motion .anim-strip { transform: translateX(-14%) rotate(-4.6deg); opacit
 
   /* ---- Papers ---------------------------------------------- */
   .hero__col--papers { position: relative; z-index: 3; margin-top: 12px; display: block; }
-  .checklist { width: 62%; margin-left: auto; transform: rotate(1.4deg); padding: 10px 12px; }
-  .checklist li { font-size: 11.5px; }
+  /* Was 62% pinned right, which left ~135px of dead black beside it on a
+     390px screen. Full width reads as a real sheet of paper. */
+  .checklist { width: 100%; margin-left: 0; transform: rotate(.8deg); padding: 13px 16px; }
+  .checklist li { font-size: 13px; }
   .hero__red-note-desktop { display: none; }
 
   /* ---- Projects: filmstrip rows ---------------------------- */
@@ -214,7 +216,7 @@ html.js-motion .anim-strip { transform: translateX(-14%) rotate(-4.6deg); opacit
 
   .card {
     display: grid;
-    grid-template-columns: 34% minmax(0, 1fr);
+    grid-template-columns: 38% minmax(0, 1fr);
     align-items: stretch;
     gap: 0; padding: 5px;
     --card-tilt: 0deg;
@@ -231,7 +233,8 @@ html.js-motion .anim-strip { transform: translateX(-14%) rotate(-4.6deg); opacit
      instead of collapsing to one word per line. */
   .card__body {
     display: flex; flex-direction: column; justify-content: center;
-    padding: 8px 46px 8px 11px;
+    /* right lane holds the sticky note AND the arrow without collision */
+    padding: 9px 50px 9px 11px;
     position: relative;
   }
   .card__num { top: 5px; left: 5px; font-size: 13px; }
@@ -240,16 +243,16 @@ html.js-motion .anim-strip { transform: translateX(-14%) rotate(-4.6deg); opacit
   .card__title { font-size: 16.5px; line-height: 1.05; }
   .card__tba { font-size: .52em; }
   .card__desc {
-    font-size: 10.5px; line-height: 1.34;
-    padding-right: 62px;
+    font-size: 11px; line-height: 1.38;
+    padding-right: 58px;
     margin: 0;
     hyphens: none; overflow-wrap: normal;
   }
 
   .sticky {
-    right: 40px; top: auto; bottom: 7px;
+    right: 46px; top: auto; bottom: 7px;
     transform: rotate(var(--sticky-tilt));
-    padding: 5px 6px; max-width: 58px;
+    padding: 5px 6px; max-width: 54px;
   }
   .sticky li { font-size: 7.6px; line-height: 1.34; }
 

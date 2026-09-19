@@ -461,8 +461,15 @@ html { scroll-behavior: smooth; }
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(14px, 1.5vw, 26px);
-  align-items: start;
+  /* It is a <ul>: without these the UA stylesheet adds 40px of inline
+     padding (40px stolen from a 390px phone) and draws list markers. */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  /* stretch, not start, so every card in the row ends level */
+  align-items: stretch;
 }
+.projects__grid > li { display: flex; }
 
 /* ---- Project card ------------------------------------------ */
 .card {
@@ -473,6 +480,7 @@ html { scroll-behavior: smooth; }
   /* Each card is pinned at a slightly different angle. The
      angle is a CSS variable so motion can straighten it. */
   --card-tilt: var(--tilt-sm);
+  width: 100%;
   transform: rotate(var(--card-tilt));
   transition: transform var(--dur-med) var(--ease-paper),
               filter var(--dur-med) var(--ease-out);
@@ -509,7 +517,7 @@ html { scroll-behavior: smooth; }
 
 .card__media {
   position: relative; overflow: hidden;
-  aspect-ratio: 16 / 9; background: var(--ink-700);
+  aspect-ratio: 3 / 2; background: var(--ink-700);
   margin-bottom: clamp(12px, 1.1vw, 18px);
 }
 .card__media img {
