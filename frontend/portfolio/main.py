@@ -35,6 +35,8 @@ from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
 
+import storage
+
 # Load environment variables securely
 load_dotenv()
 
@@ -215,9 +217,12 @@ async def lifespan(app: FastAPI):
     # Startup
     logger.info("Starting up application...")
     try:
-        # Database-independent startup - no database operations needed
+        # Durable storage is optional: if the database is unreachable the
+        # site still serves every page, it just cannot record submissions.
+        storage_ready = await storage.init_pool()
         logger.info(
-            "Application startup complete - running in database-independent mode"
+            "Application startup complete - durable storage %s",
+            "enabled" if storage_ready else "unavailable",
         )
     except Exception as e:
         logger.error(f"Failed to startup application: {e}")
@@ -227,6 +232,7 @@ async def lifespan(app: FastAPI):
 
     # Shutdown
     logger.info("Shutting down application...")
+    await storage.close_pool()
     await close_db_pool()
     logger.info("Application shutdown complete")
 
@@ -417,6 +423,22 @@ templates = Jinja2Templates(directory="templates")
 # ============================================================================
 # PYDANTIC MODELS WITH INPUT VALIDATION & SANITIZATION (OWASP)
 # ============================================================================
+
+
+class WaitlistSignup(BaseModel):
+    """Email-only signup for an unreleased product."""
+
+    email: EmailStr
+    product: str = "reseller"
+
+    @field_validator("product")
+    @classmethod
+    def validate_product(cls, v: str) -> str:
+        allowed = {"reseller", "agentop", "bakerypos"}
+        v = (v or "reseller").strip().lower()
+        if v not in allowed:
+            raise ValueError("Unknown product")
+        return v
 
 
 class ContactForm(BaseModel):
@@ -884,11 +906,39 @@ async def contact(request: Request, form_data: ContactForm):
             f"Email sent: {email_sent}, Discord sent: {discord_sent}"
         )
 
-        # If NO delivery channel succeeded the message exists only in this
-        # log line. Telling the sender "I'll respond within 24 hours" in that
-        # situation is a lie that costs real work: they wait, and nobody ever
-        # sees what they wrote. Say so instead, and give them a route that
-        # does work.
+        # Write the enquiry down before worrying about notifications.
+        # Notifications are best effort - an SMTP outage or an unset webhook
+        # must never be the reason a lead disappears.
+        stored = await storage.save_contact(
+            public_id=contact_id,
+            name=form_data.name,
+            email=str(form_data.email),
+            subject=email_subject,
+            message=form_data.message,
+            notified=bool(email_sent or discord_sent),
+            source_ip=client_ip_key(request),
+            user_agent=request.headers.get("user-agent", "")[:400] or None,
+        )
+
+        # Recorded is enough to promise a reply, even if every notification
+        # channel is down: the message is safely on disk and retrievable.
+        if stored:
+            if not (email_sent or discord_sent):
+                logger.warning(
+                    "Contact %s stored but not notified - no channel delivered",
+                    contact_id,
+                )
+            return JSONResponse(
+                status_code=status.HTTP_201_CREATED,
+                content={
+                    "message": "Thank you! I'll respond within 24 hours.",
+                    "contact_id": contact_id,
+                },
+            )
+
+        # Nothing stored and nothing delivered: the message exists only in a
+        # log line. Saying "I'll respond within 24 hours" there is a lie that
+        # costs real work, so say what actually happened.
         if not email_sent and not discord_sent:
             logger.error(
                 "Contact form NOT DELIVERED - no channel configured or all failed. "
@@ -1009,6 +1059,55 @@ async def project_agentop(request: Request):
 async def project_reseller(request: Request):
     """Reseller App (Vendora) case study."""
     return FileResponse(_CASE_STUDIES["reseller"])
+
+
+@app.post("/api/waitlist")
+@limiter.limit("10/hour")
+async def join_waitlist(request: Request, signup: WaitlistSignup):
+    """Join the waitlist for a product that has not shipped yet."""
+    result = await storage.add_waitlist(
+        email=str(signup.email),
+        product=signup.product,
+        referrer=request.headers.get("referer", "")[:300] or None,
+        source_ip=client_ip_key(request),
+    )
+
+    if result == "unavailable":
+        # Better to admit the list is not being kept than to collect an
+        # address that goes nowhere.
+        logger.error("Waitlist signup could not be stored - storage unavailable")
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={
+                "message": (
+                    "Sorry — the waitlist is not accepting signups right now. "
+                    "Email as42519256@gmail.com and you will be added by hand."
+                )
+            },
+        )
+
+    # An address already on the list is a success from the visitor's side.
+    return JSONResponse(
+        status_code=status.HTTP_201_CREATED,
+        content={
+            "message": (
+                "You're on the list. You'll hear from me when it's ready."
+                if result == "added"
+                else "You're already on the list — nothing more to do."
+            ),
+            "status": result,
+        },
+    )
+
+
+@app.get("/api/waitlist/count")
+@limiter.limit("30/minute")
+async def waitlist_total(request: Request, product: str = "reseller"):
+    """Public count, used for social proof on the product page."""
+    count = await storage.waitlist_count(product)
+    if count is None:
+        return JSONResponse(status_code=503, content={"count": None})
+    return {"product": product, "count": count}
 
 
 @app.get("/api/health")

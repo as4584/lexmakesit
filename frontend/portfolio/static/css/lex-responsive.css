@@ -201,9 +201,15 @@ html.js-motion .anim-strip { transform: translateX(-14%) rotate(-4.6deg); opacit
 
   /* ---- Papers ---------------------------------------------- */
   .hero__col--papers { position: relative; z-index: 3; margin-top: 12px; display: block; }
-  /* Was 62% pinned right, which left ~135px of dead black beside it on a
-     390px screen. Full width reads as a real sheet of paper. */
-  .checklist { width: 100%; margin-left: 0; transform: rotate(.8deg); padding: 13px 16px; }
+  /* Full width was an over-correction from the 62%-pinned-right version:
+     it filled the gap but sat flush to both gutters and read as a slab.
+     Centred with a small inset keeps it a sheet of paper on the page. */
+  .checklist {
+    width: 88%;
+    margin-inline: auto;
+    transform: rotate(.8deg);
+    padding: 13px 16px;
+  }
   .checklist li { font-size: 13px; }
   .hero__red-note-desktop { display: none; }
 

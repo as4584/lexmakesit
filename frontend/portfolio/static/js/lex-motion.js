@@ -14,6 +14,32 @@
 
   var root = document.documentElement;
 
+  /* ==========================================================
+     FAILSAFE
+     Content is hidden by CSS (.anim-* start at opacity 0) and
+     revealed by this file. That is a single point of failure: if
+     this script is stale, blocked, or throws, the page renders
+     with whole sections invisible - which is exactly what happened
+     when a cached copy of this file predated a new section.
+
+     So: unconditionally reveal everything shortly after load. Any
+     element the timeline already animated is unaffected; anything
+     it missed becomes visible instead of vanishing.
+     ========================================================== */
+  var FAILSAFE_MS = 2600;
+  window.setTimeout(function () {
+    var hidden = document.querySelectorAll(
+      '.anim-fade, .anim-rise, .anim-strip, .anim-row > span'
+    );
+    Array.prototype.forEach.call(hidden, function (el) {
+      var cs = window.getComputedStyle(el);
+      if (parseFloat(cs.opacity) < 0.95) {
+        el.style.opacity = '1';
+        el.style.transform = 'none';
+      }
+    });
+  }, FAILSAFE_MS);
+
   // Nav / menu work with or without GSAP, so they are wired first.
   initMenu();
   initYear();
