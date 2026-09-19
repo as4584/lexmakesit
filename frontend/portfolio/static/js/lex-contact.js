@@ -14,6 +14,37 @@
   var form = document.getElementById('contact-form');
   if (!form) return;
 
+  /* ----------------------------------------------------------
+     Browser-side throttle.
+
+     This is the first of three layers, and the weakest by design:
+     anyone can bypass it with curl. Its job is not security, it is
+     to stop an ordinary visitor double-submitting or hammering the
+     button and burning the server's 5/hour allowance on duplicates.
+     The real enforcement is the per-client limit on the server, and
+     a Cloudflare rule at the edge.
+
+     The timestamp lives in localStorage so a page refresh does not
+     reset it, and every access is guarded because storage throws in
+     private windows.
+     ---------------------------------------------------------- */
+  var COOLDOWN_MS = 45000;
+  var STORE_KEY = 'lex:contact:last';
+
+  function lastSentAt() {
+    try {
+      var raw = window.localStorage.getItem(STORE_KEY);
+      return raw ? parseInt(raw, 10) || 0 : 0;
+    } catch (err) { return 0; }
+  }
+
+  function markSent() {
+    try { window.localStorage.setItem(STORE_KEY, String(Date.now())); }
+    catch (err) { /* private mode: fall back to the in-page guard */ }
+  }
+
+  var inFlight = false;
+
   var statusEl = document.getElementById('cf-status');
   var submit = document.getElementById('cf-submit');
   var label = submit ? submit.querySelector('.btn__label') : null;
@@ -60,6 +91,19 @@
     event.preventDefault();
     clearErrors();
 
+    if (inFlight) return;
+
+    var waited = Date.now() - lastSentAt();
+    if (waited < COOLDOWN_MS) {
+      var seconds = Math.ceil((COOLDOWN_MS - waited) / 1000);
+      setStatus(
+        'Just sent one. Give it ' + seconds + ' second' + (seconds === 1 ? '' : 's') +
+        ' before sending another — or email as42519256@gmail.com if it is urgent.',
+        'error'
+      );
+      return;
+    }
+
     var data = {
       name: form.elements.name.value,
       email: form.elements.email.value,
@@ -81,6 +125,7 @@
 
     if (!data.subject) delete data.subject;
 
+    inFlight = true;
     submit.disabled = true;
     if (label) label.textContent = 'Sending…';
     setStatus('Sending…', 'busy');
@@ -91,6 +136,7 @@
       body: JSON.stringify(data)
     }).then(function (response) {
       if (response.ok) {
+        markSent();
         form.reset();
         setStatus('Message sent. I read everything that comes through here and will reply to the address you gave.', 'ok');
         return;
@@ -113,6 +159,7 @@
     }).catch(function () {
       setStatus('Could not reach the server. Check your connection, or email as42519256@gmail.com directly.', 'error');
     }).then(function () {
+      inFlight = false;
       submit.disabled = false;
       if (label) label.textContent = original;
     });
