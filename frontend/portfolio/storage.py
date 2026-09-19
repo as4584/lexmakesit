@@ -86,6 +86,19 @@ CREATE TABLE IF NOT EXISTS waitlist_signups (
 );
 CREATE INDEX IF NOT EXISTS waitlist_created_idx
     ON waitlist_signups (created_at DESC);
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+    id            BIGSERIAL PRIMARY KEY,
+    slug          TEXT NOT NULL UNIQUE,
+    title         TEXT NOT NULL,
+    summary       TEXT,
+    body          TEXT NOT NULL,
+    published     BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at    TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS blog_published_idx
+    ON blog_posts (published, created_at DESC);
 """
 
 
@@ -199,3 +212,95 @@ async def waitlist_count(product: str = "reseller") -> Optional[int]:
     except Exception as exc:
         logger.error("Failed to count waitlist: %s", exc)
         return None
+
+
+# ---------------------------------------------------------------------------
+# Blog
+# ---------------------------------------------------------------------------
+
+async def list_posts(include_drafts: bool = False) -> list:
+    """Newest first. Drafts are only ever returned for the admin view."""
+    if _pool is None:
+        return []
+    try:
+        async with _pool.connection() as conn:
+            if include_drafts:
+                cur = await conn.execute(
+                    "SELECT slug, title, summary, published, created_at "
+                    "FROM blog_posts ORDER BY created_at DESC"
+                )
+            else:
+                cur = await conn.execute(
+                    "SELECT slug, title, summary, published, created_at "
+                    "FROM blog_posts WHERE published = TRUE ORDER BY created_at DESC"
+                )
+            rows = await cur.fetchall()
+        return [
+            {
+                "slug": r[0], "title": r[1], "summary": r[2],
+                "published": r[3], "created_at": r[4].isoformat(),
+            }
+            for r in rows
+        ]
+    except Exception as exc:
+        logger.error("Failed to list posts: %s", exc)
+        return []
+
+
+async def get_post(slug: str, include_drafts: bool = False) -> Optional[dict]:
+    if _pool is None:
+        return None
+    try:
+        async with _pool.connection() as conn:
+            sql = ("SELECT slug, title, summary, body, published, created_at "
+                   "FROM blog_posts WHERE slug = %s")
+            if not include_drafts:
+                sql += " AND published = TRUE"
+            cur = await conn.execute(sql, (slug,))
+            r = await cur.fetchone()
+        if not r:
+            return None
+        return {
+            "slug": r[0], "title": r[1], "summary": r[2], "body": r[3],
+            "published": r[4], "created_at": r[5].isoformat(),
+        }
+    except Exception as exc:
+        logger.error("Failed to get post %s: %s", slug, exc)
+        return None
+
+
+async def upsert_post(slug: str, title: str, summary: Optional[str],
+                      body: str, published: bool) -> bool:
+    if _pool is None:
+        return False
+    try:
+        async with _pool.connection() as conn:
+            await conn.execute(
+                """
+                INSERT INTO blog_posts (slug, title, summary, body, published)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (slug) DO UPDATE SET
+                    title = EXCLUDED.title,
+                    summary = EXCLUDED.summary,
+                    body = EXCLUDED.body,
+                    published = EXCLUDED.published,
+                    updated_at = now()
+                """,
+                (slug, title, summary, body, published),
+            )
+        return True
+    except Exception as exc:
+        logger.error("Failed to save post %s: %s", slug, exc)
+        return False
+
+
+async def delete_post(slug: str) -> bool:
+    if _pool is None:
+        return False
+    try:
+        async with _pool.connection() as conn:
+            await conn.execute("DELETE FROM blog_posts WHERE slug = %s", (slug,))
+        return True
+    except Exception as exc:
+        logger.error("Failed to delete post %s: %s", slug, exc)
+        return False

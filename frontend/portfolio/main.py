@@ -7,6 +7,7 @@ import json
 import logging
 import logging.handlers
 import os
+import re
 import secrets
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -37,6 +38,20 @@ from slowapi.util import get_remote_address
 
 import storage
 import abuse_guard
+
+# Admin access for the blog editor. There is no user table and no signup:
+# one operator, one password hash supplied by the environment. If no hash
+# is configured the admin surface stays closed rather than falling back to
+# a default credential.
+ADMIN_PASSWORD_HASH = os.getenv("ADMIN_PASSWORD_HASH") or ""
+ADMIN_PASSWORD_HASH_FILE = os.getenv("ADMIN_PASSWORD_HASH_FILE")
+if not ADMIN_PASSWORD_HASH and ADMIN_PASSWORD_HASH_FILE:
+    try:
+        with open(ADMIN_PASSWORD_HASH_FILE, "r", encoding="utf-8") as _fh:
+            ADMIN_PASSWORD_HASH = _fh.read().strip()
+    except OSError:
+        ADMIN_PASSWORD_HASH = ""
+ADMIN_SESSION_HOURS = int(os.getenv("ADMIN_SESSION_HOURS", "12"))
 
 # Load environment variables securely
 load_dotenv()
@@ -866,14 +881,8 @@ async def terms_of_service(request: Request):
 
 @app.get("/about", response_class=HTMLResponse)
 async def about_page(request: Request):
-    """
-    About page
-    """
-    return templates.TemplateResponse(
-        request=request,
-        name="about.html",
-        context={"request": request},
-    )
+    """About page."""
+    return FileResponse("static/projects/about.html")
 
 
 @app.get("/api/projects")
@@ -1017,20 +1026,6 @@ async def contact(request: Request, form_data: ContactForm):
         )
 
 
-@app.get("/about", response_class=HTMLResponse)
-async def about(request: Request):
-    """About page - Authority & Liking"""
-    return templates.TemplateResponse(
-        request=request,
-        name="about.html",
-        context={
-            "request": request,
-            "certifications": CERTIFICATIONS,
-            "tools": TOOLS_EXPERTISE,
-        },
-    )
-
-
 # These three rendered templates that do not exist in the image, so each
 # returned a live 500. The work they pointed at now lives on the homepage,
 # so they redirect there instead of erroring.
@@ -1141,6 +1136,152 @@ async def waitlist_total(request: Request, product: str = "reseller"):
     if count is None:
         return JSONResponse(status_code=503, content={"count": None})
     return {"product": product, "count": count}
+
+
+# --- Blog -----------------------------------------------------------
+# Public reading is open. Writing requires the single admin session
+# cookie; there is no registration path and no password reset, because
+# there is exactly one operator.
+
+
+class BlogPostIn(BaseModel):
+    slug: str
+    title: str
+    summary: Optional[str] = None
+    body: str
+    published: bool = False
+
+    @field_validator("slug")
+    @classmethod
+    def validate_slug(cls, v: str) -> str:
+        v = (v or "").strip().lower()
+        if not re.fullmatch(r"[a-z0-9][a-z0-9-]{1,80}", v):
+            raise ValueError("Slug must be lowercase letters, numbers and hyphens")
+        return v
+
+    @field_validator("title", "body")
+    @classmethod
+    def validate_required_text(cls, v: str) -> str:
+        if not v or not v.strip():
+            raise ValueError("Field cannot be empty")
+        return v.strip()
+
+
+class AdminLogin(BaseModel):
+    password: str
+
+
+def _admin_ok(request: Request) -> bool:
+    """True when the caller holds a valid, unexpired admin session."""
+    token = request.cookies.get("lex_admin")
+    if not token or not ADMIN_PASSWORD_HASH:
+        return False
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("role") == "admin"
+    except Exception:
+        return False
+
+
+def _require_admin(request: Request) -> None:
+    if not _admin_ok(request):
+        raise HTTPException(status_code=401, detail="Not signed in")
+
+
+@app.post("/api/admin/login")
+@limiter.limit("5/hour")
+async def admin_login(request: Request, creds: AdminLogin):
+    """Sign in to the blog editor.
+
+    Deliberately limited to five attempts an hour per client: with a single
+    account and no lockout, throttling is the only thing standing between a
+    guessed password and the editor.
+    """
+    if not ADMIN_PASSWORD_HASH:
+        # No credential configured means the admin surface does not exist,
+        # rather than existing with a default password.
+        raise HTTPException(status_code=404, detail="Not found")
+
+    if not verify_password(creds.password, ADMIN_PASSWORD_HASH):
+        logger.warning("Failed admin login from %s", client_ip_key(request))
+        raise HTTPException(status_code=401, detail="Incorrect password")
+
+    token = create_access_token(
+        {"role": "admin"}, timedelta(hours=ADMIN_SESSION_HOURS)
+    )
+    response = JSONResponse(content={"message": "Signed in"})
+    response.set_cookie(
+        "lex_admin", token,
+        max_age=ADMIN_SESSION_HOURS * 3600,
+        httponly=True,          # not readable from JavaScript
+        secure=PRODUCTION,      # HTTPS only in production
+        samesite="strict",      # not sent on cross-site requests
+        path="/",
+    )
+    return response
+
+
+@app.post("/api/admin/logout")
+async def admin_logout(request: Request):
+    response = JSONResponse(content={"message": "Signed out"})
+    response.delete_cookie("lex_admin", path="/")
+    return response
+
+
+@app.get("/api/admin/session")
+async def admin_session(request: Request):
+    return {"signed_in": _admin_ok(request)}
+
+
+@app.get("/api/posts")
+@limiter.limit("60/minute")
+async def api_list_posts(request: Request):
+    """Published posts, newest first. Drafts require a session."""
+    return {"posts": await storage.list_posts(include_drafts=_admin_ok(request))}
+
+
+@app.get("/api/posts/{slug}")
+@limiter.limit("60/minute")
+async def api_get_post(request: Request, slug: str):
+    post = await storage.get_post(slug, include_drafts=_admin_ok(request))
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return post
+
+
+@app.post("/api/posts")
+@limiter.limit("60/hour")
+async def api_save_post(request: Request, post: BlogPostIn):
+    _require_admin(request)
+    ok = await storage.upsert_post(
+        slug=post.slug, title=post.title, summary=post.summary,
+        body=post.body, published=post.published,
+    )
+    if not ok:
+        raise HTTPException(status_code=503, detail="Could not save the post")
+    return JSONResponse(status_code=201, content={"message": "Saved", "slug": post.slug})
+
+
+@app.delete("/api/posts/{slug}")
+@limiter.limit("30/hour")
+async def api_delete_post(request: Request, slug: str):
+    _require_admin(request)
+    if not await storage.delete_post(slug):
+        raise HTTPException(status_code=503, detail="Could not delete the post")
+    return {"message": "Deleted"}
+
+
+@app.get("/blog/{slug}", response_class=HTMLResponse)
+async def blog_post_page(request: Request, slug: str):
+    """One post. The shell is static; the body is fetched client-side."""
+    return FileResponse("static/projects/post.html")
+
+
+@app.get("/admin", response_class=HTMLResponse)
+async def admin_page(request: Request):
+    if not ADMIN_PASSWORD_HASH:
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse("static/projects/admin.html")
 
 
 @app.get("/api/health")

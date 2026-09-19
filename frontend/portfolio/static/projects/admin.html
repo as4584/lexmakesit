@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Blog | Lexmakesit</title>
-<meta name="description" content="Notes on building software for small businesses — what broke, what shipped, what it cost." />
+<title>Admin | Lexmakesit</title>
+<meta name="description" content="Editor." />
 <meta name="theme-color" content="#050505" />
-<link rel="canonical" href="https://lexmakesit.com/blog" />
+<link rel="canonical" href="https://lexmakesit.com/admin" />
 
 
 
@@ -37,6 +37,7 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon-32.png" />
 <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon-16.png" />
 <link rel="apple-touch-icon" href="/static/images/apple-touch-icon.png" />
+<meta name="robots" content="noindex, nofollow" />
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
@@ -84,20 +85,16 @@
 </div>
 
 <main id="main" class="case">
-  <div class="shell"><a class="case-back" href="/">
-    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-arrow-right" /></svg>Home</a></div>
+  <div class="shell"><a class="case-back" href="/blog">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-arrow-right" /></svg>Blog</a></div>
 
   <section class="shell case-hero">
-    <p class="case-hero__kicker anim-rise">Blog</p>
-    <h1 class="case-hero__title anim-rise">Notes from<br /><em>building things</em>.</h1>
-    <p class="case-hero__standfirst anim-rise">
-      What broke, what shipped, and what it cost. Written while it is still
-      fresh enough to be useful.
-    </p>
+    <p class="case-hero__kicker anim-rise">Admin</p>
+    <h1 class="case-hero__title anim-rise" style="font-size:clamp(30px,3.6vw,52px)">Write a post.</h1>
   </section>
 
   <section class="shell case-section">
-    <div id="post-list" class="case__wide"></div>
+    <div id="admin-app" class="case__wide"></div>
   </section>
 </main>
 
@@ -112,6 +109,6 @@
 <script src="/static/js/vendor/gsap.min.js" defer></script>
 <script src="/static/js/vendor/ScrollTrigger.min.js" defer></script>
 <script src="/static/js/lex-motion.js" defer></script>
-<script src="/static/js/lex-blog.js" defer></script>
+<script src="/static/js/lex-admin.js" defer></script>
 </body>
 </html>

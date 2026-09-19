@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Blog | Lexmakesit</title>
-<meta name="description" content="Notes on building software for small businesses — what broke, what shipped, what it cost." />
+<title>Post | Lexmakesit</title>
+<meta name="description" content="A post from the Lexmakesit blog." />
 <meta name="theme-color" content="#050505" />
 <link rel="canonical" href="https://lexmakesit.com/blog" />
 
@@ -84,21 +84,9 @@
 </div>
 
 <main id="main" class="case">
-  <div class="shell"><a class="case-back" href="/">
-    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-arrow-right" /></svg>Home</a></div>
-
-  <section class="shell case-hero">
-    <p class="case-hero__kicker anim-rise">Blog</p>
-    <h1 class="case-hero__title anim-rise">Notes from<br /><em>building things</em>.</h1>
-    <p class="case-hero__standfirst anim-rise">
-      What broke, what shipped, and what it cost. Written while it is still
-      fresh enough to be useful.
-    </p>
-  </section>
-
-  <section class="shell case-section">
-    <div id="post-list" class="case__wide"></div>
-  </section>
+  <div class="shell"><a class="case-back" href="/blog">
+    <svg viewBox="0 0 100 100" aria-hidden="true"><use href="#i-arrow-right" /></svg>All posts</a></div>
+  <article class="shell case-hero" id="post"></article>
 </main>
 
 <footer class="shell" style="padding-block:20px 34px;border-top:1px solid var(--ink-600)">
@@ -112,6 +100,6 @@
 <script src="/static/js/vendor/gsap.min.js" defer></script>
 <script src="/static/js/vendor/ScrollTrigger.min.js" defer></script>
 <script src="/static/js/lex-motion.js" defer></script>
-<script src="/static/js/lex-blog.js" defer></script>
+<script src="/static/js/lex-post.js" defer></script>
 </body>
 </html>

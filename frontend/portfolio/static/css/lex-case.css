@@ -545,3 +545,103 @@ a.contact-card:hover { transform: translateX(4px); border-left-color: var(--red-
   .product-strip { grid-template-columns: 1fr; }
   .steps { gap: 14px; }
 }
+
+
+/* ============================================================
+   WAITLIST
+   One field and one button. Anything more is a reason to leave.
+   ============================================================ */
+.waitlist {
+  display: grid;
+  gap: clamp(12px, 1.4vw, 20px);
+  padding: clamp(20px, 2.4vw, 36px);
+  background: var(--ink-800);
+  border-inline-start: 4px solid var(--acid-400);
+}
+.waitlist h2 {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 2vw, 32px);
+  letter-spacing: -.025em;
+  margin: 0;
+}
+.waitlist p { margin: 0; max-inline-size: 56ch; color: rgba(247,244,237,.82); line-height: 1.55; }
+
+.waitlist__row {
+  display: flex; flex-wrap: wrap; gap: clamp(8px, 1vw, 14px);
+  align-items: flex-start;
+}
+.waitlist__row input {
+  flex: 1 1 15rem;
+  min-inline-size: 0;
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.1vw, 16px);
+  color: var(--paper-100);
+  background: rgba(247,244,237,.08);
+  border: 1.5px solid rgba(247,244,237,.32);
+  border-radius: 0;
+  padding: .72em .8em;
+}
+.waitlist__row input::placeholder { color: rgba(247,244,237,.45); }
+.waitlist__row input:focus-visible {
+  outline: 3px solid var(--acid-400); outline-offset: 1px;
+  border-color: var(--acid-400);
+}
+.waitlist__note {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 12.5px);
+  letter-spacing: .05em;
+  color: rgba(247,244,237,.55);
+}
+.waitlist__status {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .9vw, 13.5px);
+  letter-spacing: .05em;
+  padding: .6em .8em;
+  border-inline-start: 3px solid var(--red-500);
+  background: rgba(247,244,237,.06);
+  margin: 0;
+}
+.waitlist__status[data-state="ok"] { border-inline-start-color: var(--acid-400); }
+.waitlist__status[hidden] { display: none !important; }
+
+
+/* ============================================================
+   BLOG LIST
+   ============================================================ */
+.post-list { display: grid; gap: clamp(12px, 1.4vw, 20px); list-style: none; margin: 0; padding: 0; }
+.post-card {
+  display: block;
+  padding: clamp(16px, 1.8vw, 26px);
+  background: var(--paper-200);
+  color: var(--paper-ink);
+  filter: var(--paper-shadow);
+  transition: transform var(--dur-med) var(--ease-out);
+}
+.post-card:hover { transform: translateY(-3px); }
+.post-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(18px, 1.7vw, 26px);
+  letter-spacing: -.02em; line-height: 1.08;
+  margin: 0 0 .3em; color: var(--paper-ink);
+}
+.post-card__summary {
+  font-size: clamp(13.5px, 1.05vw, 16px);
+  line-height: 1.55; color: rgba(22,21,15,.8); margin: 0 0 .5em;
+}
+.post-card__date {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 12.5px);
+  letter-spacing: .07em; color: rgba(22,21,15,.58); margin: 0;
+}
+.post-card__draft {
+  display: inline-block;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(9px, .74vw, 11px);
+  letter-spacing: .1em;
+  padding: .2em .5em; margin-bottom: .5em;
+  background: var(--red-500); color: var(--paper-100);
+}

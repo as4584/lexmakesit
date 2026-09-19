@@ -198,6 +198,28 @@
       </div>
     </div>
   </section>
+  <section class="shell case-section" aria-labelledby="waitlist-title">
+    <div class="waitlist anim-rise">
+      <h2 id="waitlist-title">Want it when it ships?</h2>
+      <p>
+        It is not released yet. Leave an email and you&rsquo;ll hear from me
+        when it is ready &mdash; that is the only thing it will ever be used for.
+      </p>
+      <form class="waitlist__row" id="waitlist-form" novalidate data-product="reseller">
+        <label class="sr-only" for="wl-email">Email address</label>
+        <input id="wl-email" name="email" type="email" inputmode="email"
+               autocomplete="email" spellcheck="false" required maxlength="200"
+               placeholder="you@example.com" />
+        <button class="btn btn--acid" type="submit" id="wl-submit">
+          <span class="btn__label">Join the waitlist</span>
+          <span class="btn__arrow" aria-hidden="true">&rarr;</span>
+        </button>
+      </form>
+      <p class="waitlist__note">No newsletter. No sharing. One email, once.</p>
+      <p class="waitlist__status" id="wl-status" role="status" aria-live="polite" hidden></p>
+    </div>
+  </section>
+
   <section class="shell case-cta">
     <p class="case-cta__text">Building something people will run a business on?</p>
     <a class="btn btn--acid" href="/contact">
@@ -223,5 +245,6 @@
 <script src="/static/js/vendor/gsap.min.js" defer></script>
 <script src="/static/js/vendor/ScrollTrigger.min.js" defer></script>
 <script src="/static/js/lex-motion.js" defer></script>
+<script src="/static/js/lex-waitlist.js" defer></script>
 </body>
 </html>
