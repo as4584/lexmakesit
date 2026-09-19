@@ -797,14 +797,14 @@ async def home(request: Request):
 
 @app.get("/pricing", response_class=HTMLResponse)
 async def pricing(request: Request):
+    """Services overview.
+
+    This URL used to be AI Receptionist plans only, which framed the whole
+    practice as a single product. It now leads with what gets built for
+    businesses; the receptionist keeps its own page, with its plans and
+    checkout untouched, and is linked from here as one productised service.
     """
-    Dedicated pricing page for AI Receptionist plans
-    """
-    return templates.TemplateResponse(
-        request=request,
-        name="pricing.html",
-        context={"request": request},
-    )
+    return FileResponse("static/projects/services.html")
 
 
 @app.get("/privacy-policy", response_class=HTMLResponse)

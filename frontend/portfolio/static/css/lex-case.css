@@ -419,3 +419,129 @@ a.contact-card:hover { transform: translateX(4px); border-left-color: var(--red-
   .contact-grid { grid-template-columns: 1fr; }
   .contact-form { transform: none; }
 }
+
+
+/* ============================================================
+   SERVICES
+   Grouped by space rather than rules: 12px inside a card, 26px+
+   between cards, and a full section step between bands, so the
+   hierarchy reads before any text does. Logical properties
+   throughout - nothing here assumes left-to-right.
+   ============================================================ */
+.services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+  gap: clamp(16px, 1.9vw, 28px);
+  list-style: none; margin: 0; padding: 0;
+}
+
+.service {
+  position: relative;
+  display: flex; flex-direction: column;
+  gap: clamp(8px, .9vw, 12px);
+  padding: clamp(18px, 2vw, 30px);
+  background: var(--paper-200);
+  color: var(--paper-ink);
+  filter: var(--paper-shadow);
+  block-size: 100%;
+}
+.services > li:nth-child(3n+1) .service { transform: rotate(-.35deg); }
+.services > li:nth-child(3n+2) .service { transform: rotate(.28deg); }
+.services > li:nth-child(3n+3) .service { transform: rotate(-.2deg); }
+.services > li { display: flex; }
+
+.service__num {
+  font-family: var(--font-hand);
+  font-size: clamp(11px, .9vw, 13px);
+  letter-spacing: .14em;
+  color: var(--red-600);
+  margin: 0;
+}
+.service__name {
+  font-family: var(--font-display);
+  font-size: clamp(17px, 1.5vw, 24px);
+  letter-spacing: -.02em; line-height: 1.06;
+  margin: 0;
+}
+.service__what {
+  font-size: clamp(13.5px, 1.05vw, 16px);
+  line-height: 1.55;
+  color: rgba(22,21,15,.82);
+  margin: 0;
+  text-wrap: pretty;
+}
+.service__eg {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 12.5px);
+  letter-spacing: .05em;
+  color: rgba(22,21,15,.6);
+  margin: auto 0 0;
+  padding-block-start: .7em;
+  border-block-start: 1px solid rgba(22,21,15,.18);
+}
+
+/* ---- Process: numbered steps on the dark ground ------------- */
+.steps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: clamp(14px, 1.7vw, 26px);
+  list-style: none; margin: 0; padding: 0;
+  counter-reset: step;
+}
+.step { padding-inline-start: clamp(12px, 1.2vw, 18px); border-inline-start: 3px solid var(--red-500); }
+.step h3 {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.2vw, 19px);
+  margin: 0 0 .3em;
+}
+.step p {
+  font-size: clamp(13px, 1.02vw, 15.5px);
+  line-height: 1.55;
+  color: rgba(247,244,237,.8);
+  margin: 0;
+}
+
+/* ---- One productised service, kept in proportion ------------ */
+.product-strip {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: clamp(16px, 2vw, 34px);
+  align-items: center;
+  padding: clamp(18px, 2.2vw, 32px);
+  background: var(--ink-800);
+  border-inline-start: 4px solid var(--acid-400);
+}
+.product-strip__tag {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 12.5px);
+  letter-spacing: .1em;
+  color: var(--acid-400);
+  margin: 0 0 .4em;
+}
+.product-strip h3 {
+  font-family: var(--font-display);
+  font-size: clamp(19px, 1.8vw, 28px);
+  letter-spacing: -.02em;
+  margin: 0 0 .35em;
+}
+.product-strip p {
+  font-size: clamp(13.5px, 1.05vw, 16px);
+  line-height: 1.55;
+  color: rgba(247,244,237,.82);
+  margin: 0;
+  max-inline-size: 52ch;
+}
+.product-strip__price {
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.2vw, 19px);
+  color: var(--acid-400);
+  white-space: nowrap;
+}
+
+@media (max-width: 699px) {
+  .services > li .service { transform: none; }
+  .product-strip { grid-template-columns: 1fr; }
+  .steps { gap: 14px; }
+}
