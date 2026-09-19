@@ -884,15 +884,39 @@ async def contact(request: Request, form_data: ContactForm):
             f"Email sent: {email_sent}, Discord sent: {discord_sent}"
         )
 
-        # Success response
-        response_message = "Thank you! I'll respond within 24 hours."
+        # If NO delivery channel succeeded the message exists only in this
+        # log line. Telling the sender "I'll respond within 24 hours" in that
+        # situation is a lie that costs real work: they wait, and nobody ever
+        # sees what they wrote. Say so instead, and give them a route that
+        # does work.
+        if not email_sent and not discord_sent:
+            logger.error(
+                "Contact form NOT DELIVERED - no channel configured or all failed. "
+                f"ID: {contact_id}. Message is only in this log."
+            )
+            return JSONResponse(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                content={
+                    "message": (
+                        "Sorry — the message could not be delivered right now. "
+                        "Please email as42519256@gmail.com directly so it is not lost."
+                    ),
+                    "contact_id": contact_id,
+                },
+            )
+
         if not email_sent:
-            logger.warning("Contact form submitted but email notification failed")
-            # Still return success to user (don't expose email config issues)
+            logger.warning(
+                "Contact email failed but Discord notification succeeded - "
+                f"ID: {contact_id}"
+            )
 
         return JSONResponse(
             status_code=status.HTTP_201_CREATED,
-            content={"message": response_message, "contact_id": contact_id},
+            content={
+                "message": "Thank you! I'll respond within 24 hours.",
+                "contact_id": contact_id,
+            },
         )
 
     except ValueError as e:
@@ -934,10 +958,10 @@ async def portfolio(request: Request):
     return RedirectResponse(url="/#work", status_code=308)
 
 
-@app.get("/contact")
+@app.get("/contact", response_class=HTMLResponse)
 async def contact_page(request: Request):
-    """Contact lives at the foot of the homepage."""
-    return RedirectResponse(url="/#contact", status_code=308)
+    """Real contact page: message form, plus direct routes."""
+    return FileResponse("static/projects/contact.html")
 
 
 @app.get("/blog", response_class=HTMLResponse)
@@ -965,6 +989,7 @@ _CASE_STUDIES = {
     "bakerypos": "static/projects/bakerypos.html",
     "agentop": "static/projects/agentop.html",
     "reseller": "static/projects/reseller.html",
+    "contact": "static/projects/contact.html",
 }
 
 

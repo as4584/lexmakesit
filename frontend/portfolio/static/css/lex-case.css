@@ -318,3 +318,104 @@
   .case-cta__text { max-width: none; }
   .status { padding: 14px 16px; }
 }
+
+
+/* ============================================================
+   CONTACT
+   A form on paper. The only page on the site that asks the
+   visitor to type, so it gets the calmest treatment here.
+   ============================================================ */
+.contact-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, .8fr);
+  gap: clamp(20px, 3vw, 44px);
+  align-items: start;
+}
+
+.contact-form {
+  padding: clamp(20px, 2.2vw, 34px);
+  background: var(--paper-200);
+  color: var(--paper-ink);
+  filter: var(--paper-shadow);
+  transform: rotate(-.3deg);
+}
+.field { display: grid; gap: .35em; margin-bottom: clamp(12px, 1.3vw, 18px); }
+.field label {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .9vw, 13px);
+  letter-spacing: .08em;
+  color: rgba(22,21,15,.72);
+}
+.field input,
+.field textarea {
+  font-family: var(--font-body);
+  font-size: clamp(14px, 1.1vw, 16px);
+  color: var(--paper-ink);
+  background: rgba(255,255,255,.7);
+  border: 1.5px solid rgba(22,21,15,.3);
+  border-radius: 0;
+  padding: .62em .7em;
+  width: 100%;
+}
+.field textarea { min-height: 9em; resize: vertical; }
+.field input:focus-visible,
+.field textarea:focus-visible {
+  outline: 3px solid var(--red-500);
+  outline-offset: 1px;
+  border-color: var(--red-500);
+}
+.field__error {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--red-600);
+  min-height: 1.1em;
+}
+
+.form-status {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .92vw, 14px);
+  letter-spacing: .05em;
+  margin: .8em 0 0;
+  padding: .7em .9em;
+  border-left: 4px solid var(--red-500);
+  background: rgba(22,21,15,.06);
+  color: var(--paper-ink);
+}
+.form-status[data-state="ok"] { border-left-color: #12833f; }
+.form-status[hidden] { display: none !important; }
+
+/* ---- Direct routes ----------------------------------------- */
+.contact-direct { display: grid; gap: clamp(12px, 1.4vw, 20px); }
+.contact-card {
+  display: flex; align-items: center; gap: clamp(12px, 1.2vw, 18px);
+  padding: clamp(14px, 1.5vw, 22px) clamp(16px, 1.7vw, 24px);
+  background: var(--ink-800);
+  border-left: 4px solid var(--case-accent, var(--acid-400));
+  color: var(--paper-100);
+  transition: transform var(--dur-med) var(--ease-out),
+              border-color var(--dur-med) var(--ease-out);
+}
+a.contact-card:hover { transform: translateX(4px); border-left-color: var(--red-500); }
+.contact-card svg { width: clamp(22px, 2vw, 30px); flex: none; fill: currentColor; }
+.contact-card__label {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 12.5px);
+  letter-spacing: .08em;
+  color: rgba(247,244,237,.6);
+  margin: 0 0 .15em;
+}
+.contact-card__value {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(14px, 1.1vw, 17px);
+  margin: 0;
+  word-break: break-word;
+}
+
+@media (max-width: 899px) {
+  .contact-grid { grid-template-columns: 1fr; }
+  .contact-form { transform: none; }
+}
