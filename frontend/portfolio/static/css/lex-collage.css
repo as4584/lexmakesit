@@ -662,3 +662,129 @@ html { scroll-behavior: smooth; }
   background: none; border: 0; color: var(--paper-100);
   font-size: 34px; line-height: 1; cursor: pointer; padding: 10px;
 }
+
+
+/* ============================================================
+   EXPERIENCE
+   Roles, not projects. Three taped index cards on the black
+   ground, between the work and the outro.
+   ============================================================ */
+.experience { position: relative; z-index: 10; padding-block: clamp(14px, 1.8vw, 26px) clamp(20px, 2.4vw, 36px); }
+
+.experience__head {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 20px; flex-wrap: wrap;
+  margin-bottom: clamp(14px, 1.8vw, 26px);
+}
+.experience__title {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(16px, 1.55vw, 24px);
+  letter-spacing: .1em;
+  margin: 0;
+}
+.experience__title svg { display: block; width: 100%; margin-top: 5px; }
+.experience__title path { fill: none; stroke: var(--paper-100); stroke-width: 3.5; stroke-linecap: round; }
+
+.roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: clamp(14px, 1.6vw, 26px);
+  list-style: none; margin: 0; padding: 0;
+}
+
+.role {
+  position: relative;
+  padding: clamp(16px, 1.6vw, 24px) clamp(18px, 1.8vw, 28px);
+  background: var(--paper-200);
+  color: var(--paper-ink);
+  filter: var(--paper-shadow);
+}
+.roles > li:nth-child(odd) .role  { transform: rotate(-.5deg); }
+.roles > li:nth-child(even) .role { transform: rotate(.42deg); }
+
+.role__org {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 1.32vw, 21px);
+  letter-spacing: -.02em; line-height: 1.08;
+  margin: 0 0 .25em;
+}
+.role__title {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: clamp(12px, 1vw, 14px);
+  color: var(--red-600);
+  margin: 0 0 .5em;
+}
+.role__when {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(10px, .82vw, 12.5px);
+  letter-spacing: .07em;
+  color: rgba(22,21,15,.62);
+  margin: 0 0 .7em;
+}
+.role__what {
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(11px, .92vw, 14px);
+  line-height: 1.45; letter-spacing: .03em;
+  margin: 0;
+}
+.role__tape {
+  position: absolute; top: -11px; left: 18%;
+  width: 84px; height: 24px;
+}
+
+@media (max-width: 699px) {
+  .roles { grid-template-columns: 1fr; gap: 12px; }
+  .roles > li .role { transform: none; }
+  .experience { padding-block: 10px 18px; }
+}
+
+
+/* ============================================================
+   CARD META - stack chips + source link
+   ============================================================ */
+.card__stack {
+  display: flex; flex-wrap: wrap; gap: 4px 5px;
+  list-style: none; margin: .6em 0 0; padding: 0;
+  /* Same right lane the description reserves, or the chips run
+     underneath the sticky note. */
+  padding-right: clamp(60px, 7vw, 108px);
+}
+.card__stack li {
+  font-family: var(--font-body);
+  font-size: clamp(8.5px, .68vw, 10.5px);
+  font-weight: 500;
+  letter-spacing: .02em;
+  padding: .24em .5em;
+  border: 1px solid rgba(22,21,15,.26);
+  color: rgba(22,21,15,.78);
+  white-space: nowrap;
+}
+.card--dark .card__stack li {
+  border-color: rgba(247,244,237,.28);
+  color: rgba(247,244,237,.8);
+}
+
+.card__repo {
+  position: absolute; z-index: 7;
+  top: clamp(6px, .7vw, 12px); right: clamp(6px, .7vw, 12px);
+  display: inline-flex; align-items: center; gap: .35em;
+  font-family: var(--font-hand);
+  text-transform: uppercase;
+  font-size: clamp(9px, .74vw, 11px);
+  letter-spacing: .06em;
+  padding: .3em .55em;
+  background: rgba(5,5,5,.86);
+  color: var(--paper-100);
+  transition: background var(--dur-med) var(--ease-out);
+}
+.card__repo:hover { background: var(--acid-400); color: #000; }
+.card__repo svg { width: 12px; height: 12px; fill: currentColor; flex: none; }
+
+@media (max-width: 699px) {
+  .card__stack { display: none; }
+  .card__repo { top: 4px; right: 4px; font-size: 8.5px; padding: .25em .4em; }
+}

@@ -100,6 +100,10 @@
     <symbol id="i-arrow-right" viewBox="0 0 100 100">
       <path d="M10 50 H84 M60 26 L86 50 L60 74" fill="none" stroke="currentColor" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" />
     </symbol>
+    <!-- GitHub mark -->
+    <symbol id="i-github" viewBox="0 0 16 16">
+      <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+    </symbol>
     <!-- Globe for the red note -->
     <symbol id="i-globe" viewBox="0 0 100 100">
       <circle cx="50" cy="50" r="42" />
@@ -124,6 +128,7 @@
     <ul class="nav__links">
       <li><a class="nav__link" href="#work">Work</a></li>
       <li><a class="nav__link" href="/pricing">Services</a></li>
+      <li><a class="nav__link" href="#experience">Experience</a></li>
       <li><a class="nav__link" href="/about">About</a></li>
       <li><a class="nav__link" href="/blog">Blog</a></li>
       <li><a class="nav__link" href="#contact">Contact</a></li>
@@ -280,7 +285,7 @@
           <picture>
             <source srcset="/static/images/collage/project-bakerypos.webp" type="image/webp" />
             <img src="/static/images/collage/project-bakerypos.jpg" width="800" height="600" loading="lazy" decoding="async"
-                 alt="Hands holding a traditional Mexican bakery box — artwork for the BakeryPOS project." />
+                 alt="BakeryPOS running: the La Jarochita employee login screen with bilingual English and Spanish options." />
           </picture>
         </div>
         <div class="card__body">
@@ -288,6 +293,7 @@
             <h3 class="card__title">BakeryPOS</h3>
           </div>
           <p class="card__desc">Real world software for a real bakery.</p>
+          <ul class="card__stack"><li>.NET 8</li><li>WPF</li><li>MVVM</li><li>SQLite</li></ul>
           <div class="paper paper--sticky sticky">
             <ul><li>Orders</li><li>Inventory</li><li>Reports</li><li>Growth</li></ul>
           </div>
@@ -303,6 +309,7 @@
     <li>
       <article class="card paper card--dark anim-rise">
         <span class="card__num">02</span>
+        <a class="card__repo" href="https://github.com/as4584/Agentops" target="_blank" rel="noopener noreferrer" aria-label="Agentop code on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-github" /></svg>GitHub</a>
         <div class="card__media">
           <picture>
             <source srcset="/static/images/collage/project-agentop.webp" type="image/webp" />
@@ -318,6 +325,7 @@
             <h3 class="card__title">Agentop</h3>
           </div>
           <p class="card__desc">A local-first AI agent system.</p>
+          <ul class="card__stack"><li>Python</li><li>MCP</li><li>Next.js</li><li>Electron</li></ul>
           <div class="paper paper--sticky sticky">
             <ul><li>Automate</li><li>Delegate</li><li>Get things done</li></ul>
           </div>
@@ -349,6 +357,7 @@
             <h3 class="card__title">AI Receptionist</h3>
           </div>
           <p class="card__desc">Never miss a customer again.</p>
+          <ul class="card__stack"><li>FastAPI</li><li>Twilio</li><li>OpenAI</li><li>PostgreSQL</li></ul>
           <div class="paper paper--sticky sticky">
             <ul><li>24/7</li><li>Friendly</li><li>Efficient</li></ul>
           </div>
@@ -364,6 +373,7 @@
     <li>
       <article class="card paper anim-rise">
         <span class="card__num">04</span>
+        <a class="card__repo" href="https://github.com/as4584/Vendora" target="_blank" rel="noopener noreferrer" aria-label="Vendora code on GitHub"><svg viewBox="0 0 16 16" aria-hidden="true"><use href="#i-github" /></svg>GitHub</a>
         <div class="card__media">
           <picture>
             <source srcset="/static/images/collage/project-reseller.webp" type="image/webp" />
@@ -380,6 +390,7 @@
             <h3 class="card__title">Reseller App <span class="card__tba">(name TBA)</span></h3>
           </div>
           <p class="card__desc">Buy. Sell. Manage. All in one place.</p>
+          <ul class="card__stack"><li>React Native</li><li>Expo 56</li><li>FastAPI</li><li>Stripe</li></ul>
           <div class="paper paper--sticky sticky">
             <ul><li>Inventory</li><li>Listings</li><li>Orders</li><li>Profits</li></ul>
           </div>
@@ -388,6 +399,66 @@
             <a class="card__cta card__link" href="/projects/reseller">View project <span aria-hidden="true">&rarr;</span></a>
           </div>
         </div>
+      </article>
+    </li>
+  </ul>
+</section>
+
+
+<!-- ============================================================
+     EXPERIENCE
+     ============================================================ -->
+<section class="experience shell" id="experience" aria-labelledby="experience-title">
+  <div class="experience__head">
+    <h2 class="experience__title" id="experience-title">
+      Where I work
+      <svg viewBox="0 0 300 12" height="10" preserveAspectRatio="none" aria-hidden="true">
+        <path class="draw-line" d="M2 7 Q 84 3 152 8 T 298 4" />
+      </svg>
+    </h2>
+    <p class="hand" style="margin:0">
+      Building, hosting and keeping it running.
+      <svg class="annot__arrow" viewBox="0 0 100 100" aria-hidden="true" style="width:22px;vertical-align:-8px;margin-left:8px"><use href="#i-arrow-curve" /></svg>
+    </p>
+  </div>
+
+  <ul class="roles" role="list">
+    <li>
+      <article class="role anim-rise">
+        <span class="tape role__tape" aria-hidden="true"></span>
+        <h3 class="role__org">Innovation Business Development Solutions</h3>
+        <p class="role__title">Head of Technology</p>
+        <p class="role__when">Feb 2026 &ndash; present</p>
+        <p class="role__what">
+          Owns the technology side end to end &mdash; applications, websites,
+          hosting and the systems behind them.
+        </p>
+      </article>
+    </li>
+
+    <li>
+      <article class="role anim-rise">
+        <span class="tape role__tape" aria-hidden="true" style="left:62%"></span>
+        <h3 class="role__org">La Jarochita Bakery</h3>
+        <p class="role__title">Point of sale &amp; IT support</p>
+        <p class="role__when">Passaic, NJ &middot; 2026</p>
+        <p class="role__what">
+          Built the bakery&rsquo;s point-of-sale software and keep the counter
+          hardware running day to day.
+        </p>
+      </article>
+    </li>
+
+    <li>
+      <article class="role anim-rise">
+        <span class="tape role__tape" aria-hidden="true" style="left:30%"></span>
+        <h3 class="role__org">IT technician</h3>
+        <p class="role__title">Hands-on support</p>
+        <p class="role__when">Ongoing</p>
+        <p class="role__what">
+          Computer problems, ethernet and networking, and IoT devices &mdash;
+          the unglamorous work that keeps a business open.
+        </p>
       </article>
     </li>
   </ul>

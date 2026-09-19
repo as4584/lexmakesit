@@ -118,7 +118,10 @@
 
     // Project cards enter in batches, each at a slightly different
     // angle, then straighten as they settle onto the page.
-    ScrollTrigger.batch('.projects__grid .anim-rise', {
+    // Any new section must be listed here or its .anim-rise elements
+    // stay at opacity 0 forever - which is exactly what happened when
+    // the experience section was added.
+    ScrollTrigger.batch('.projects__grid .anim-rise, .experience .anim-rise', {
       start: 'top 88%',
       once: true,
       onEnter: function (batch) {
