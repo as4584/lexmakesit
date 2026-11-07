@@ -5,9 +5,9 @@ name: Keep server setup out of this public repo
 #
 # GitHub cannot block such a push on a personally owned public repo, so this
 # runs after the fact: on every push that carries this file, and every 15
-# minutes from master to catch branches that do not. Any branch or tag whose
+# minutes from main to catch branches that do not. Any branch or tag whose
 # files match is deleted, and the run fails so the owner is emailed.
-# master is never deleted; a match there only fails the run.
+# main is never deleted; a match there only fails the run.
 #
 # The same patterns are in the local pre-push hook
 # (C:\Users\AlexS\Automations\git-hooks\lexmakesit-pre-push); keep them in sync.
@@ -49,8 +49,8 @@ jobs:
             short=${short#refs/tags/}
             echo "::error::$ref contains server setup files:"
             echo "$hits" | head -20 | sed 's/^/    /'
-            if [ "$ref" = "refs/remotes/origin/master" ]; then
-              echo "::error::master is not deleted automatically; remove these files from master."
+            if [ "$ref" = "refs/remotes/origin/main" ]; then
+              echo "::error::main is not deleted automatically; remove these files from main."
             elif [[ "$ref" == refs/tags/* ]]; then
               git push --quiet origin --delete "refs/tags/$short" && echo "Deleted tag $short"
             else
